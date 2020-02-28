@@ -10,7 +10,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     g_ui = ui; //初始化全局ui指针便于在外部调用ui
-
+    qDebug() << "MainWindow in thread" << QThread::currentThread() ;
     //std::thread t = std::thread(&MainWindow::requestConnect,this,dstIp,dstPort);
     //t.detach();
     //requestConnect(dstId);
@@ -95,6 +95,7 @@ void MainWindow::on_pushButton_start_clicked()
     {
         m_udpSender->stopSend();
         m_udpReceiver->stopReceive();
+        ui->label_showImageMain->clear();
 
         ui->pushButton_start->setChecked(false);
         ui->pushButton_start->setText("start");
@@ -115,6 +116,8 @@ void MainWindow::closeEvent(QCloseEvent *event)
     {
         std::cout << "exit " << std::endl;
         event->accept();  //接受退出信号，程序退出
+        QThread::sleep(1); //等待清理线程完毕
+        std::cout << "exit ok" << std::endl;
     }
 }
 
@@ -131,3 +134,4 @@ void MainWindow::on_pushButton_setMyId_clicked()
     }
 
 }
+

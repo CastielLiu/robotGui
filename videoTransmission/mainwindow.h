@@ -7,6 +7,7 @@
 #include "udpsender.h"
 #include <QCloseEvent>
 #include <QMessageBox>
+#include <myqlabel.h>
 
 
 namespace Ui {

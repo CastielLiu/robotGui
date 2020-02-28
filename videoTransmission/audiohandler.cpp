@@ -24,7 +24,6 @@ bool AudioHandler::init(const std::string& mode)
         return false;
     }
     return true;
-
 }
 
 /* 以下为捕获声音相关函数 */

@@ -1,9 +1,14 @@
 #include "vediohandler.h"
 
+//类静态成员函数需要在类的外部分配内存空间
+QMutex VedioHandler::m_tempImageMutex;
+QImage VedioHandler::m_tempImage;
+
 VedioHandler::VedioHandler():
     m_camera(nullptr),
     m_cameraViewFinder(nullptr),
-    m_imageCapture(nullptr)
+    m_imageCapture(nullptr),
+    m_myQlabel(nullptr)
 {
     m_imageBuffer = new CircleBuffer<QImage>();
 }
@@ -32,8 +37,14 @@ void VedioHandler::stopCapture()
         delete  m_imageCapture;
         m_imageCapture = nullptr;
     }
+    if(m_myQlabel != nullptr)
+    {
+        //qDebug() << "m_myQlabel->hide()";
+        m_myQlabel->hide();
+        delete  m_myQlabel;
+        m_myQlabel = nullptr;
+    }
 }
-
 
 bool VedioHandler::init(const std::string& mode)
 {
@@ -52,12 +63,16 @@ bool VedioHandler::init(const std::string& mode)
 
         connect(m_imageCapture, SIGNAL(imageCaptured(int,QImage)),
                 this, SLOT(onImageCaptured(int,QImage)));
-
         return true;
     }
     else if(mode == "play")
     {
         m_imageBuffer->setSize(5);
+        m_myQlabel = new MyQLabel(g_ui->label_showImageMain);
+        connect(m_myQlabel,SIGNAL(clicked()),this,SLOT(modifyShowMode()));
+        m_myQlabel->setGeometry(0,0,128,96);
+        //m_myQlabel->setText("testsfdd");
+        m_myQlabel->show();
         return true;
     }
     else
@@ -126,18 +141,10 @@ void VedioHandler::onImageCaptured(int id,QImage image)
     m_imageBuffer->write(image);
     m_imageMutex.unlock();
 
-    //image=image.convertToFormat(QImage::Format_RGB888);
-    g_ui->label_showImage1->setPixmap(QPixmap::fromImage(image));
+    m_tempImageMutex.lock();
+    m_tempImage = image.copy();
+    m_tempImageMutex.unlock();
 
-    /*
-    QImage::Format format =  image.format();
-    qDebug() << (int)format << "\t" << image.size();
-    // 使用QPainter进行绘制
-    QPainter painter;
-    painter.begin(g_ui->openGLWidget);
-    painter.drawImage(QPoint(0,0),m_image);
-    painter.end();
-    */
 }
 
 /****************** 视频播放相关代码 ********************/
@@ -160,7 +167,6 @@ void VedioHandler::appendData(char* const buf, int len)
     //if(ok)
     //    qDebug() << "received one image and write to imageBuffer ok. size:" << image.size()
     //             << "image len: " << len;
-
 }
 
 void VedioHandler::playVedio()
@@ -170,14 +176,39 @@ void VedioHandler::playVedio()
     QMutexLocker locker(&m_imageMutex);
     bool ok = m_imageBuffer->read(image);
     locker.unlock();
-
-    if(!ok)
+    //image=image.convertToFormat(QImage::Format_RGB888);
+    if(m_myImageBig) //我方大图
     {
-        //qDebug() << "play vedio failed! read image error";
-        return;
+        m_tempImageMutex.lock();
+        g_ui->label_showImageMain->setPixmap(QPixmap::fromImage(m_tempImage));
+        m_tempImageMutex.unlock();
+        if(ok)
+            m_myQlabel->setPixmap(QPixmap::fromImage(image.scaled(m_myQlabel->size())));
     }
-    //else
-        //qDebug() << "play vedio ok! read image ok， imageSize:" << image.size();
+    else //我方小图
+    {
+        m_tempImageMutex.lock();
+        if(!m_tempImage.isNull())
+            m_myQlabel->setPixmap(QPixmap::fromImage(m_tempImage.scaled(m_myQlabel->size())));
+        m_tempImageMutex.unlock();
 
-    g_ui->label_showImage2->setPixmap(QPixmap::fromImage(image));
+        if(ok)
+            g_ui->label_showImageMain->setPixmap(QPixmap::fromImage(image));
+    }
+
+    /* //图片显示方法2
+    QImage::Format format =  image.format();
+    qDebug() << (int)format << "\t" << image.size();
+    // 使用QPainter进行绘制
+    QPainter painter;
+    painter.begin(g_ui->openGLWidget);
+    painter.drawImage(QPoint(0,0),m_image);
+    painter.end();
+    */
+}
+
+void VedioHandler::modifyShowMode()
+{
+    m_myImageBig = !m_myImageBig;
+    //qDebug() << m_myImageBig ;
 }

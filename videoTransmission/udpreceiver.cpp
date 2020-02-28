@@ -6,22 +6,13 @@ UdpReceiver::UdpReceiver():
     //利用每帧图片的数据量确定缓冲区的大小
     m_maxBufLength = 640*480*3+sizeof(transPack_t);
     m_dataBuf = new char[m_maxBufLength];
-    m_audioPlayer = new AudioHandler;
-    m_audioPlayer->init("play");
 
-    m_vedioPlayer = new VedioHandler;
-    m_vedioPlayer->init("play");
 }
 
 UdpReceiver::~UdpReceiver()
 {
     stopReceive();
     delete [] m_dataBuf;
-    delete m_audioPlayer;
-    delete m_vedioPlayer;
-
-    if(m_udpSocket!=nullptr)
-        delete m_udpSocket;
 }
 
 //注册到服务器
@@ -45,6 +36,12 @@ bool UdpReceiver::registerToServer()
 //返回本地端口号
 uint16_t UdpReceiver::startReceive()
 {
+    m_audioPlayer = new AudioHandler;
+    m_audioPlayer->init("play");
+
+    m_vedioPlayer = new VedioHandler;
+    m_vedioPlayer->init("play");
+
     m_udpSocket = new QUdpSocket(this);
     m_udpSocket->bind(QHostAddress::Any);
 
@@ -59,11 +56,6 @@ uint16_t UdpReceiver::startReceive()
 
 void UdpReceiver::stopReceive()
 {
-    //判断指针是否为空，然后断开信号
-    //否则，若指针为空将报错
-    if(m_udpSocket != nullptr)
-        disconnect(m_udpSocket,SIGNAL(readyRead()),this,SLOT(onReadyRead()));
-
     if(this->isRunning())
     {
         this->requestInterruption();
@@ -73,10 +65,15 @@ void UdpReceiver::stopReceive()
 
     if(m_udpSocket != nullptr)
     {
+        disconnect(m_udpSocket,SIGNAL(readyRead()),this,SLOT(onReadyRead()));
         m_udpSocket->close();
         delete m_udpSocket;
         m_udpSocket = nullptr;
     }
+    if(m_audioPlayer != nullptr)
+        delete m_audioPlayer;
+    if(m_vedioPlayer != nullptr)
+        delete m_vedioPlayer;
 }
 
 //udp 数据读取函数
@@ -182,7 +179,7 @@ void UdpReceiver::run(void)
     {
         m_audioPlayer->playAudio();
         m_vedioPlayer->playVedio();
-        QThread::msleep(50);
+        QThread::msleep(30);
     }
 
 }
