@@ -10,6 +10,8 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     g_ui = ui; //初始化全局ui指针便于在外部调用ui
+    this->setWindowTitle("视频聊天工具");
+    this->setWindowIcon(QIcon(":/images/icon"));
     qDebug() << "MainWindow in thread" << QThread::currentThread() ;
     //std::thread t = std::thread(&MainWindow::requestConnect,this,dstIp,dstPort);
     //t.detach();
