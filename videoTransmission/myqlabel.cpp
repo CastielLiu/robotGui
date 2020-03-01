@@ -4,7 +4,9 @@ MyQLabel::MyQLabel(QWidget *parent):
     QLabel(parent)
 {
     setMouseTracking(true);
-    //connect(this,SIGNAL(clicked()),this,SLOT(onClicked()));
+
+    m_isOpenMoveEvent = false;
+    m_isOpenClickEvent = false;
 }
 
 MyQLabel::~MyQLabel()
@@ -14,6 +16,9 @@ MyQLabel::~MyQLabel()
 
 void MyQLabel::mousePressEvent(QMouseEvent *event)
 {
+    //将该事件传给父类处理，这句话很重要，如果没有，父类无法处理本来的点击事件
+    QLabel::mousePressEvent(event);
+
     //qDebug() << "pressed!!" ;
     if(event->button() == Qt::LeftButton)
     {
@@ -22,14 +27,16 @@ void MyQLabel::mousePressEvent(QMouseEvent *event)
         m_formerWidgetPos = this->pos(); //获取当前控件位置
     }
 
-    //将该事件传给父类处理，这句话很重要，如果没有，父类无法处理本来的点击事件
-    QLabel::mousePressEvent(event);
+
 }
 
 void MyQLabel::mouseReleaseEvent(QMouseEvent *event)
 {
+    QLabel::mouseReleaseEvent(event);
+
     //qDebug() << "released!!" ;
     if(event->button()!=Qt::LeftButton) return;
+    if(!m_isOpenClickEvent) return;
 
     m_shouldMove = false;
     if(!m_moveOk) //没有移动，表明为点击事件
@@ -40,12 +47,12 @@ void MyQLabel::mouseReleaseEvent(QMouseEvent *event)
     {
         m_moveOk = false;
     }
-
-    QLabel::mouseReleaseEvent(event);
 }
 
 void MyQLabel::mouseMoveEvent(QMouseEvent *event)
 {
+    QLabel::mouseMoveEvent(event);
+    if(!m_isOpenMoveEvent) return;
     if(!m_shouldMove) return;
 
     QPoint nowMousePos = event->globalPos();
@@ -57,5 +64,5 @@ void MyQLabel::mouseMoveEvent(QMouseEvent *event)
         m_moveOk = true;
     }
 
-    QLabel::mouseMoveEvent(event);
+
 }

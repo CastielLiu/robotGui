@@ -96,7 +96,7 @@ void AudioHandler::sendAudio(QUdpSocket* sockect, uint16_t receiverId)
         package->receiverId = receiverId;
 
         memcpy(sendData+sizeof(transPack_t),&m_recoderBuffer.data()[m_currentSendIndex], AUDIO_LEN_60ms);
-        sockect->writeDatagram(sendData,sizeof(transPack_t)+AUDIO_LEN_60ms,g_serverIp,g_serverPort);
+        sockect->writeDatagram(sendData,sizeof(transPack_t)+AUDIO_LEN_60ms,g_serverIp,g_msgPort);
         //std::cout << "send data in thread: " << QThread::currentThreadId() << std::endl;
         m_currentSendIndex += AUDIO_LEN_60ms;
         //qDebug()<<m_currentSendIndex;

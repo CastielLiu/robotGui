@@ -22,14 +22,14 @@ enum dataType
     AcceptConnect=3,  //接收连接
     RefuseConnect=4,  //拒绝连接
     DisConnect=5,     //挂断连接
-
     Register=6,       //注册到服务器
-
+    RegisterOK=7,     //注册成功(服务器发往客户端)
+    RegisterFail=8,   //注册失败(服务器发往客户端)
 };
 
 //数据传输头
 #pragma pack(push,1)
-typedef struct
+typedef struct TransPack
 {
     uint8_t head[2];
     uint16_t length;
@@ -38,8 +38,13 @@ typedef struct
 
     uint16_t senderId;
     uint16_t receiverId;
-    uint16_t listenerPort; //消息发送者的监听端口，期望消息接收者向此端口发送数据
 
+    TransPack()
+    {
+        head[0] = 0x66;
+        head[1] = 0xcc;
+        length = type = checkNum = 0;
+    }
 } transPack_t;
 
 #pragma pack(pop)
@@ -53,10 +58,16 @@ enum systemStatus
     SystemAccepted, //请求被接受
 };
 
-extern QHostAddress g_serverIp;
-extern quint16 g_serverPort;
+extern const QHostAddress g_serverIp;
+extern const quint16 g_registerPort;
+extern int g_registerStatus;
+extern quint16 g_msgPort;
 extern systemStatus g_systemStatus;
 extern uint16_t g_myId;
+extern uint16_t g_otherId ;
+extern bool g_isCaller;
+
+//extern bool
 extern Ui::MainWindow *g_ui;
 
 int ipConvert(const std::string& ip_str);

@@ -15,16 +15,21 @@ public:
     ~UdpReceiver() override;
 
     virtual void run(void) override;
-    uint16_t startReceive();
+    void startReceive();
     void stopReceive();
+    void registerToServer();
+    void logout();
 private slots:
     void onReadyRead();
+
+signals:
+    void startSendSignal();
 
 private:
     void handleRequestConnect(uint16_t id, bool flag);
     void handleVedioMsg(char * const buf);
     void handleAudioMsg(char * const buf);
-    bool registerToServer();
+    void registerToServerThread();
 
 private:
     QUdpSocket *m_udpSocket;

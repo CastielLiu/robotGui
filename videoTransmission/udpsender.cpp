@@ -14,15 +14,8 @@ UdpSender::~UdpSender()
     stopSend();
 }
 
-bool UdpSender::init()
-{
-    return true;
-}
-
-
-/*
+/*开始发送
  * dstId @目标客户端的id
- *
  */
 bool UdpSender::startSend(uint16_t dstId)
 {

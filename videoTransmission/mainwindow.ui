@@ -16,6 +16,13 @@
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
+     <widget class="MyQLabel" name="label_registerStatus">
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+    </item>
+    <item>
      <widget class="QLabel" name="label_showImageMain">
       <property name="minimumSize">
        <size>
@@ -95,9 +102,9 @@
            <widget class="QLineEdit" name="lineEdit_dstId"/>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_start">
+           <widget class="QPushButton" name="pushButton_call">
             <property name="text">
-             <string>start</string>
+             <string>call</string>
             </property>
             <property name="checkable">
              <bool>true</bool>
@@ -146,6 +153,13 @@
   <widget class="QStatusBar" name="statusBar"/>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>MyQLabel</class>
+   <extends>QLabel</extends>
+   <header>myqlabel.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

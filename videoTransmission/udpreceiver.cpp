@@ -6,7 +6,6 @@ UdpReceiver::UdpReceiver():
     //利用每帧图片的数据量确定缓冲区的大小
     m_maxBufLength = 640*480*3+sizeof(transPack_t);
     m_dataBuf = new char[m_maxBufLength];
-
 }
 
 UdpReceiver::~UdpReceiver()
@@ -16,25 +15,71 @@ UdpReceiver::~UdpReceiver()
 }
 
 //注册到服务器
-bool UdpReceiver::registerToServer()
+void UdpReceiver::registerToServer()
 {
-    transPack_t package;
-    package.head[0] = 0x66;
-    package.head[1] = 0xcc;
-    package.type = Register;
-    package.length = 0;
-    package.checkNum = 0;
-    package.senderId = g_myId;
-    package.receiverId = 0;
-
-    size_t dataLength = sizeof(package)+package.length;
-    for(int i=0; i<5; ++i)
-        m_udpSocket->writeDatagram((char *)&package,dataLength, g_serverIp,g_serverPort);
-    return true;
+    std::thread t(&UdpReceiver::registerToServerThread,this);
+    t.detach();
+    //连接信号槽，udp收到消息后触发槽函数
+    this->startReceive();
 }
 
-//返回本地端口号
-uint16_t UdpReceiver::startReceive()
+//注册到服务器线程函数
+void UdpReceiver::registerToServerThread()
+{
+    qDebug() << "registerToServerThread" ;
+
+    if(m_udpSocket != nullptr)
+    {
+        m_udpSocket->close();
+        delete m_udpSocket;
+    }
+    m_udpSocket = new QUdpSocket();
+    m_udpSocket->bind(QHostAddress::Any);
+
+    //连接信号槽，udp收到消息后触发槽函数
+    connect(m_udpSocket,SIGNAL(readyRead()),this,SLOT(onReadyRead()));
+    emit m_udpSocket->readyRead();
+
+    transPack_t package;
+    package.type = Register;
+    package.senderId = g_myId;
+    int cnt = 0;
+    g_registerStatus = 1;
+    while(g_registerStatus == 1) //登陆中
+    {
+        qDebug() << "send register msg...";
+        m_udpSocket->writeDatagram((char *)&package,
+                   sizeof(package), g_serverIp,g_registerPort);
+
+        QThread::msleep(500);
+        if(++cnt > 20)
+        {
+            g_registerStatus = 0;
+            g_ui->label_registerStatus->setText("login");
+            qDebug() << "login time out!";
+            break;
+        }
+    }
+    if(g_registerStatus == 2)
+    {
+        g_ui->label_registerStatus->setText("logout");
+    }
+}
+
+//退出登陆 等待完善...
+void UdpReceiver::logout()
+{
+    //发送退出登陆信号，服务器收到后将客户端从列表中删除
+
+
+    g_registerStatus = 0;
+    stopReceive();
+}
+
+/*作为主叫时开始接收数据
+ *
+ */
+void UdpReceiver::startReceive()
 {
     m_audioPlayer = new AudioHandler;
     m_audioPlayer->init("play");
@@ -42,16 +87,7 @@ uint16_t UdpReceiver::startReceive()
     m_vedioPlayer = new VedioHandler;
     m_vedioPlayer->init("play");
 
-    m_udpSocket = new QUdpSocket(this);
-    m_udpSocket->bind(QHostAddress::Any);
-
-    registerToServer();
-
-    //连接信号槽，udp收到消息后触发槽函数
-    connect(m_udpSocket,SIGNAL(readyRead()),this,SLOT(onReadyRead()));
-    this->start();
-
-    return m_udpSocket->localPort();
+    this->start(); //启动音频视频播放Qthread
 }
 
 void UdpReceiver::stopReceive()
@@ -79,7 +115,7 @@ void UdpReceiver::stopReceive()
 //udp 数据读取函数
 void UdpReceiver::onReadyRead()
 {
-    //std::cout << "UdpReceiver::onReadyRead!!!" << std::endl;
+    std::cout << "UdpReceiver::onReadyRead!!!" << std::endl;
     while(m_udpSocket->hasPendingDatagrams())
     {
         //应为服务器ip
@@ -93,7 +129,6 @@ void UdpReceiver::onReadyRead()
             continue;
         if(len <=0 )
             continue;
-
 
         transPack_t* package = (transPack_t*)m_dataBuf;
         //std::cout << "package->type:" << int(package->type) << std::endl;
@@ -122,14 +157,30 @@ void UdpReceiver::onReadyRead()
             //std::cout <<  "DisConnect" << std::endl;
         }
         else if(Vedio == package->type)
-        {
-            //std::cout <<  "Vedio" << std::endl;
+        {//如果为主叫方，直接处理消息
+         //如果为被叫方，应将对方id保存并启动udpSender
+            if(!g_isCaller && g_otherId==0) //客户端被叫，且主叫id为默认
+            {
+                g_otherId = package->senderId;
+                emit startSendSignal();
+            }
             handleVedioMsg(m_dataBuf);
         }
         else if(Audio == package->type)
         {
+
             //std::cout <<  "Audio" << std::endl;
             handleAudioMsg(m_dataBuf);
+        }
+        else if(RegisterOK == package->type)
+        {
+            g_msgPort = senderport; //记录服务器数据端口号
+            g_registerStatus = 2;
+        }
+        else if(RegisterFail == package->type)
+        {
+            qDebug() << "register failed!" ;
+            g_registerStatus = 0;
         }
         else
         {
@@ -154,7 +205,7 @@ void UdpReceiver::handleRequestConnect(uint16_t id, bool flag)
     package.receiverId = id;
     const char *data = (const char *)&package;
 
-    m_udpSocket->writeDatagram(data,sizeof(package)+package.length,g_serverIp,g_serverPort);
+    //m_udpSocket->writeDatagram(data,sizeof(package)+package.length,g_serverIp,g_serverPort);
 }
 
 void UdpReceiver::handleVedioMsg(char* const buf)

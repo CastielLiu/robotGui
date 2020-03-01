@@ -71,6 +71,8 @@ bool VedioHandler::init(const std::string& mode)
         m_myQlabel = new MyQLabel(g_ui->label_showImageMain);
         connect(m_myQlabel,SIGNAL(clicked()),this,SLOT(modifyShowMode()));
         m_myQlabel->setGeometry(0,0,128,96);
+        m_myQlabel->setOpenMoveEvent(true);
+        m_myQlabel->setOpenClickEvent(true);
         //m_myQlabel->setText("testsfdd");
         m_myQlabel->show();
         return true;
@@ -126,7 +128,7 @@ void VedioHandler::sendImage(QUdpSocket *sockect, uint16_t receiverId)
 
     QByteArray sendArray = QByteArray((char*)&header, sizeof(transPack_t)) + imageByteArray;
 
-    sockect->writeDatagram(sendArray,sendArray.size(), g_serverIp, g_serverPort);
+    sockect->writeDatagram(sendArray,sendArray.size(), g_serverIp, g_msgPort);
     //qDebug() << "send one frame image, size: " << imageByteArray.size();
 }
 

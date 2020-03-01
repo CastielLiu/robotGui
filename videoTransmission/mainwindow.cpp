@@ -13,9 +13,15 @@ MainWindow::MainWindow(QWidget *parent) :
     this->setWindowTitle("视频聊天工具");
     this->setWindowIcon(QIcon(":/images/icon"));
     qDebug() << "MainWindow in thread" << QThread::currentThread() ;
-    //std::thread t = std::thread(&MainWindow::requestConnect,this,dstIp,dstPort);
-    //t.detach();
-    //requestConnect(dstId);
+    ui->label_registerStatus->setOpenClickEvent(true);
+    connect(ui->label_registerStatus,SIGNAL(clicked()),this,SLOT(onLableRegisterStatusClicked()));
+    ui->label_registerStatus->setAlignment(Qt::AlignHCenter);
+
+    //实例化接收器
+    m_udpReceiver = new UdpReceiver;
+    connect(m_udpReceiver,SIGNAL(startSendSignal()),this,SLOT(startSendSlot()));
+    m_udpReceiver->registerToServer();
+    ui->label_registerStatus->setText("logging in");
 }
 
 MainWindow::~MainWindow()
@@ -28,70 +34,34 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-
-void MainWindow::requestConnect(uint16_t id)
+//开始发送数据 槽函数，信号来自于udpReceiver
+//客户端被叫，udpReceiver保存主叫id后发出信号
+void MainWindow::startSendSlot()
 {
-    QUdpSocket *udpSocket = new QUdpSocket(this);
-
-    transPack_t package;
-    package.head[0] = 0x66;
-    package.head[1] = 0xcc;
-    package.type = RequestConnect;
-    package.length = 0;
-    package.checkNum = 0;
-    package.senderId = g_myId;
-    package.receiverId = id;
-
-    size_t dataLength = sizeof(package)+package.length;
-
-    g_systemStatus = SystemBusy;
-    int cnt = 200;
-    while(g_systemStatus == SystemBusy)
-    {
-        //发送请求数据
-        qint64 len =
-        udpSocket->writeDatagram((char *)&package,dataLength, g_serverIp,g_serverPort);
-
-        qDebug() <<g_serverIp.toString() << "\t"
-                 << g_serverPort <<"\t len:"<<  len << "\n";
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
-        if(cnt-- == 0)
-        {
-            g_systemStatus = SystemIdle;
-            break;
-        }
-    }
-
-    if(g_systemStatus == SystemRefused) //请求被拒绝
-        g_systemStatus = SystemIdle;
-    else if(g_systemStatus == SystemAccepted) //请求被接受
-    {
-        g_systemStatus = SystemRunning;
-        m_udpSender->startSend(id);
-    }
-    else if(g_systemStatus == SystemIdle)
-    {
-        qDebug() << "request overtime ";
-    }
+    m_udpSender = new UdpSender();
+    m_udpSender->startSend(g_otherId);
 }
 
-void MainWindow::on_pushButton_start_clicked()
+void MainWindow::on_pushButton_call_clicked()
 {
-    if(ui->pushButton_start->isChecked())
+    if(ui->pushButton_call->isChecked())
     {
-        //实例化接收器
-        m_udpReceiver = new UdpReceiver;
-        m_udpReceiver->startReceive();
+        if(g_registerStatus != 2 )
+        {
+            ui->statusBar->showMessage("please login firstly!",3000);
+            return;
+        }
 
-        //再实例化发送器
+        g_isCaller = true;
+
         m_udpSender = new UdpSender();
         uint16_t dstId = ui->lineEdit_dstId->text().toUShort();
         bool ok = m_udpSender->startSend(dstId);
         if(!ok)
             return;
 
-        ui->pushButton_start->setChecked(true);
-        ui->pushButton_start->setText("stop");
+        ui->pushButton_call->setChecked(true);
+        ui->pushButton_call->setText("stop");
     }
     else
     {
@@ -99,12 +69,13 @@ void MainWindow::on_pushButton_start_clicked()
         m_udpReceiver->stopReceive();
         ui->label_showImageMain->clear();
 
-        ui->pushButton_start->setChecked(false);
-        ui->pushButton_start->setText("start");
+        ui->pushButton_call->setChecked(false);
+        ui->pushButton_call->setText("start");
+        g_isCaller = false;
     }
 }
 
-
+//点击叉号时的提示弹窗
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     int button = QMessageBox::question(this, tr("退出程序"),
@@ -134,6 +105,27 @@ void MainWindow::on_pushButton_setMyId_clicked()
         g_myId = ui->lineEdit_myId->text().toUInt();
         ui->statusBar->showMessage("my id set ok.",3000);
     }
+}
 
+void MainWindow::onLableRegisterStatusClicked()
+{
+    //0未登陆，1登陆中，2已登录
+    if(g_registerStatus == 0)
+    {
+        g_registerStatus =1;
+        ui->label_registerStatus->setText("logging in, click cancel");
+        m_udpReceiver->registerToServer();
+    }
+    else if(g_registerStatus == 1)
+    {
+        g_registerStatus = 0;
+        ui->label_registerStatus->setText("login");
+    }
+    else if(g_registerStatus == 2)
+    {
+        g_registerStatus = 0;
+        m_udpReceiver->logout();
+        ui->label_registerStatus->setText("login");
+    }
 }
 

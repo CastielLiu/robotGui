@@ -10,11 +10,12 @@ class UdpSender: public QThread
 public:
     UdpSender();
     ~UdpSender() override;
-    bool init();
     bool startSend(uint16_t dstId);
     void stopSend();
     virtual void run() override;
     void setDstId(uint16_t id) {m_dstId = id;}
+
+
 
 private:
     QUdpSocket *m_udpSocket;
