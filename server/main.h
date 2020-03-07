@@ -26,10 +26,11 @@ enum dataType
     AcceptConnect=3,  //接收连接
     RefuseConnect=4,  //拒绝连接
     DisConnect=5,     //挂断连接
-    Register=6,       //注册到服务器
+      
     RegisterOK=7,     //注册成功(服务器发往客户端)
-	RegisterFail=8,   //注册失败(服务器发往客户端) 
-
+	RegisterFail=8,   //注册失败(服务器发往客户端)
+	RequestRegister=9,//请求注册到服务器
+	ResponseRegister=10,//回应客户端请求(包含服务端服务端口号) 
 };
 
 #pragma pack(push,1)
@@ -54,10 +55,17 @@ typedef struct TransPack
 
 #pragma pack(pop)
 
-typedef struct
+typedef struct ClientInfo 
 {
-	sockaddr_in addr;
+	sockaddr_in addr; //客户端地址 
 	bool connect; //客户端的连接状态 
+	std::time_t lastRegisterTime; //上一次申请登录的时间
+	
+	ClientInfo()
+	{
+		lastRegisterTime = 0;
+	}
+	 
 } clientInfo_t;  
 
 //使用map存放客户端信息以及对应的id 
@@ -74,8 +82,9 @@ public:
 	
 private:
 	int initSocket(const int port=0, const std::string ip = "0.0.0.0");
+	int initSocketAutoAssignPort(uint16_t& port);
 	void receiveRegisterThread();
-	void receiveAndTransThread(uint16_t clientId);
+	void receiveAndTransThread(int server_fd); 
 	
 	void printThread(int interval); 
 	void msgTransmit(int fd, const uint8_t* buf, int len);
@@ -85,7 +94,6 @@ private:
 	
 	//客户端注册端口号 
 	const int register_port_; 
-	int register_fd_; // 注册socket套接字 
 	
 
 };

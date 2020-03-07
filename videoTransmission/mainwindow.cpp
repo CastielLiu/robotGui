@@ -15,7 +15,9 @@ MainWindow::MainWindow(QWidget *parent) :
     qDebug() << "MainWindow in thread" << QThread::currentThread() ;
     ui->label_registerStatus->setOpenClickEvent(true);
     connect(ui->label_registerStatus,SIGNAL(clicked()),this,SLOT(onLableRegisterStatusClicked()));
-    ui->label_registerStatus->setAlignment(Qt::AlignHCenter);
+    ui->label_registerStatus->setAlignment(Qt::AlignHCenter); //设置label文字居中
+
+    connect(ui->action_user_id,SIGNAL(triggered()),this,SLOT(setUserId()));
 
     //实例化接收器
     m_udpReceiver = new UdpReceiver;
@@ -94,16 +96,24 @@ void MainWindow::closeEvent(QCloseEvent *event)
     }
 }
 
-void MainWindow::on_pushButton_setMyId_clicked()
+void MainWindow::setUserId()
 {
-    if(ui->lineEdit_myId->text().isEmpty())
+    QInputDialog dia(this);
+    dia.setWindowTitle("Set User Id");
+    dia.setLabelText("Please input id: ");
+    dia.setInputMode(QInputDialog::TextInput);//可选参数：DoubleInput  TextInput
+
+    if(dia.exec() == QInputDialog::Accepted)
     {
-        ui->statusBar->showMessage("empty!!!",3000);
-    }
-    else
-    {
-        g_myId = ui->lineEdit_myId->text().toUInt();
-        ui->statusBar->showMessage("my id set ok.",3000);
+
+       g_myId = dia.textValue().toUInt();
+       if(g_myId == 0)
+       {
+           ui->statusBar->showMessage("error, please input again",1000);
+           setUserId();
+       }
+       QString msg = QString("Set User Id ") + QString::number(g_myId) + " ok.";
+       ui->statusBar->showMessage(msg, 3000);
     }
 }
 
@@ -114,6 +124,7 @@ void MainWindow::onLableRegisterStatusClicked()
     {
         g_registerStatus =1;
         ui->label_registerStatus->setText("logging in, click cancel");
+        qDebug() << "click event in thread" << QThread::currentThread() ;
         m_udpReceiver->registerToServer();
     }
     else if(g_registerStatus == 1)

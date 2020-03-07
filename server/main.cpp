@@ -22,13 +22,12 @@ bool Server::run_flag = true;
 Server::Server(int port):
 	register_port_(port)
 {
-	register_fd_ = -1;
+
 }
 
 Server::~Server()
 {
-	if(register_fd_ != -1)
-		close(register_fd_);
+
 }
 
 //初始化socket返回句柄
@@ -57,9 +56,6 @@ int Server::initSocket(const int port, const std::string ip)
 	// 设置地址可复用 
 	setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &udp_opt, sizeof(udp_opt));
 	
-	if(port == 0) //如果port为默认值，不绑定端口，由主机分配 
-		return fd;
-	
 	int ret = bind(fd, (struct sockaddr*)&local_addr,sizeof(local_addr));
 	if(ret < 0)
 	{
@@ -67,12 +63,46 @@ int Server::initSocket(const int port, const std::string ip)
 		return -1;
 	}
 	return fd;
- } 
+} 
 
+//打印socket地址以及端口号信息 
+void showSocketMsg(const std::string& prefix, int fd)
+{
+	struct sockaddr_in serverAddr;
+	socklen_t server_len; // = sizeof(sockaddr_in);
+	//获取socket信息, ip,port.. 
+	getsockname(fd,  (struct sockaddr *)&serverAddr, &server_len);
+	char ip[16];
+	inet_ntop(AF_INET,&serverAddr.sin_addr,ip,server_len);
+	cout << prefix << "\t ip: " << ip << "\t port: " << serverAddr.sin_port << endl;
+}
+
+int Server::initSocketAutoAssignPort(uint16_t& port)
+{
+	struct sockaddr_in local_addr;
+	bzero(&local_addr,sizeof(local_addr));//init 0
+	local_addr.sin_family = AF_INET;
+	int convert_ret = inet_pton(AF_INET, "0.0.0.0", &local_addr.sin_addr);
+	
+	for(port=50000;port<60000; ++port)
+	{
+		local_addr.sin_port = htons(port);
+		int fd = socket(PF_INET,SOCK_DGRAM , 0);
+		int ret = bind(fd, (struct sockaddr*)&local_addr,sizeof(local_addr));
+		if(ret == 0)
+		{
+			cout << "AutoAssignPort: " << port << endl;
+			return fd;
+		}
+	}
+}
 
 //接收客户端注册信息的线程 
 void Server::receiveRegisterThread()
 {
+	int register_fd = initSocket(register_port_); //初始化注册socket 
+	showSocketMsg("register sockect ",register_fd);
+	
 	const int BufLen =20;
 	uint8_t *recvbuf = new uint8_t [BufLen];
 	const transPack_t *pkg = (const transPack_t *)recvbuf;
@@ -81,73 +111,126 @@ void Server::receiveRegisterThread()
 	
 	while(run_flag)
 	{
-		int len = recvfrom(register_fd_, recvbuf, BufLen,0,(struct sockaddr*)&client_addr, &clientLen);
+		int len = recvfrom(register_fd, recvbuf, BufLen,0,(struct sockaddr*)&client_addr, &clientLen);
+		
 		if(recvbuf[0] != 0x66 || recvbuf[1] != 0xcc)
 			continue;
-		if(pkg->type != Register)
+		if(pkg->type != RequestRegister)
 			continue;
 		
-		cout << "receiveRegisterMsg, client id:  " << pkg->senderId << "\t msg len:" << len << endl;
-		
+		// 收到客户端请求注册的信息 
 		uint16_t clientId = pkg->senderId;
 		auto it = clients_.find(clientId);
 		if (it != clients_.end()) //查找到目标客户端 ,表明已经注册
 			continue; 
+		
+		cout << "receiveRegisterMsg, client id:  " << pkg->senderId << "\t msg len:" << len << endl;
+		
 		clientInfo_t client;
 		client.addr = client_addr;
-		client.connect = true;
+		client.connect = false; //此时客户端与服务端还未建立真正的连接 
 		clients_[clientId] = client; //新注册的客户端填入map 
+		//为新注册的客户端新创建一个服务套接字
+		uint16_t new_port;
+		int server_fd = initSocketAutoAssignPort(new_port);
+		
+		//向客户端回应为其分配的新端口号信息 
+		transPack_t pkg;
+		int headerLen = sizeof(transPack_t); 
+		pkg.length = 2;
+		pkg.type = ResponseRegister;
+		char *buf = new char[headerLen+pkg.length];
+		memcpy(buf, &pkg, headerLen);
+
+		buf[headerLen] = new_port%256;
+		buf[headerLen+1] = new_port/256;
+		sendto(register_fd, buf, headerLen+pkg.length, 0, 
+				(struct sockaddr*)&client_addr, sizeof(sockaddr_in));
 		
 		//启动接收和转发线程 
-		std::thread t(&Server::receiveAndTransThread,this,clientId);
+		std::thread t(&Server::receiveAndTransThread,this,server_fd);
 		t.detach();
 	}
-}
-
-//接收客户端信息并进行转发的线程 
-void Server::receiveAndTransThread(uint16_t clientId)
-{
-	//首先建立新的socket并发送接受注册指令
-	//客户端收到接受注册指令后记录服务器的新端口号，并用此端口号进行数据发送
-	int fd = initSocket(8618);
-	if(fd < 0)
-	{
-		clients_[clientId].connect = false;
-		return;
-	}
 	
-	//发送注册成功
-	transPack_t temp_pkg;
-	temp_pkg.type = RegisterOK;
-	
-	//发送多次注册成功信号 
-	for(int i=0; i<3; ++i)
-	{
-		cout << "clientId: "<< clientId << " register ok.  addr " << clients_[clientId].addr.sin_port << endl; 
-		sendto(fd,(char*)&temp_pkg, sizeof(temp_pkg), 0, (struct sockaddr*)&clients_[clientId].addr, sizeof(sockaddr_in));
-		usleep(300000);
-	}
-	
-	
-	const int BufLen =100000;
-	uint8_t *recvbuf = new uint8_t [BufLen];
-	const transPack_t *pkg = (const transPack_t *)recvbuf;
-	struct sockaddr_in client_addr;
-	socklen_t clientLen = sizeof(client_addr);
-	
-	while(clients_[clientId].connect)
-	{
-		int len = recvfrom(fd, recvbuf, BufLen,0,(struct sockaddr*)&client_addr, &clientLen);
-		
-		if(pkg->head[0] != 0x66 || pkg->head[1] != 0xcc)
-			continue;
-		//uint8_t type = pkg.type();
-	
-		msgTransmit(fd, recvbuf, len);
-	}
 	delete [] recvbuf;
 }
 
+//接收客户端信息并进行转发的线程 
+//客户端断开连接后关闭线程 
+void Server::receiveAndTransThread(int server_fd)
+{
+	const int BufLen1 =2*sizeof(transPack_t);
+	uint8_t *recvbuf = new uint8_t [BufLen1];
+	const transPack_t *pkg = (const transPack_t *)recvbuf;
+	struct sockaddr_in client_addr;
+	socklen_t clientLen = sizeof(client_addr);
+	uint16_t clientId;
+	while(run_flag)
+	{
+		//cout << "new thread start to receive msgs..." << endl;
+		int len = recvfrom(server_fd, recvbuf, BufLen1,0,(struct sockaddr*)&client_addr, &clientLen);
+		//cout << "new thread received msgs. length: " << len << endl;
+		if(recvbuf[0] != 0x66 || recvbuf[1] != 0xcc || pkg->type != RequestRegister)
+			continue;
+		clientId = pkg->senderId;
+		clients_[clientId].connect = true; //连接成功 
+		//发送注册成功
+		transPack_t temp_pkg;
+		temp_pkg.type = RegisterOK;
+		//发送多次注册成功信号 
+		for(int i=0; i<3; ++i)
+		{
+			cout << "clientId: "<< clientId << " register ok.  addr " << clients_[clientId].addr.sin_port << endl; 
+			sendto(server_fd,(char*)&temp_pkg, sizeof(temp_pkg), 0, (struct sockaddr*)&client_addr, sizeof(sockaddr_in));
+			usleep(50000);
+		}
+		break;
+	}
+	 
+	delete [] recvbuf;
+	const int BufLen2 = 100000;
+	recvbuf = new uint8_t [BufLen2];
+	const transPack_t *_pkg = (const transPack_t *)recvbuf;
+
+	while(run_flag && clients_[clientId].connect)
+	{
+		int len = recvfrom(server_fd, recvbuf, BufLen2,0,(struct sockaddr*)&client_addr, &clientLen);
+		
+		if(_pkg->head[0] != 0x66 || _pkg->head[1] != 0xcc)
+			continue;
+		
+		if(_pkg->type != Video || _pkg->type != Audio)
+			continue;
+		
+		msgTransmit(server_fd, recvbuf, len);
+	}
+	delete [] recvbuf;
+	close(server_fd);
+}
+
+void Server::run()
+{
+	std::thread t1 = std::thread(&Server::printThread,this,5);
+	t1.detach();
+	
+	//新建接收客户端注册信息的线程 
+	std::thread t = std::thread(&Server::receiveRegisterThread,this);
+	t.join();
+}
+
+void Server::msgTransmit(int fd, const uint8_t* buf, int len)
+{
+	uint16_t dstClientId = ((const transPack_t *)buf)->receiverId;
+
+	auto it = clients_.find(dstClientId);
+	if (it == clients_.end()) //未查找到目标客户端 
+	{
+		cout << "No client : " << dstClientId << endl;
+		return;
+	}
+	int send_len = sendto(fd, buf, len, 0, (struct sockaddr*)&clients_[dstClientId].addr, sizeof(sockaddr_in));
+	cout << "transmitting : " << send_len << " bytes to id: " << dstClientId << "\tport：" << clients_[dstClientId].addr.sin_port << endl;
+}
 
 //由于遇到过服务器自动断开的问题 
 //定时向终端打印数据的线程，保持服务器一直处于唤醒状态
@@ -159,33 +242,6 @@ void Server::printThread(int interval)
 		sleep(interval);
 		printf("this server has been running for %d seconds.\n",interval*(++i));
 	}
-}
-
-void Server::run()
-{
-	std::thread t1 = std::thread(&Server::printThread,this,5);
-	t1.detach();
-	
-	register_fd_ = initSocket(register_port_); //初始化注册socket 
-	if(register_fd_ < 0)
-		return; 
-	
-	//新建接收客户端注册信息的线程 
-	std::thread t = std::thread(&Server::receiveRegisterThread,this);
-	t.join();
-}
-
-void Server::msgTransmit(int fd, const uint8_t* buf, int len)
-{
-	uint16_t dstClientId = buf[9]*256 + buf[8];
-	auto it = clients_.find(dstClientId);
-	if (it == clients_.end()) //未查找到目标客户端 
-	{
-		cout << "No client : " << dstClientId << endl;
-		return;
-	}
-	int send_len = sendto(fd, buf, len, 0, (struct sockaddr*)&clients_[dstClientId].addr, sizeof(sockaddr_in));
-	cout << "transmitting : " << send_len << " bytes to id: " << dstClientId << "\tport：" << clients_[dstClientId].addr.sin_port << endl;
 }
 
 //系统中断信号捕获

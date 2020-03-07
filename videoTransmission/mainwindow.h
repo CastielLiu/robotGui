@@ -8,6 +8,7 @@
 #include <QCloseEvent>
 #include <QMessageBox>
 #include <myqlabel.h>
+#include <QInputDialog>
 
 
 namespace Ui {
@@ -23,7 +24,7 @@ public:
     ~MainWindow();
 private slots:
     void on_pushButton_call_clicked();
-    void on_pushButton_setMyId_clicked();
+    void setUserId();
     void onLableRegisterStatusClicked();
 
     void startSendSlot();

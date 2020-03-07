@@ -6,53 +6,54 @@ UdpReceiver::UdpReceiver():
     //利用每帧图片的数据量确定缓冲区的大小
     m_maxBufLength = 640*480*3+sizeof(transPack_t);
     m_dataBuf = new char[m_maxBufLength];
+
+    m_udpSocket = new QUdpSocket();
+    m_udpSocket->bind(QHostAddress::Any);
+    //连接信号槽，udp收到消息后触发槽函数
+    connect(m_udpSocket,SIGNAL(readyRead()),this,SLOT(onReadyRead()));
 }
 
 UdpReceiver::~UdpReceiver()
 {
+    if(m_udpSocket != nullptr)
+    {
+        //对象析构后与之绑定的所有信号自动断开，无需手动断开
+        //disconnect(m_udpSocket,SIGNAL(readyRead()),this,SLOT(onReadyRead()));
+        m_udpSocket->close();
+        delete m_udpSocket;
+        m_udpSocket = nullptr;
+    }
+
     stopReceive();
     delete [] m_dataBuf;
 }
 
 //注册到服务器
+//此处只需启动一个注册线程
 void UdpReceiver::registerToServer()
 {
     std::thread t(&UdpReceiver::registerToServerThread,this);
     t.detach();
-    //连接信号槽，udp收到消息后触发槽函数
-    this->startReceive();
 }
 
 //注册到服务器线程函数
+//此线程循环发送请求注册信息到服务器，直到注册成功或超时
 void UdpReceiver::registerToServerThread()
 {
-    qDebug() << "registerToServerThread" ;
-
-    if(m_udpSocket != nullptr)
-    {
-        m_udpSocket->close();
-        delete m_udpSocket;
-    }
-    m_udpSocket = new QUdpSocket();
-    m_udpSocket->bind(QHostAddress::Any);
-
-    //连接信号槽，udp收到消息后触发槽函数
-    connect(m_udpSocket,SIGNAL(readyRead()),this,SLOT(onReadyRead()));
-    emit m_udpSocket->readyRead();
-
+    qDebug() << "registerToServerThread in: " << QThread::currentThread() ;
     transPack_t package;
-    package.type = Register;
+    package.type = RequestRegister;
     package.senderId = g_myId;
     int cnt = 0;
     g_registerStatus = 1;
-    while(g_registerStatus == 1) //登陆中
+    while(g_registerStatus == 1) //登陆中(循环登录)
     {
         qDebug() << "send register msg...";
         m_udpSocket->writeDatagram((char *)&package,
                    sizeof(package), g_serverIp,g_registerPort);
 
-        QThread::msleep(500);
-        if(++cnt > 20)
+        QThread::msleep(1000);
+        if(++cnt > 10)
         {
             g_registerStatus = 0;
             g_ui->label_registerStatus->setText("login");
@@ -60,9 +61,27 @@ void UdpReceiver::registerToServerThread()
             break;
         }
     }
-    if(g_registerStatus == 2)
+    if(g_registerStatus == 2) //登录成功
     {
         g_ui->label_registerStatus->setText("logout");
+    }
+}
+
+//确认注册
+//当收到服务器的注册回应时调用此函数
+//此函数首先向serverPort再次发送注册信息，以与服务器的消息转发socket建立连接
+void UdpReceiver::confirmRegister(quint16 serverPort)
+{
+    qDebug() << "confirmRegister... port:" <<  serverPort;
+    transPack_t package;
+    package.type = RequestRegister;
+    package.senderId = g_myId;
+    for(int i=0; i<3; ++i)
+    {
+        qDebug() << "try to send msg to new port:" <<  serverPort;
+        m_udpSocket->writeDatagram((char *)&package,
+                   sizeof(package), g_serverIp,serverPort);
+        QThread::msleep(50);
     }
 }
 
@@ -70,7 +89,6 @@ void UdpReceiver::registerToServerThread()
 void UdpReceiver::logout()
 {
     //发送退出登陆信号，服务器收到后将客户端从列表中删除
-
 
     g_registerStatus = 0;
     stopReceive();
@@ -99,13 +117,6 @@ void UdpReceiver::stopReceive()
         this->wait();
     }
 
-    if(m_udpSocket != nullptr)
-    {
-        disconnect(m_udpSocket,SIGNAL(readyRead()),this,SLOT(onReadyRead()));
-        m_udpSocket->close();
-        delete m_udpSocket;
-        m_udpSocket = nullptr;
-    }
     if(m_audioPlayer != nullptr)
         delete m_audioPlayer;
     if(m_vedioPlayer != nullptr)
@@ -118,7 +129,6 @@ void UdpReceiver::onReadyRead()
     std::cout << "UdpReceiver::onReadyRead!!!" << std::endl;
     while(m_udpSocket->hasPendingDatagrams())
     {
-        //应为服务器ip
         QHostAddress senderip;
         quint16 senderport;
 
@@ -172,6 +182,14 @@ void UdpReceiver::onReadyRead()
             //std::cout <<  "Audio" << std::endl;
             handleAudioMsg(m_dataBuf);
         }
+        else if(ResponseRegister == package->type)
+        {
+            quint16 serverPort =
+                m_dataBuf[sizeof(transPack_t)]+m_dataBuf[sizeof(transPack_t)+1]*256;
+
+            confirmRegister(serverPort);
+        }
+
         else if(RegisterOK == package->type)
         {
             g_msgPort = senderport; //记录服务器数据端口号

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>318</width>
-    <height>447</height>
+    <height>463</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -66,28 +66,7 @@
       <item>
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout">
-          <item>
-           <widget class="QLabel" name="label">
-            <property name="text">
-             <string>my id:   </string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLineEdit" name="lineEdit_myId"/>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pushButton_setMyId">
-            <property name="text">
-             <string>set</string>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-         </layout>
+         <layout class="QHBoxLayout" name="horizontalLayout"/>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -141,6 +120,13 @@
      <height>23</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menu_setting">
+    <property name="title">
+     <string>setting</string>
+    </property>
+    <addaction name="action_user_id"/>
+   </widget>
+   <addaction name="menu_setting"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -151,6 +137,11 @@
    </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <action name="action_user_id">
+   <property name="text">
+    <string>user id</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>

@@ -5,8 +5,6 @@
 #include "audiohandler.h"
 #include "vediohandler.h"
 
-
-
 class UdpReceiver: public QThread
 {
     Q_OBJECT
@@ -18,6 +16,7 @@ public:
     void startReceive();
     void stopReceive();
     void registerToServer();
+    void confirmRegister(quint16 port);
     void logout();
 private slots:
     void onReadyRead();

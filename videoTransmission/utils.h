@@ -22,9 +22,11 @@ enum dataType
     AcceptConnect=3,  //接收连接
     RefuseConnect=4,  //拒绝连接
     DisConnect=5,     //挂断连接
-    Register=6,       //注册到服务器
+
     RegisterOK=7,     //注册成功(服务器发往客户端)
     RegisterFail=8,   //注册失败(服务器发往客户端)
+    RequestRegister=9,//请求注册到服务器
+    ResponseRegister=10,//回应客户端请求(包含服务端服务端口号)
 };
 
 //数据传输头
