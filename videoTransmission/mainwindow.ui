@@ -18,7 +18,7 @@
     <item>
      <widget class="MyQLabel" name="label_registerStatus">
       <property name="text">
-       <string/>
+       <string>login</string>
       </property>
      </widget>
     </item>
@@ -125,6 +125,7 @@
      <string>setting</string>
     </property>
     <addaction name="action_user_id"/>
+    <addaction name="action_auto_login"/>
    </widget>
    <addaction name="menu_setting"/>
   </widget>
@@ -140,6 +141,11 @@
   <action name="action_user_id">
    <property name="text">
     <string>user id</string>
+   </property>
+  </action>
+  <action name="action_auto_login">
+   <property name="text">
+    <string>auto login</string>
    </property>
   </action>
  </widget>

@@ -68,7 +68,7 @@ void UdpSender::run()
     //此处分配内存不传递this指针，否则由于this所在线程与当前线程不匹配而报错
     //在run函数内部分配内存以保证socket使用线程与socket所在线程一致
     m_udpSocket = new QUdpSocket();
-    std::cout << "create QUdpSocket in thread: " << QThread::currentThreadId() << std::endl;
+    std::cout << "UdpSender: create QUdpSocket in thread: " << QThread::currentThreadId() << std::endl;
 
     while (!this->isInterruptionRequested())
     {

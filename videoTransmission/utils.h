@@ -16,17 +16,18 @@
 // 消息类型
 enum dataType
 {
-    Vedio=0,          //视频消息
+    Video=0,          //视频消息
     Audio=1,          //语音
     RequestConnect=2, //请求连接
     AcceptConnect=3,  //接收连接
     RefuseConnect=4,  //拒绝连接
     DisConnect=5,     //挂断连接
-
+    NoneType = 6,
     RegisterOK=7,     //注册成功(服务器发往客户端)
     RegisterFail=8,   //注册失败(服务器发往客户端)
     RequestRegister=9,//请求注册到服务器
     ResponseRegister=10,//回应客户端请求(包含服务端服务端口号)
+    HeartBeat = 11, //心跳包
 };
 
 //数据传输头
@@ -41,11 +42,12 @@ typedef struct TransPack
     uint16_t senderId;
     uint16_t receiverId;
 
-    TransPack()
+    TransPack(dataType t = NoneType)
     {
         head[0] = 0x66;
         head[1] = 0xcc;
-        length = type = checkNum = 0;
+        type = t;
+        length = checkNum = 0;
     }
 } transPack_t;
 

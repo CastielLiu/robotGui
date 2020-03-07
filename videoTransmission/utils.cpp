@@ -6,7 +6,7 @@ const quint16 g_registerPort = 8617; //服务器接收注册信息的端口号
 quint16 g_msgPort;                   //服务器接收数据的端口号
 int g_registerStatus = 0;  //客户端注册状态 0未注册，1注册中，2已注册
 bool g_isCaller = false;  //当前是否为主叫方
-uint16_t g_myId = 1;
+uint16_t g_myId = 123;
 uint16_t g_otherId = 0; //通话对方的id，当作为被叫时存放主叫的id,通话结束后置位
 // 注：分配客户端id时保留0
 

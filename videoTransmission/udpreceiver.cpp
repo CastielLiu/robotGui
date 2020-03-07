@@ -1,7 +1,9 @@
 #include "udpreceiver.h"
 
 UdpReceiver::UdpReceiver():
-    m_udpSocket(nullptr)
+    m_udpSocket(nullptr),
+    m_audioPlayer(nullptr),
+    m_vedioPlayer(nullptr)
 {
     //利用每帧图片的数据量确定缓冲区的大小
     m_maxBufLength = 640*480*3+sizeof(transPack_t);
@@ -10,7 +12,7 @@ UdpReceiver::UdpReceiver():
     m_udpSocket = new QUdpSocket();
     m_udpSocket->bind(QHostAddress::Any);
     //连接信号槽，udp收到消息后触发槽函数
-    connect(m_udpSocket,SIGNAL(readyRead()),this,SLOT(onReadyRead()));
+    connect(m_udpSocket,SIGNAL(readyRead()),this,SLOT(onReadyRead()),Qt::DirectConnection);
 }
 
 UdpReceiver::~UdpReceiver()
@@ -24,7 +26,7 @@ UdpReceiver::~UdpReceiver()
         m_udpSocket = nullptr;
     }
 
-    stopReceive();
+    stopPlayMv();
     delete [] m_dataBuf;
 }
 
@@ -65,6 +67,7 @@ void UdpReceiver::registerToServerThread()
     {
         g_ui->label_registerStatus->setText("logout");
     }
+
 }
 
 //确认注册
@@ -91,13 +94,11 @@ void UdpReceiver::logout()
     //发送退出登陆信号，服务器收到后将客户端从列表中删除
 
     g_registerStatus = 0;
-    stopReceive();
+    stopPlayMv();
 }
 
-/*作为主叫时开始接收数据
- *
- */
-void UdpReceiver::startReceive()
+//  开始播放视频和声音
+void UdpReceiver::startPlayMv()
 {
     m_audioPlayer = new AudioHandler;
     m_audioPlayer->init("play");
@@ -108,7 +109,7 @@ void UdpReceiver::startReceive()
     this->start(); //启动音频视频播放Qthread
 }
 
-void UdpReceiver::stopReceive()
+void UdpReceiver::stopPlayMv()
 {
     if(this->isRunning())
     {
@@ -118,15 +119,21 @@ void UdpReceiver::stopReceive()
     }
 
     if(m_audioPlayer != nullptr)
+    {
         delete m_audioPlayer;
+        m_audioPlayer = nullptr;
+    }
     if(m_vedioPlayer != nullptr)
+    {
         delete m_vedioPlayer;
+        m_vedioPlayer = nullptr;
+    }
 }
 
 //udp 数据读取函数
 void UdpReceiver::onReadyRead()
 {
-    std::cout << "UdpReceiver::onReadyRead!!!" << std::endl;
+    //std::cout << "UdpReceiver::onReadyRead!!!" << std::endl;
     while(m_udpSocket->hasPendingDatagrams())
     {
         QHostAddress senderip;
@@ -166,20 +173,22 @@ void UdpReceiver::onReadyRead()
         {
             //std::cout <<  "DisConnect" << std::endl;
         }
-        else if(Vedio == package->type)
-        {//如果为主叫方，直接处理消息
-         //如果为被叫方，应将对方id保存并启动udpSender
-            if(!g_isCaller && g_otherId==0) //客户端被叫，且主叫id为默认
-            {
-                g_otherId = package->senderId;
-                emit startSendSignal();
-            }
+        else if((Video == package->type || Audio == package->type) && //收到语音或视频
+                (!g_isCaller && g_otherId==0)) //客户端被叫，且主叫id为默认
+        {
+            //如果为主叫方，下次直接处理消息
+            //如果为被叫方，应将对方id保存并启动udpSender
+            qDebug() << "called! .....";
+            this->startPlayMv(); //开始播放
+            g_otherId = package->senderId;
+            emit startSendSignal();
+        }
+        else if(Video == package->type)
+        {
             handleVedioMsg(m_dataBuf);
         }
         else if(Audio == package->type)
         {
-
-            //std::cout <<  "Audio" << std::endl;
             handleAudioMsg(m_dataBuf);
         }
         else if(ResponseRegister == package->type)
@@ -194,11 +203,20 @@ void UdpReceiver::onReadyRead()
         {
             g_msgPort = senderport; //记录服务器数据端口号
             g_registerStatus = 2;
+            //启动心跳线程
+            std::thread t(&UdpReceiver::heartBeatThread,this);
+            t.detach();
         }
         else if(RegisterFail == package->type)
         {
             qDebug() << "register failed!" ;
             g_registerStatus = 0;
+        }
+        else if(HeartBeat == package->type)
+        {
+            m_heartBeatMutex.lock();
+            m_serverLastHeartBeatTime = time(0);
+            m_heartBeatMutex.unlock();
         }
         else
         {
@@ -251,4 +269,23 @@ void UdpReceiver::run(void)
         QThread::msleep(30);
     }
 
+}
+
+void UdpReceiver::heartBeatThread()
+{
+    int heartBeatInterval = 5;
+    transPack_t heartBeatPkg(HeartBeat);
+    while(g_registerStatus == 2)
+    {
+        m_heartBeatMutex.lock();
+        if(m_serverLastHeartBeatTime !=0 && m_serverLastHeartBeatTime-time(0) >heartBeatInterval+1)
+        {
+            qDebug() << "server is shutdown" ;
+        }
+        m_heartBeatMutex.unlock();
+
+        m_udpSocket->writeDatagram((char *)&heartBeatPkg,
+                   sizeof(heartBeatPkg), g_serverIp,g_msgPort);
+        QThread::sleep(heartBeatInterval);
+    }
 }

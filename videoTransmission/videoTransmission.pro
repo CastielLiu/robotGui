@@ -36,6 +36,7 @@ SOURCES += \
     vediohandler.cpp \
     udpsender.cpp \
     myqlabel.cpp \
+    cameraframegrabber.cpp
 
 
 HEADERS += \
@@ -47,6 +48,7 @@ HEADERS += \
     udpsender.h \
     circlebuffer.h \
     myqlabel.h \
+    cameraframegrabber.h
 
 FORMS += \
         mainwindow.ui

@@ -12,6 +12,6 @@
 @echo %cd% 
 
 windeployqt videoTransmission.exe
-pause
-
+rem pause
+exit
 

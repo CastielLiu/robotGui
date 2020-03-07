@@ -6,7 +6,8 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
     m_udpReceiver(nullptr),
-    m_udpSender(nullptr)
+    m_udpSender(nullptr),
+    m_configFile("config")
 {
     ui->setupUi(this);
     g_ui = ui; //初始化全局ui指针便于在外部调用ui
@@ -18,12 +19,19 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->label_registerStatus->setAlignment(Qt::AlignHCenter); //设置label文字居中
 
     connect(ui->action_user_id,SIGNAL(triggered()),this,SLOT(setUserId()));
+    connect(ui->action_auto_login,SIGNAL(triggered()),this,SLOT(setAutoLogin()));
+
+    this->loadPerformance();//载入用户参数
 
     //实例化接收器
     m_udpReceiver = new UdpReceiver;
     connect(m_udpReceiver,SIGNAL(startSendSignal()),this,SLOT(startSendSlot()));
-    m_udpReceiver->registerToServer();
-    ui->label_registerStatus->setText("logging in");
+
+    if(m_autoRegister)
+    {
+        m_udpReceiver->registerToServer();
+        ui->label_registerStatus->setText("logging in");
+    }
 }
 
 MainWindow::~MainWindow()
@@ -41,7 +49,9 @@ MainWindow::~MainWindow()
 void MainWindow::startSendSlot()
 {
     m_udpSender = new UdpSender();
+
     m_udpSender->startSend(g_otherId);
+    m_udpReceiver->startPlayMv();
 }
 
 void MainWindow::on_pushButton_call_clicked()
@@ -58,9 +68,8 @@ void MainWindow::on_pushButton_call_clicked()
 
         m_udpSender = new UdpSender();
         uint16_t dstId = ui->lineEdit_dstId->text().toUShort();
-        bool ok = m_udpSender->startSend(dstId);
-        if(!ok)
-            return;
+        m_udpSender->startSend(dstId);
+        m_udpReceiver->startPlayMv();
 
         ui->pushButton_call->setChecked(true);
         ui->pushButton_call->setText("stop");
@@ -68,7 +77,7 @@ void MainWindow::on_pushButton_call_clicked()
     else
     {
         m_udpSender->stopSend();
-        m_udpReceiver->stopReceive();
+        m_udpReceiver->stopPlayMv();
         ui->label_showImageMain->clear();
 
         ui->pushButton_call->setChecked(false);
@@ -89,7 +98,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     }
     else if (button == QMessageBox::Yes)
     {
-        std::cout << "exit " << std::endl;
+        savePerformance();
         event->accept();  //接受退出信号，程序退出
         QThread::sleep(1); //等待清理线程完毕
         std::cout << "exit ok" << std::endl;
@@ -102,10 +111,9 @@ void MainWindow::setUserId()
     dia.setWindowTitle("Set User Id");
     dia.setLabelText("Please input id: ");
     dia.setInputMode(QInputDialog::TextInput);//可选参数：DoubleInput  TextInput
-
+    dia.setTextValue(QString::number(g_myId));
     if(dia.exec() == QInputDialog::Accepted)
     {
-
        g_myId = dia.textValue().toUInt();
        if(g_myId == 0)
        {
@@ -138,5 +146,41 @@ void MainWindow::onLableRegisterStatusClicked()
         m_udpReceiver->logout();
         ui->label_registerStatus->setText("login");
     }
+}
+
+void MainWindow::setAutoLogin()
+{
+    int button = QMessageBox::question(this, tr("自动登录设置"),
+                                   QString(tr("下次自动登录？")),
+                                   QMessageBox::Yes | QMessageBox::No);
+    if (button == QMessageBox::No)
+        m_autoRegister = true;
+    else
+        m_autoRegister = false;
+}
+
+void MainWindow::savePerformance()
+{
+    //创建配置文件操作对象
+    QSettings *config = new QSettings(m_configFile, QSettings::IniFormat);
+
+    //config->beginGroup("");
+    config->setValue("user id", g_myId);
+    config->setValue("auto login", QString::number(m_autoRegister));
+    //config->endGroup();
+    delete config;
+}
+
+void MainWindow::loadPerformance()
+{
+    QSettings *config = new QSettings(m_configFile, QSettings::IniFormat);
+    if(config)
+    {
+        uint16_t id = config->value(QString("user id")).toUInt();
+        if(id != 0 )
+            g_myId = id;
+        m_autoRegister = config->value("auto login").toBool();
+    }
+    delete config;
 }
 

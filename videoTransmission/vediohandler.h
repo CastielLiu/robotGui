@@ -15,6 +15,7 @@
 #include "utils.h"
 #include <myqlabel.h>
 #include <memory>
+#include "cameraframegrabber.h"
 
 #include "circlebuffer.h"
 
@@ -38,10 +39,12 @@ private:
 private slots:
     void onImageCaptured(int id, QImage image);
     void modifyShowMode();
+    void onImageGrabed(const QVideoFrame &frame);
 private:
     QCamera *m_camera;//摄像头
     QCameraViewfinder *m_cameraViewFinder;//摄像头取景器部件
     QCameraImageCapture * m_imageCapture;//截图部件
+    CameraFrameGrabber *m_imageGrabber;
 
     //m_imageBuffer 作为发送器存放要发送的图片
     //作为接收器存放接收到的图片

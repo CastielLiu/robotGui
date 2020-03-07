@@ -9,6 +9,7 @@
 #include <QMessageBox>
 #include <myqlabel.h>
 #include <QInputDialog>
+#include <QSettings>
 
 
 namespace Ui {
@@ -25,19 +26,25 @@ public:
 private slots:
     void on_pushButton_call_clicked();
     void setUserId();
+    void setAutoLogin();
     void onLableRegisterStatusClicked();
 
     void startSendSlot();
 
 private:
     void closeEvent(QCloseEvent *event);
+    void loadPerformance();
+    void savePerformance();
 
 private:
     Ui::MainWindow *ui;
-
     QUdpSocket *m_udpSocket;
     UdpReceiver *m_udpReceiver;
     UdpSender *m_udpSender;
+
+    bool m_autoRegister;
+    QString m_configFile;
+
 };
 
 #endif // MAINWINDOW_H
