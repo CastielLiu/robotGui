@@ -176,9 +176,8 @@ void UdpReceiver::onReadyRead()
             //启动发送数据
 
             qDebug() << "accept called! .....";
-            this->startPlayMv(); //开始播放
-            emit startChatSignal(callerId);
 
+            emit startChatSignal(callerId);
         }
         else if(CalledOffline == package->type)
         {

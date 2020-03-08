@@ -24,10 +24,6 @@ private:
 
     //通信目标id
     uint16_t m_dstId;
-    bool m_sendFlag;
-
-
-
 };
 
 #endif // UDPSENDER_H

@@ -51,6 +51,9 @@ MainWindow::~MainWindow()
 //开始通话
 void MainWindow::startChat(uint16_t id)
 {
+    ui->pushButton_call->setChecked(true);
+    ui->pushButton_call->setText("stop");
+
     m_udpSender = new UdpSender();
     m_udpSender->startSend(id);
     m_udpReceiver->startPlayMv();
@@ -58,7 +61,8 @@ void MainWindow::startChat(uint16_t id)
 
 void MainWindow::stopChat()
 {
-    m_udpReceiver->sendCmd(DisConnect);
+    ui->pushButton_call->setChecked(false);
+    ui->pushButton_call->setText("start");
     m_udpReceiver->stopPlayMv();
     //务必首先判断m_udpSender是否已经被实例化
     if(m_udpSender != nullptr)
@@ -67,6 +71,8 @@ void MainWindow::stopChat()
         delete m_udpSender;
         m_udpSender = nullptr;
     }
+    m_udpReceiver->sendCmd(DisConnect);
+    ui->label_showImageMain->clear();
 }
 
 //用户退出登陆，主动退出，与服务器失去连接被动退出
@@ -92,28 +98,30 @@ void MainWindow::on_pushButton_call_clicked()
 {
     if(ui->pushButton_call->isChecked())
     {
+        bool ok;
+        uint16_t dstId = ui->lineEdit_dstId->text().toUShort(&ok);
+
         if(g_registerStatus != 2 )
-        {
             ui->statusBar->showMessage("please login firstly!",3000);
+        else if(g_systemStatus == SystemOnThePhone)
+            ui->statusBar->showMessage("Call in progress, No Call!",3000);
+        else if(!ok)
+            ui->statusBar->showMessage(QString("input id error, please input again"),3000);
+        else if(dstId == g_myId)
+            ui->statusBar->showMessage(QString("can not call yourself!"),3000);
+        else
+        {
+            this->startChat(dstId);
             return;
         }
-
-        uint16_t dstId = ui->lineEdit_dstId->text().toUShort();
-        this->startChat(dstId);
-
-        ui->pushButton_call->setChecked(true);
-        ui->pushButton_call->setText("stop");
+        ui->pushButton_call->setChecked(false);
     }
     else
-    {
         this->stopChat();
-        ui->label_showImageMain->clear();
 
-        ui->pushButton_call->setChecked(false);
-        ui->pushButton_call->setText("start");
-    }
 }
 
+//被叫忙
 void MainWindow::onCalledBusy()
 {
     this->stopChat();

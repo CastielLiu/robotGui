@@ -237,13 +237,14 @@ void Server::receiveAndTransThread(int server_fd)
 		}
 		else if(_pkg->type == DisConnect)
 		{
+			uint16_t clientA =  clientId;
 			//A方请求断开，清除A中存放的B的Id，并向B发送断开连接 
-			uint16_t otherId = clients_[clientId].callingID;
-			if(otherId == 0) //还未成功连接 
+			uint16_t clientB = clients_[clientId].callingID;
+			if(clientB == 0) //clientA没有正在通话的客户 
 				continue; 
-			clients_[clientId].callingID = 0;
+			clients_[clientA].callingID = 0; //清除A中B的ID 
 			transPack_t pkg(DisConnect);
-    		sendto(clients_[otherId].fd, (char*)&pkg, sizeof(transPack_t), 0, (struct sockaddr*)&clients_[otherId].addr, sizeof(sockaddr_in));
+    		sendto(clients_[clientB].fd, (char*)&pkg, sizeof(transPack_t), 0, (struct sockaddr*)&clients_[clientB].addr, sizeof(sockaddr_in));
 		}
 			
 	}
@@ -256,7 +257,8 @@ void Server::receiveAndTransThread(int server_fd)
 void Server::removeClient(uint16_t id)
 {
 	uint16_t otherId = clients_[id].callingID;
-	clients_[otherId].callingID = 0; //删除用户前将与之通话的客户的信息置位	
+	if(otherId != 0) //必须判断，若此值为0，对其访问将导致插入ID为0的客户。（map访问不存在的键，自动插入） 
+		clients_[otherId].callingID = 0; //删除用户前将与之通话的客户的信息置位	
 	clients_.erase(id);
 }
 
@@ -298,12 +300,7 @@ void Server::msgTransmit(const uint8_t* buf, int len)
 		int send_len = sendto(clients_[dstClientId].fd, buf, len, 0, (struct sockaddr*)&clients_[dstClientId].addr, sizeof(sockaddr_in));
 		//cout << "transmitting : " << send_len << " bytes to id: " << dstClientId << "\tport：" << clients_[dstClientId].addr.sin_port << endl;
 	}
-	else if(clients_[dstClientId].callingID != 0) //被叫正在与其他用户通话
-	{
-		transPack_t pkg(CalledBusy);
-		sendto(clients_[srcClientId].fd, (char*)&pkg, sizeof(transPack_t), 0, (struct sockaddr*)&clients_[srcClientId].addr, sizeof(sockaddr_in));	
-	} 
-	else 
+	else if(clients_[srcClientId].callingID == 0) 
 	{
 		//向被叫发送请求连接指令 ,按原包头修改指令类型后发送（旨在包含主叫和被叫的信息） 
 		transPack_t pkg;
@@ -313,6 +310,12 @@ void Server::msgTransmit(const uint8_t* buf, int len)
 		
 		sendto(clients_[dstClientId].fd, (char*)&pkg, sizeof(transPack_t), 0, (struct sockaddr*)&clients_[dstClientId].addr, sizeof(sockaddr_in));
 	} 
+	else //被叫正在与其他用户通话
+	{
+		transPack_t pkg(CalledBusy);
+		sendto(clients_[srcClientId].fd, (char*)&pkg, sizeof(transPack_t), 0, (struct sockaddr*)&clients_[srcClientId].addr, sizeof(sockaddr_in));	
+	} 
+	
 }
 
 //由于遇到过服务器自动断开的问题 
@@ -335,13 +338,26 @@ void Server::heartBeatThread()
 		cout << "clients size: " << clients_.size() << "\t sending heart beat pkg...\n";
 		for(auto client =clients_.begin(); client!= clients_.end(); ++client)
 		{
+			cout << "id: " << client->first <<endl;
+			//初始情况下客户上次心跳时间为0 
 			if(client->second.lastHeartBeatTime ==0)
-			    continue;
-			if(time(0) - client->second.lastHeartBeatTime >heartBeatInterval+1)
 			{
+				//此处修改上次心跳时间，防止有些客户注册后从未心跳。 
+				client->second.lastHeartBeatTime = 1; 
+				continue;
+			} 
+			std::time_t diff =  time(0) - client->second.lastHeartBeatTime;
+			if( diff >heartBeatInterval+1) 
+			{
+				//连接置false，等待线程退出后自动删除用户 
 				client->second.connect = false;
 				cout << "client " << client->first  << "  disconnect." << endl;
 			}
+			if(diff > heartBeatInterval+5) 
+			{
+				//删除未能正常删除的用户
+				clients_.erase(client);
+			} 
 		}
 		std::this_thread::sleep_for(std::chrono::seconds(heartBeatInterval)); 
 	}

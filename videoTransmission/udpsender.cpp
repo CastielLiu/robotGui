@@ -5,7 +5,6 @@ UdpSender::UdpSender():
     m_audioRecorder(nullptr),
     m_vedioCaptor(nullptr)
 {
-    m_sendFlag = false;
     std::cout << "create UdpSender in thread: " << QThread::currentThreadId() << std::endl;
 }
 
@@ -20,7 +19,6 @@ UdpSender::~UdpSender()
 bool UdpSender::startSend(uint16_t dstId)
 {
     m_dstId = dstId;
-    m_sendFlag = true;
 
     m_audioRecorder = new AudioHandler;
     if(!m_audioRecorder->init("record"))
@@ -54,13 +52,6 @@ void UdpSender::stopSend()
         delete m_vedioCaptor;
         m_vedioCaptor = nullptr;
     }
-
-    if(m_udpSocket != nullptr)
-    {
-        m_udpSocket->close();
-        delete m_udpSocket;
-        m_udpSocket = nullptr;
-    }
 }
 
 void UdpSender::run()
@@ -75,7 +66,10 @@ void UdpSender::run()
        //发送消息
        m_audioRecorder->sendAudio(m_udpSocket,m_dstId);
        m_vedioCaptor->sendImage(m_udpSocket,m_dstId);
-       QThread::msleep(50);
+       QThread::msleep(20);
        //QThread::sleep(2);
     }
+    m_udpSocket->close();
+    delete m_udpSocket;
+    m_udpSocket = nullptr;
 }

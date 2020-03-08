@@ -100,13 +100,13 @@ bool VedioHandler::init(const std::string& mode)
 /***************** 视频获取和发送相关代码 *********************/
 bool VedioHandler::captureImage()
 {
-    m_imageCapture->capture("C:\\Users\\casti\\Pictures\\a.jpg");
+    m_imageCapture->capture();
     return true;
 }
 
 void VedioHandler::sendImage(QUdpSocket *sockect, uint16_t receiverId)
 {
-    m_imageCapture->capture(); //获取图片，槽函数onImageCaptured将被调用
+    m_imageCapture->capture("a.jpg"); //获取图片，槽函数onImageCaptured将被调用
 
     QImage image;
     m_imageMutex.lock();
