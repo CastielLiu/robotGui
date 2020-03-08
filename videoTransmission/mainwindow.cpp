@@ -9,15 +9,16 @@ MainWindow::MainWindow(QWidget *parent) :
     m_udpSender(nullptr),
     m_configFile("config")
 {
+    qDebug() << "MainWindow in thread" << QThread::currentThread() ;
+
     ui->setupUi(this);
     g_ui = ui; //初始化全局ui指针便于在外部调用ui
     this->setWindowTitle("视频聊天工具");
     this->setWindowIcon(QIcon(":/images/icon"));
-    qDebug() << "MainWindow in thread" << QThread::currentThread() ;
+
     ui->label_registerStatus->setOpenClickEvent(true);
     connect(ui->label_registerStatus,SIGNAL(clicked()),this,SLOT(onLableRegisterStatusClicked()));
     ui->label_registerStatus->setAlignment(Qt::AlignHCenter); //设置label文字居中
-
     connect(ui->action_user_id,SIGNAL(triggered()),this,SLOT(setUserId()));
     connect(ui->action_auto_login,SIGNAL(triggered()),this,SLOT(setAutoLogin()));
 
@@ -25,7 +26,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
     //实例化接收器
     m_udpReceiver = new UdpReceiver;
-    connect(m_udpReceiver,SIGNAL(startSendSignal()),this,SLOT(startSendSlot()));
+    connect(m_udpReceiver,SIGNAL(startChatSignal(uint16_t)),this,SLOT(startChat(uint16_t)));
+    connect(m_udpReceiver,SIGNAL(stopChatSignal()),this,SLOT(stopChat()));
+    connect(m_udpReceiver,SIGNAL(logoutSignal()),this,SLOT(logout()));
+    connect(m_udpReceiver,SIGNAL(calledBusy()),this,SLOT(onCalledBusy()));
 
     if(m_autoRegister)
     {
@@ -44,15 +48,45 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-//开始发送数据 槽函数，信号来自于udpReceiver
-//客户端被叫，udpReceiver保存主叫id后发出信号
-void MainWindow::startSendSlot()
+//开始通话
+void MainWindow::startChat(uint16_t id)
 {
     m_udpSender = new UdpSender();
-
-    m_udpSender->startSend(g_otherId);
+    m_udpSender->startSend(id);
     m_udpReceiver->startPlayMv();
 }
+
+void MainWindow::stopChat()
+{
+    m_udpReceiver->sendCmd(DisConnect);
+    m_udpReceiver->stopPlayMv();
+    //务必首先判断m_udpSender是否已经被实例化
+    if(m_udpSender != nullptr)
+    {
+        m_udpSender->stopSend();
+        delete m_udpSender;
+        m_udpSender = nullptr;
+    }
+}
+
+//用户退出登陆，主动退出，与服务器失去连接被动退出
+void MainWindow::logout()
+{
+    g_registerStatus = 0;
+    this->stopChat();
+    m_udpReceiver->logout();
+
+    ui->label_registerStatus->setText("login");
+}
+
+void MainWindow::login()
+{
+    g_registerStatus =1;
+    ui->label_registerStatus->setText("logging in, click cancel");
+    //qDebug() << "click event in thread" << QThread::currentThread() ;
+    m_udpReceiver->registerToServer();
+}
+
 
 void MainWindow::on_pushButton_call_clicked()
 {
@@ -64,26 +98,29 @@ void MainWindow::on_pushButton_call_clicked()
             return;
         }
 
-        g_isCaller = true;
-
-        m_udpSender = new UdpSender();
         uint16_t dstId = ui->lineEdit_dstId->text().toUShort();
-        m_udpSender->startSend(dstId);
-        m_udpReceiver->startPlayMv();
+        this->startChat(dstId);
 
         ui->pushButton_call->setChecked(true);
         ui->pushButton_call->setText("stop");
     }
     else
     {
-        m_udpSender->stopSend();
-        m_udpReceiver->stopPlayMv();
+        this->stopChat();
         ui->label_showImageMain->clear();
 
         ui->pushButton_call->setChecked(false);
         ui->pushButton_call->setText("start");
-        g_isCaller = false;
     }
+}
+
+void MainWindow::onCalledBusy()
+{
+    this->stopChat();
+    ui->label_showImageMain->clear();
+
+    ui->pushButton_call->setChecked(false);
+    ui->pushButton_call->setText("start");
 }
 
 //点击叉号时的提示弹窗
@@ -129,23 +166,12 @@ void MainWindow::onLableRegisterStatusClicked()
 {
     //0未登陆，1登陆中，2已登录
     if(g_registerStatus == 0)
-    {
-        g_registerStatus =1;
-        ui->label_registerStatus->setText("logging in, click cancel");
-        qDebug() << "click event in thread" << QThread::currentThread() ;
-        m_udpReceiver->registerToServer();
-    }
+        this->login();
     else if(g_registerStatus == 1)
-    {
-        g_registerStatus = 0;
-        ui->label_registerStatus->setText("login");
-    }
+        this->logout();
     else if(g_registerStatus == 2)
-    {
-        g_registerStatus = 0;
-        m_udpReceiver->logout();
-        ui->label_registerStatus->setText("login");
-    }
+        this->logout();
+
 }
 
 void MainWindow::setAutoLogin()

@@ -92,6 +92,9 @@ void UdpReceiver::confirmRegister(quint16 serverPort)
 void UdpReceiver::logout()
 {
     //发送退出登陆信号，服务器收到后将客户端从列表中删除
+    transPack_t LogOutPkg(LogOut);
+    m_udpSocket->writeDatagram((char *)&LogOutPkg,
+               sizeof(LogOutPkg), g_serverIp,g_msgPort);
 
     g_registerStatus = 0;
     stopPlayMv();
@@ -100,6 +103,7 @@ void UdpReceiver::logout()
 //  开始播放视频和声音
 void UdpReceiver::startPlayMv()
 {
+    g_systemStatus = SystemOnThePhone;
     m_audioPlayer = new AudioHandler;
     m_audioPlayer->init("play");
 
@@ -111,6 +115,7 @@ void UdpReceiver::startPlayMv()
 
 void UdpReceiver::stopPlayMv()
 {
+    g_systemStatus = SystemIdle;
     if(this->isRunning())
     {
         this->requestInterruption();
@@ -130,6 +135,12 @@ void UdpReceiver::stopPlayMv()
     }
 }
 
+void UdpReceiver::sendCmd(dataType cmdType)
+{
+    transPack_t pkg(cmdType);
+    m_udpSocket->writeDatagram((char*)&pkg,sizeof(transPack_t),g_serverIp,g_msgPort);
+}
+
 //udp 数据读取函数
 void UdpReceiver::onReadyRead()
 {
@@ -140,56 +151,44 @@ void UdpReceiver::onReadyRead()
         quint16 senderport;
 
         int len = m_udpSocket->readDatagram(m_dataBuf,m_maxBufLength,&senderip,&senderport);
-        //qDebug() << "(" <<senderip.toIPv4Address() << ") -> receive msg. len: " << len ;
 
         if( g_serverIp.toIPv4Address() != g_serverIp.toIPv4Address()) //消息不是来自服务器
             continue;
-        if(len <=0 )
-            continue;
+        if(len <=0 ) continue;
 
         transPack_t* package = (transPack_t*)m_dataBuf;
         //std::cout << "package->type:" << int(package->type) << std::endl;
 
         if(RequestConnect == package->type)
         {
-            //std::cout <<  "RequestConnect" << std::endl;
-            if(g_systemStatus!= SystemIdle)
-                handleRequestConnect(package->senderId, false);
-            else
-                handleRequestConnect(package->senderId ,true);
+            //请求连接一般有很多条，确保只接受处理一次
+            if(SystemOnThePhone == g_systemStatus)
+                continue;
+            uint16_t callerId = package->senderId;
+            QString qstr = QString("you have a new call. ID: ") + QString::number(callerId);
+            g_ui->statusBar->showMessage(qstr, 3000);
+            //可以考虑设置一个弹窗线程，用户选择是否接听
+            transPack_t pkg;
+            memcpy(&pkg, m_dataBuf, sizeof(transPack_t));
+            pkg.type =  AcceptConnect;
+            pkg.length = 0;
+            m_udpSocket->writeDatagram((char*)&pkg,sizeof(transPack_t),senderip,senderport);
+            //启动发送数据
+
+            qDebug() << "accept called! .....";
+            this->startPlayMv(); //开始播放
+            emit startChatSignal(callerId);
+
         }
-        //应答被接受、拒绝、挂断 是否来自正在通话的ip？ 需增加判断条件
-        else if(AcceptConnect == package->type)
+        else if(CalledOffline == package->type)
         {
-            //std::cout <<  "AcceptConnect" << std::endl;
-            g_systemStatus = SystemAccepted;
-        }
-        else if(RequestConnect == package->type)
-        {
-            //std::cout <<  "RequestConnect" << std::endl;
-            g_systemStatus = SystemRefused;
+            emit calledBusy();
         }
         else if(DisConnect == package->type)
         {
+            g_ui->statusBar->showMessage(QString("Call disconnected"), 3000);
+            emit stopChatSignal();
             //std::cout <<  "DisConnect" << std::endl;
-        }
-        else if((Video == package->type || Audio == package->type) && //收到语音或视频
-                (!g_isCaller && g_otherId==0)) //客户端被叫，且主叫id为默认
-        {
-            //如果为主叫方，下次直接处理消息
-            //如果为被叫方，应将对方id保存并启动udpSender
-            qDebug() << "called! .....";
-            this->startPlayMv(); //开始播放
-            g_otherId = package->senderId;
-            emit startSendSignal();
-        }
-        else if(Video == package->type)
-        {
-            handleVedioMsg(m_dataBuf);
-        }
-        else if(Audio == package->type)
-        {
-            handleAudioMsg(m_dataBuf);
         }
         else if(ResponseRegister == package->type)
         {
@@ -218,30 +217,21 @@ void UdpReceiver::onReadyRead()
             m_serverLastHeartBeatTime = time(0);
             m_heartBeatMutex.unlock();
         }
-        else
+        //以上消息类型为指令消息
+        //以下消息类型为通话消息
+        else if(Video == package->type)
         {
-            std::cout << "unknown type " << std::endl;
+            if(SystemOnThePhone == g_systemStatus)
+                handleVedioMsg(m_dataBuf);
         }
-
+        else if(Audio == package->type)
+        {
+            if(SystemOnThePhone == g_systemStatus)
+                handleAudioMsg(m_dataBuf);
+        }
+        else
+            std::cout << "unknown type " << std::endl;
     }
-}
-
-void UdpReceiver::handleRequestConnect(uint16_t id, bool flag)
-{
-    transPack_t package;
-    package.head[0] = 0x66;
-    package.head[1] = 0xcc;
-    if(flag)
-        package.type = AcceptConnect;
-    else
-        package.type = RefuseConnect;
-    package.length = 0;
-    package.checkNum = 0;
-    package.senderId = g_myId;
-    package.receiverId = id;
-    const char *data = (const char *)&package;
-
-    //m_udpSocket->writeDatagram(data,sizeof(package)+package.length,g_serverIp,g_serverPort);
 }
 
 void UdpReceiver::handleVedioMsg(char* const buf)
@@ -273,16 +263,22 @@ void UdpReceiver::run(void)
 
 void UdpReceiver::heartBeatThread()
 {
+    //此心跳间隔应与服务器程序保持一致
     int heartBeatInterval = 5;
+    m_serverLastHeartBeatTime = time(0); //此处必须初始化
     transPack_t heartBeatPkg(HeartBeat);
     while(g_registerStatus == 2)
     {
         m_heartBeatMutex.lock();
-        if(m_serverLastHeartBeatTime !=0 && m_serverLastHeartBeatTime-time(0) >heartBeatInterval+1)
-        {
-            qDebug() << "server is shutdown" ;
-        }
+        //qDebug() << m_serverLastHeartBeatTime << "\t" << m_serverLastHeartBeatTime-time(0) ;
+        bool disconnect = time(0) - m_serverLastHeartBeatTime >heartBeatInterval+1;
         m_heartBeatMutex.unlock();
+        if(disconnect)
+        {
+            emit logoutSignal();
+            qDebug() << "server is shutdown" ;
+            return;
+        }
 
         m_udpSocket->writeDatagram((char *)&heartBeatPkg,
                    sizeof(heartBeatPkg), g_serverIp,g_msgPort);

@@ -223,12 +223,41 @@ void Server::receiveAndTransThread(int server_fd)
 		}
 		else if(_pkg->type == Video || _pkg->type == Audio)
 			msgTransmit(recvbuf, len);
+		else if(_pkg->type == LogOut) 
+		{
+			cout << "client logout...."<< endl;
+			clients_[clientId].connect = false;
+		}
+		else if(_pkg->type == AcceptConnect) //被叫用户接受连接 
+		{
+			uint16_t srcClientId = ((const transPack_t *)recvbuf)->senderId;
+			uint16_t dstClientId = ((const transPack_t *)recvbuf)->receiverId;
+			clients_[srcClientId].callingID = dstClientId;
+			clients_[dstClientId].callingID = srcClientId;
+		}
+		else if(_pkg->type == DisConnect)
+		{
+			//A方请求断开，清除A中存放的B的Id，并向B发送断开连接 
+			uint16_t otherId = clients_[clientId].callingID;
+			if(otherId == 0) //还未成功连接 
+				continue; 
+			clients_[clientId].callingID = 0;
+			transPack_t pkg(DisConnect);
+    		sendto(clients_[otherId].fd, (char*)&pkg, sizeof(transPack_t), 0, (struct sockaddr*)&clients_[otherId].addr, sizeof(sockaddr_in));
+		}
 			
 	}
 	cout << "delete client : " << clientId;
-	clients_.erase(clientId);
+	removeClient(clientId);
 	delete [] recvbuf;
 	close(server_fd);
+}
+
+void Server::removeClient(uint16_t id)
+{
+	uint16_t otherId = clients_[id].callingID;
+	clients_[otherId].callingID = 0; //删除用户前将与之通话的客户的信息置位	
+	clients_.erase(id);
 }
 
 void Server::run()
@@ -246,16 +275,44 @@ void Server::run()
 
 void Server::msgTransmit(const uint8_t* buf, int len)
 {
+	uint16_t srcClientId = ((const transPack_t *)buf)->senderId;
 	uint16_t dstClientId = ((const transPack_t *)buf)->receiverId;
 
 	auto it = clients_.find(dstClientId);
 	if (it == clients_.end()) //未查找到目标客户端 
 	{
+		//向主叫用户回复 ,回复时按原包头修改指令类型后返回
+		transPack_t pkg;
+		memcpy(&pkg, buf, sizeof(transPack_t));
+		pkg.type =  CalledOffline;
+		pkg.length = 0;
+		
+		sendto(clients_[srcClientId].fd, (char*)&pkg, sizeof(transPack_t), 0, (struct sockaddr*)&clients_[srcClientId].addr, sizeof(sockaddr_in));
 		cout << "No client : " << dstClientId << endl;
 		return;
 	}
-	int send_len = sendto(clients_[dstClientId].fd, buf, len, 0, (struct sockaddr*)&clients_[dstClientId].addr, sizeof(sockaddr_in));
-	cout << "transmitting : " << send_len << " bytes to id: " << dstClientId << "\tport：" << clients_[dstClientId].addr.sin_port << endl;
+	
+	//主叫用户信息中的被叫ID已被写入，表明接通成功 
+	if(clients_[srcClientId].callingID == dstClientId) 
+	{
+		int send_len = sendto(clients_[dstClientId].fd, buf, len, 0, (struct sockaddr*)&clients_[dstClientId].addr, sizeof(sockaddr_in));
+		//cout << "transmitting : " << send_len << " bytes to id: " << dstClientId << "\tport：" << clients_[dstClientId].addr.sin_port << endl;
+	}
+	else if(clients_[dstClientId].callingID != 0) //被叫正在与其他用户通话
+	{
+		transPack_t pkg(CalledBusy);
+		sendto(clients_[srcClientId].fd, (char*)&pkg, sizeof(transPack_t), 0, (struct sockaddr*)&clients_[srcClientId].addr, sizeof(sockaddr_in));	
+	} 
+	else 
+	{
+		//向被叫发送请求连接指令 ,按原包头修改指令类型后发送（旨在包含主叫和被叫的信息） 
+		transPack_t pkg;
+		memcpy(&pkg, buf, sizeof(transPack_t));
+		pkg.type =  RequestConnect;
+		pkg.length = 0;
+		
+		sendto(clients_[dstClientId].fd, (char*)&pkg, sizeof(transPack_t), 0, (struct sockaddr*)&clients_[dstClientId].addr, sizeof(sockaddr_in));
+	} 
 }
 
 //由于遇到过服务器自动断开的问题 

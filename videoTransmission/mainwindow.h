@@ -29,8 +29,11 @@ private slots:
     void setAutoLogin();
     void onLableRegisterStatusClicked();
 
-    void startSendSlot();
-
+    void startChat(uint16_t id);
+    void stopChat();
+    void onCalledBusy();
+    void logout();
+    void login();
 private:
     void closeEvent(QCloseEvent *event);
     void loadPerformance();

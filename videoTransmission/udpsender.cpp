@@ -43,13 +43,6 @@ void UdpSender::stopSend()
         this->wait();
     }
 
-    if(m_udpSocket != nullptr)
-    {
-        m_udpSocket->close();
-        delete m_udpSocket;
-        m_udpSocket = nullptr;
-    }
-
     if(m_audioRecorder!= nullptr )
     {
         delete m_audioRecorder;
@@ -60,6 +53,13 @@ void UdpSender::stopSend()
     {
         delete m_vedioCaptor;
         m_vedioCaptor = nullptr;
+    }
+
+    if(m_udpSocket != nullptr)
+    {
+        m_udpSocket->close();
+        delete m_udpSocket;
+        m_udpSocket = nullptr;
     }
 }
 

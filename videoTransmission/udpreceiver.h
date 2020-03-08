@@ -19,14 +19,16 @@ public:
     void registerToServer();
     void confirmRegister(quint16 port);
     void logout();
+    void sendCmd(dataType);
 private slots:
     void onReadyRead();
 
 signals:
-    void startSendSignal();
-
+    void startChatSignal(uint16_t id);
+    void stopChatSignal();
+    void logoutSignal();
+    void calledBusy();
 private:
-    void handleRequestConnect(uint16_t id, bool flag);
     void handleVedioMsg(char * const buf);
     void handleAudioMsg(char * const buf);
     void registerToServerThread();

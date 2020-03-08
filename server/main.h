@@ -32,6 +32,9 @@ enum dataType
 	RequestRegister=9,//请求注册到服务器
 	ResponseRegister=10,//回应客户端请求(包含服务端服务端口号) 
     HeartBeat = 11, //心跳包
+    LogOut = 12,    //退出登陆
+    CalledOffline=13,// 被叫不在线
+	CalledBusy = 14,//被叫忙 
 };
 
 #pragma pack(push,1)
@@ -64,10 +67,11 @@ typedef struct ClientInfo
 	sockaddr_in addr; //客户端地址 
 	bool connect; //客户端的连接状态 
 	std::time_t lastHeartBeatTime; //上一次心跳时间
-	
+	uint16_t callingID; //正在通话的ID 
 	ClientInfo()
 	{
 		lastHeartBeatTime=0;
+		callingID = 0; 
 	}
 	 
 } clientInfo_t;  
@@ -93,6 +97,7 @@ private:
 	void heartBeatThread();
 	void printThread(int interval); 
 	void msgTransmit(const uint8_t* buf, int len);
+	void removeClient(uint16_t id); 
 	
 private:
 	clientsMap clients_;

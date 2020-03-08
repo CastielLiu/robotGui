@@ -21,13 +21,16 @@ enum dataType
     RequestConnect=2, //请求连接
     AcceptConnect=3,  //接收连接
     RefuseConnect=4,  //拒绝连接
-    DisConnect=5,     //挂断连接
-    NoneType = 6,
+    DisConnect=5,     //挂断
+    NoneType =6,
     RegisterOK=7,     //注册成功(服务器发往客户端)
     RegisterFail=8,   //注册失败(服务器发往客户端)
     RequestRegister=9,//请求注册到服务器
     ResponseRegister=10,//回应客户端请求(包含服务端服务端口号)
     HeartBeat = 11, //心跳包
+    LogOut = 12,    //退出登陆
+    CalledOffline=13,// 被叫不在线
+    CalledBusy = 14,//被叫忙
 };
 
 //数据传输头
@@ -55,8 +58,9 @@ typedef struct TransPack
 
 enum systemStatus
 {
-    SystemIdle,     //空闲
-    SystemBusy,     //忙(正在呼叫、正在被叫)
+    SystemIdle,       //空闲
+    SystemOnThePhone, //正在通话
+
     SystemRunning,  //正在通话
     SystemRefused,  //请求被拒绝
     SystemAccepted, //请求被接受
@@ -68,7 +72,7 @@ extern int g_registerStatus;
 extern quint16 g_msgPort;
 extern systemStatus g_systemStatus;
 extern uint16_t g_myId;
-extern uint16_t g_otherId ;
+
 extern bool g_isCaller;
 
 //extern bool
