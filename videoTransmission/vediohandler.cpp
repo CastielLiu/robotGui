@@ -4,6 +4,12 @@
 QMutex VedioHandler::m_tempImageMutex;
 QImage VedioHandler::m_tempImage;
 
+#define QCAMERA_IMAGE_CAPTURE 1
+#define CAMERA_FRAME_GRABER 2
+#define CV_IMAGE_GRABER 3
+
+#define WHAT_CAMERE_TOOL CV_IMAGE_GRABER
+
 VedioHandler::VedioHandler():
     m_camera(nullptr),
     m_cameraViewFinder(nullptr),
@@ -44,9 +50,15 @@ void VedioHandler::stopCapture()
         delete  m_imageGrabber;
         m_imageGrabber = nullptr;
     }
+    if(m_cvImageGrabber != nullptr)
+    {
+        m_cvImageGrabber->closeCamera();
+        delete m_cvImageGrabber;
+    }
     if(m_myQlabel != nullptr)
     {
         //qDebug() << "m_myQlabel->hide()";
+        m_myQlabel->clear();
         m_myQlabel->hide();
         delete  m_myQlabel;
         m_myQlabel = nullptr;
@@ -57,25 +69,32 @@ bool VedioHandler::init(const std::string& mode)
 {
     if(mode == "record")
     {
-        m_camera = new QCamera;//摄像头
-        m_camera->setCaptureMode(QCamera::CaptureVideo);
         m_imageBuffer->setSize(5);
 
-#if 1
+    #if(WHAT_CAMERE_TOOL == QCAMERA_IMAGE_CAPTURE)
+        m_camera = new QCamera;//摄像头
+        m_camera->setCaptureMode(QCamera::CaptureVideo);
         m_cameraViewFinder = new QCameraViewfinder;
         m_camera->setViewfinder(m_cameraViewFinder);
         m_imageCapture = new QCameraImageCapture(m_camera,this);//截图部件
         m_imageCapture->setCaptureDestination(QCameraImageCapture::CaptureToFile);
         connect(m_imageCapture, SIGNAL(imageCaptured(int,QImage)),
                 this, SLOT(onImageCaptured(int,QImage)));
-#else
-
+        m_camera->start(); //启动摄像头
+    #elif(WHAT_CAMERE_TOOL == CAMERA_FRAME_GRABER)
+        m_camera = new QCamera;//摄像头
+        m_camera->setCaptureMode(QCamera::CaptureVideo);
         m_imageGrabber = new CameraFrameGrabber();
         m_camera->setViewfinder(m_imageGrabber);
         connect(m_imageGrabber, SIGNAL(imageGrabed(const QVideoFrame &)),
                 this, SLOT(onImageGrabed(const QVideoFrame &)));
-#endif
         m_camera->start(); //启动摄像头
+    #elif(WHAT_CAMERE_TOOL == CV_IMAGE_GRABER)
+        m_cvImageGrabber = new CvImageGraber();
+        if(!m_cvImageGrabber->openCamera(0))
+            return false;
+
+#endif
         return true;
     }
     else if(mode == "play")
@@ -86,7 +105,6 @@ bool VedioHandler::init(const std::string& mode)
         m_myQlabel->setGeometry(0,0,128,96);
         m_myQlabel->setOpenMoveEvent(true);
         m_myQlabel->setOpenClickEvent(true);
-        //m_myQlabel->setText("testsfdd");
         m_myQlabel->show();
         return true;
     }
@@ -98,23 +116,26 @@ bool VedioHandler::init(const std::string& mode)
 }
 
 /***************** 视频获取和发送相关代码 *********************/
-bool VedioHandler::captureImage()
-{
-    m_imageCapture->capture();
-    return true;
-}
 
 void VedioHandler::sendImage(QUdpSocket *sockect, uint16_t receiverId)
 {
-    m_imageCapture->capture("a.jpg"); //获取图片，槽函数onImageCaptured将被调用
-
     QImage image;
+#if(WHAT_CAMERE_TOOL == QCAMERA_IMAGE_CAPTURE)
+    m_imageCapture->capture("a.jpg"); //获取图片，槽函数onImageCaptured将被调用
     m_imageMutex.lock();
     bool ok = m_imageBuffer->read(image);
     m_imageMutex.unlock();
+    if(!ok) return;
+#elif(WHAT_CAMERE_TOOL == CAMERA_FRAME_GRABER)
+    m_imageMutex.lock();
+    bool ok = m_imageBuffer->read(image);
+    m_imageMutex.unlock();
+    if(!ok) return;
+#elif(WHAT_CAMERE_TOOL == CV_IMAGE_GRABER)
+    image = m_cvImageGrabber->capture();
+    if(image.isNull()) return;
+#endif
 
-    if(!ok)
-        return;
     //QImage转QByteArray 方式1
     QByteArray imageByteArray;// QByteArray类提供了一个字节数组（字节流）。对使用自定义数据来操作内存区域是很有用的
     QBuffer Buffer(&imageByteArray);// QBuffer(QByteArray * byteArray, QObject * parent = 0)
@@ -130,12 +151,8 @@ void VedioHandler::sendImage(QUdpSocket *sockect, uint16_t receiverId)
     imageByteArray.append(buffer.data()); //此处多了一遍数据复制，应该没有方式以效率高，未深入研究
     */
 
-    transPack_t header ;
-    header.head[0] = 0x66;
-    header.head[1] = 0xcc;
-    header.type = Video;
+    transPack_t header(Video) ;
     header.length = imageByteArray.size();
-    header.checkNum = 0;
     header.senderId = g_myId;
     header.receiverId = receiverId;
 
@@ -150,6 +167,12 @@ void VedioHandler::sendImage(QUdpSocket *sockect, uint16_t receiverId)
 //显示本地图片
 void VedioHandler::onImageCaptured(int id,QImage image)
 {
+    Q_UNUSED(id);
+    this->writeImageToBuffer(image);
+}
+
+void VedioHandler::writeImageToBuffer(QImage& image)
+{
     QSize size = image.size();
     image = image.scaled(size.width()/2,size.height()/2);
     m_imageMutex.lock();
@@ -159,7 +182,6 @@ void VedioHandler::onImageCaptured(int id,QImage image)
     m_tempImageMutex.lock();
     m_tempImage = image.copy();
     m_tempImageMutex.unlock();
-
 }
 
 //cameraFrameGraber每次抓到图片将触发此槽函数
@@ -177,16 +199,7 @@ void VedioHandler::onImageGrabed(const QVideoFrame &frame)
                        imageFormat);
     cloneFrame.unmap();
 
-    QSize size = image.size();
-    image = image.scaled(size.width()/2,size.height()/2);
-    m_imageMutex.lock();
-    m_imageBuffer->write(image);
-    m_imageMutex.unlock();
-
-    m_tempImageMutex.lock();
-    m_tempImage = image.copy();
-    m_tempImageMutex.unlock();
-
+    this->writeImageToBuffer(image);
 }
 
 /****************** 视频播放相关代码 ********************/

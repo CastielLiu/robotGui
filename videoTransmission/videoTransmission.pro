@@ -36,7 +36,8 @@ SOURCES += \
     vediohandler.cpp \
     udpsender.cpp \
     myqlabel.cpp \
-    cameraframegrabber.cpp
+    cameraframegrabber.cpp \
+    cvimagegraber.cpp
 
 
 HEADERS += \
@@ -48,7 +49,8 @@ HEADERS += \
     udpsender.h \
     circlebuffer.h \
     myqlabel.h \
-    cameraframegrabber.h
+    cameraframegrabber.h \
+    cvimagegraber.h
 
 FORMS += \
         mainwindow.ui
@@ -60,3 +62,6 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 RESOURCES += \
     res.qrc
+
+INCLUDEPATH += C:\opencv\build\include
+LIBS += C:\opencv\opencv-build\bin\libopencv_*

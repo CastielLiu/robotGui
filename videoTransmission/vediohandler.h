@@ -16,7 +16,7 @@
 #include <myqlabel.h>
 #include <memory>
 #include "cameraframegrabber.h"
-
+#include "cvimagegraber.h"
 #include "circlebuffer.h"
 
 class VedioHandler : public QObject
@@ -34,7 +34,7 @@ public:
     void playVedio();
 
 private:
-    bool captureImage();
+    void writeImageToBuffer(QImage& image);
 
 private slots:
     void onImageCaptured(int id, QImage image);
@@ -45,6 +45,7 @@ private:
     QCameraViewfinder *m_cameraViewFinder;//摄像头取景器部件
     QCameraImageCapture * m_imageCapture;//截图部件
     CameraFrameGrabber *m_imageGrabber;
+    CvImageGraber *m_cvImageGrabber;
 
     //m_imageBuffer 作为发送器存放要发送的图片
     //作为接收器存放接收到的图片

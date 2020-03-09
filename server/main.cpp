@@ -338,7 +338,7 @@ void Server::heartBeatThread()
 		cout << "clients size: " << clients_.size() << "\t sending heart beat pkg...\n";
 		for(auto client =clients_.begin(); client!= clients_.end(); ++client)
 		{
-			cout << "id: " << client->first <<endl;
+			//cout << "id: " << client->first <<endl;
 			//初始情况下客户上次心跳时间为0 
 			if(client->second.lastHeartBeatTime ==0)
 			{

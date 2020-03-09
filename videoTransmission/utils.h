@@ -60,7 +60,7 @@ enum systemStatus
 {
     SystemIdle,       //空闲
     SystemOnThePhone, //正在通话
-
+    SystemDebug,     //正在调试
     SystemRunning,  //正在通话
     SystemRefused,  //请求被拒绝
     SystemAccepted, //请求被接受
