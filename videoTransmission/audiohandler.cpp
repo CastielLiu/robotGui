@@ -1,6 +1,7 @@
 #include "audiohandler.h"
 
 AudioHandler::AudioHandler():
+    m_input(nullptr),
     m_tempRecorderBuf(nullptr)
 {
      std::cout << "create AudioHandler in thread: " << QThread::currentThreadId() << std::endl;
@@ -10,6 +11,11 @@ AudioHandler::~AudioHandler()
 {
     if(m_tempRecorderBuf!=nullptr)
         delete [] m_tempRecorderBuf;
+    if(m_input != nullptr)
+    {
+        m_input->stop();
+        delete m_input;
+    }
 }
 
 bool AudioHandler::init(const std::string& mode)

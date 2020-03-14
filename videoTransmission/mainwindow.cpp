@@ -75,7 +75,8 @@ void MainWindow::stopChat()
     ui->label_showImageMain->clear();
 }
 
-//用户退出登陆，主动退出，与服务器失去连接被动退出
+//用户退出登陆，主动退出，
+//与服务器失去连接被动退出
 void MainWindow::logout()
 {
     g_registerStatus = 0;
