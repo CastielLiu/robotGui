@@ -9,7 +9,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_udpSender(nullptr),
     m_configFile("config")
 {
-    qDebug() << "MainWindow in thread" << QThread::currentThread() ;
+    std::cout << "create MainWindow in thread: " << QThread::currentThreadId() << std::endl;
 
     ui->setupUi(this);
     g_ui = ui; //初始化全局ui指针便于在外部调用ui
@@ -36,6 +36,8 @@ MainWindow::MainWindow(QWidget *parent) :
         m_udpReceiver->registerToServer();
         ui->label_registerStatus->setText("logging in");
     }
+
+    //debug
 }
 
 MainWindow::~MainWindow()
@@ -206,6 +208,7 @@ void MainWindow::savePerformance()
     delete config;
 }
 
+//载入参数
 void MainWindow::loadPerformance()
 {
     QSettings *config = new QSettings(m_configFile, QSettings::IniFormat);
@@ -215,6 +218,11 @@ void MainWindow::loadPerformance()
         if(id != 0 )
             g_myId = id;
         m_autoRegister = config->value("auto login").toBool();
+
+        QString ip = config->value(QString("server/ip")).toString();
+        quint16 port = config->value(QString("server/port")).toUInt();
+        g_registerPort = port;
+        g_serverIp.setAddress(ip);
     }
     delete config;
 }

@@ -66,14 +66,16 @@ enum systemStatus
     SystemAccepted, //请求被接受
 };
 
-extern const QHostAddress g_serverIp;
-extern const quint16 g_registerPort;
+extern QHostAddress g_serverIp;
+extern quint16 g_registerPort;
 extern int g_registerStatus;
 extern quint16 g_msgPort;
 extern systemStatus g_systemStatus;
 extern uint16_t g_myId;
-
 extern bool g_isCaller;
+
+extern uint16_t g_heartBeatInterval ;
+extern uint16_t g_maxHeartBeatDelay ;
 
 //extern bool
 extern Ui::MainWindow *g_ui;

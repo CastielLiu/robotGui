@@ -2,7 +2,7 @@
 
 //类静态成员函数需要在类的外部分配内存空间
 QMutex VedioHandler::m_tempImageMutex;
-QImage VedioHandler::m_tempImage;
+std::shared_ptr<QImage> VedioHandler::m_tempImage = nullptr;
 
 #define QCAMERA_IMAGE_CAPTURE 1
 #define CAMERA_FRAME_GRABER 2
@@ -15,16 +15,16 @@ VedioHandler::VedioHandler():
     m_cameraViewFinder(nullptr),
     m_imageCapture(nullptr),
     m_imageGrabber(nullptr),
+    m_cvImageGrabber(nullptr),
     m_myQlabel(nullptr)
 
 {
-    m_imageBuffer = new CircleBuffer<QImage>();
+
 }
 
 VedioHandler::~VedioHandler()
 {
     this->stopCapture();
-    delete m_imageBuffer;
 }
 
 void VedioHandler::stopCapture()
@@ -69,7 +69,7 @@ bool VedioHandler::init(const std::string& mode)
 {
     if(mode == "record")
     {
-        m_imageBuffer->setSize(5);
+        m_imageBuffer.setSize(5);
 
     #if(WHAT_CAMERE_TOOL == QCAMERA_IMAGE_CAPTURE)
         m_camera = new QCamera;//摄像头
@@ -92,14 +92,16 @@ bool VedioHandler::init(const std::string& mode)
     #elif(WHAT_CAMERE_TOOL == CV_IMAGE_GRABER)
         m_cvImageGrabber = new CvImageGraber();
         if(!m_cvImageGrabber->openCamera(0))
+        {
+            qDebug() << "open camera failed!" ;
             return false;
-
+        }
 #endif
         return true;
     }
     else if(mode == "play")
     {
-        m_imageBuffer->setSize(5);
+        m_imageBuffer.setSize(5);
         m_myQlabel = new MyQLabel(g_ui->label_showImageMain);
         connect(m_myQlabel,SIGNAL(clicked()),this,SLOT(modifyShowMode()));
         m_myQlabel->setGeometry(0,0,128,96);
@@ -119,29 +121,37 @@ bool VedioHandler::init(const std::string& mode)
 
 void VedioHandler::sendImage(QUdpSocket *sockect, uint16_t receiverId)
 {
-    QImage image;
-#if(WHAT_CAMERE_TOOL == QCAMERA_IMAGE_CAPTURE)
-    m_imageCapture->capture("a.jpg"); //获取图片，槽函数onImageCaptured将被调用
-    m_imageMutex.lock();
-    bool ok = m_imageBuffer->read(image);
-    m_imageMutex.unlock();
-    if(!ok) return;
-#elif(WHAT_CAMERE_TOOL == CAMERA_FRAME_GRABER)
-    m_imageMutex.lock();
-    bool ok = m_imageBuffer->read(image);
-    m_imageMutex.unlock();
-    if(!ok) return;
-#elif(WHAT_CAMERE_TOOL == CV_IMAGE_GRABER)
-    image = m_cvImageGrabber->capture();
-    if(image.isNull()) return;
-#endif
-
-    //QImage转QByteArray 方式1
     QByteArray imageByteArray;// QByteArray类提供了一个字节数组（字节流）。对使用自定义数据来操作内存区域是很有用的
     QBuffer Buffer(&imageByteArray);// QBuffer(QByteArray * byteArray, QObject * parent = 0)
     Buffer.open(QIODevice::ReadWrite);
-    image.save(&Buffer,"JPG");//用于直接将一张图片保存在QByteArray中
-    //qDebug() << "send " << imageByteArray ;
+
+
+#if(WHAT_CAMERE_TOOL == QCAMERA_IMAGE_CAPTURE)
+    std::shared_ptr<QImage> imgPtr;
+    m_imageCapture->capture("a.jpg"); //获取图片，槽函数onImageCaptured将被调用
+    m_imageMutex.lock();
+    bool ok = m_imageBuffer.read(imgPtr);
+    m_imageMutex.unlock();
+    if(!ok) return;
+    imgPtr->save(&Buffer,"JPG");
+#elif(WHAT_CAMERE_TOOL == CAMERA_FRAME_GRABER)
+    std::shared_ptr<QImage> imgPtr;
+    m_imageMutex.lock();
+    bool ok = m_imageBuffer.read(imgPtr);
+    m_imageMutex.unlock();
+    if(!ok) return;
+    imgPtr->save(&Buffer,"JPG");
+#elif(WHAT_CAMERE_TOOL == CV_IMAGE_GRABER)
+
+    std::shared_ptr<QImage> imgPtr = std::shared_ptr<QImage>(new QImage(m_cvImageGrabber->capture()));
+    if(imgPtr->isNull()) return;
+
+    m_tempImageMutex.lock();
+    m_tempImage = imgPtr;
+    m_tempImageMutex.unlock();
+
+    imgPtr->save(&Buffer,"JPG");//用于直接将一张图片保存在QByteArray中
+#endif
 
     /* //QImage转QByteArray 方式2
     QBuffer buffer;
@@ -171,16 +181,19 @@ void VedioHandler::onImageCaptured(int id,QImage image)
     this->writeImageToBuffer(image);
 }
 
+//将本地捕获的图片保存至缓冲区，等待发送以及显示
 void VedioHandler::writeImageToBuffer(QImage& image)
 {
     QSize size = image.size();
     image = image.scaled(size.width()/2,size.height()/2);
+    std::shared_ptr<QImage> imgPtr = std::shared_ptr<QImage>(new QImage(image));
+
     m_imageMutex.lock();
-    m_imageBuffer->write(image);
+    m_imageBuffer.write(imgPtr);
     m_imageMutex.unlock();
 
     m_tempImageMutex.lock();
-    m_tempImage = image.copy();
+    m_tempImage = imgPtr;
     m_tempImageMutex.unlock();
 }
 
@@ -203,7 +216,7 @@ void VedioHandler::onImageGrabed(const QVideoFrame &frame)
 }
 
 /****************** 视频播放相关代码 ********************/
-
+//将接收到的图片保存至缓冲区
 void VedioHandler::appendData(char* const buf, int len)
 {
     //qDebug() << "void VedioHandler::appendData(char* const buf, int len):" << len;
@@ -215,10 +228,14 @@ void VedioHandler::appendData(char* const buf, int len)
 
     //qDebug() << "receive " <<imageByteArray ;
 
-    QMutexLocker locker(&m_imageMutex);
-    QImage image= reader.read();
+    //读取图片，通过拷贝构造函数生成智能指针
+    std::shared_ptr<QImage> imgPtr = std::shared_ptr<QImage>(new QImage(reader.read()));
     // qDebug() << reader.errorString() << " " << reader.error();
-    bool ok = m_imageBuffer->write(image);
+
+
+    QMutexLocker locker(&m_imageMutex);
+
+    bool ok = m_imageBuffer.write(imgPtr);
     //if(ok)
     //    qDebug() << "received one image and write to imageBuffer ok. size:" << image.size()
     //             << "image len: " << len;
@@ -227,28 +244,34 @@ void VedioHandler::appendData(char* const buf, int len)
 void VedioHandler::playVedio()
 {
     //从缓冲区读取一张图片并显示
-    QImage image;
+    std::shared_ptr<QImage> imgPtr;
+
     QMutexLocker locker(&m_imageMutex);
-    bool ok = m_imageBuffer->read(image);
+   // qDebug() << "data cnt in buffer: " << m_imageBuffer.getDataCnt();
+    bool ok = m_imageBuffer.read(imgPtr);
     locker.unlock();
+
     //image=image.convertToFormat(QImage::Format_RGB888);
     if(m_myImageBig) //我方大图
     {
         m_tempImageMutex.lock();
-        g_ui->label_showImageMain->setPixmap(QPixmap::fromImage(m_tempImage));
+        if(m_tempImage!=nullptr && !m_tempImage->isNull())
+            g_ui->label_showImageMain->setPixmap(
+                        QPixmap::fromImage(m_tempImage->scaled(g_ui->label_showImageMain->size())));
         m_tempImageMutex.unlock();
         if(ok)
-            m_myQlabel->setPixmap(QPixmap::fromImage(image.scaled(m_myQlabel->size())));
+            m_myQlabel->setPixmap(QPixmap::fromImage(imgPtr->scaled(m_myQlabel->size())));
     }
     else //我方小图
     {
         m_tempImageMutex.lock();
-        if(!m_tempImage.isNull())
-            m_myQlabel->setPixmap(QPixmap::fromImage(m_tempImage.scaled(m_myQlabel->size())));
+        if(m_tempImage!=nullptr && !m_tempImage->isNull())
+            m_myQlabel->setPixmap(QPixmap::fromImage(m_tempImage->scaled(m_myQlabel->size())));
         m_tempImageMutex.unlock();
 
         if(ok)
-            g_ui->label_showImageMain->setPixmap(QPixmap::fromImage(image));
+            g_ui->label_showImageMain->setPixmap(
+                        QPixmap::fromImage(imgPtr->scaled(g_ui->label_showImageMain->size())));
     }
 
     /* //图片显示方法2
@@ -265,5 +288,11 @@ void VedioHandler::playVedio()
 void VedioHandler::modifyShowMode()
 {
     m_myImageBig = !m_myImageBig;
+    if(m_myImageBig)
+        m_myQlabel->clear();
+    else
+        g_ui->label_showImageMain->clear();
+
+
     //qDebug() << m_myImageBig ;
 }

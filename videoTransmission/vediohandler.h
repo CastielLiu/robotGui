@@ -50,13 +50,13 @@ private:
     //m_imageBuffer 作为发送器存放要发送的图片
     //作为接收器存放接收到的图片
     QMutex m_imageMutex;
-    CircleBuffer<QImage> *m_imageBuffer;
+    CircleBuffer<std::shared_ptr<QImage> > m_imageBuffer;
 
     //类静态成员函数需要在类的外部分配内存空间
     //m_tempImage 存放本地捕获的图片，用于显示
     //由于图片是在record模式下捕获，在play模式下播放，所以一定要使用静态成员。
     static QMutex m_tempImageMutex;
-    static QImage m_tempImage;
+    static std::shared_ptr<QImage> m_tempImage;
 
     //QMutex m_myImageMutex, m_heImageMutex;
     //CircleBuffer<std::shared_ptr<QImage>> m_myImageBuffer;//我方图片缓冲区

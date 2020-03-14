@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <mutex>
+#include <iostream>
 
 /*
  * CircleBuffer 环形数据存储区模板类
@@ -38,14 +39,45 @@ public:
     bool setSize(size_t size)
     {
         if(m_size != 0)
+        {
+            std::cout << "current size is not zero, if you want change size dynamicly, please call resetSize!" << std::endl;
             return false;
+        }
         m_size = size;
         m_array.resize(m_size);
         m_datasStatus = std::vector<bool>(m_size,false);
         return true;
     }
 
+    bool resetSize(size_t size)
+    {
+        std::lock_guard<std::mutex> lck(m_readWriteMutex);
+        m_size = size;
+
+        m_array.clear(); //先清除掉所有元素
+        m_array.resize(m_size);
+        m_datasStatus = std::vector<bool>(m_size,false);
+        m_readIndex = m_writeIndex = 0; //读写指针复位
+    }
+
     size_t getSize(){return m_size;}
+
+    //获取存储区中的数据个数，未测试
+    size_t getDataCnt()
+    {
+        std::lock_guard<std::mutex> lck(m_readWriteMutex);
+        int diff = m_writeIndex-m_readIndex;
+        if(diff==0) //读写指针在同一位置
+        {
+            if(!m_datasStatus[m_readIndex])//不可读
+                return 0;
+            else if(m_datasStatus[m_readIndex] && m_datasStatus[(m_readIndex+1)%m_size]) //多处可读,数据满
+                return m_size;
+            return 1;
+        }
+
+        return diff>0 ? diff: diff+m_size;
+    }
 
     //设置缓冲区工作模式
     bool setMode(int mode){ m_mode = mode;}
