@@ -6,17 +6,15 @@ using std::endl;
 
 //多线程数据转发
 /*
-方法1. 建立多个转发线程，接收线程唯一. 每个接收线程独立对应一个数据接收缓冲区，并设立条件变量，当接收进程收到数据并存储缓冲区x中时唤醒线程x进行转发
-当前数据接收缓冲区应进行合理选择，正在使用的缓冲区应设置标志位，对标志位进行读写时应加锁
-最初可以初始化N个线程，当线程不够使用时再动态增加
- **方法1 用一个线程接收数据多个线程转发数据，一定程度上可以提高效率**
-方法2. 多个线程，每个线程均可收发，由于多个绑定同一地址端口对的socket只有第一绑定的可以接收数据，因此应采用不同线程不同端口号的方式
+	多个线程，每个线程均可收发，
 	服务器提供多个接收端口号，其中一个用作注册端口号，即客户端连接服务器时访问的端口号，
-	服务器收到注册信息后启动一个新的线程并创建新的socket向客户端发送注册成功信息，（此时系统给分配了一个新的端口号）
-	客户端注册成功后添加进客户列表，方式多次注册导致启动多余线程。 
-	之后该用户端用服务器分配的端口号进行数据请求
+	服务器收到注册信息后启动一个新的线程并创建新的socket（此时系统给分配了一个新的端口号）
+	将新端口号通过注册socket发送给客户端，客户端收到新端口号后向新端口号发送注册指令，服务器回应后注册成功。 
+	客户端注册成功后添加进客户列表，防止多次注册导致启动多余线程。 
+	之后该客户端与服务器的新端口号进行数据交互
  */
 
+//静态变量，运行标志，用于中断多线程 
 bool Server::run_flag = true; 
 
 Server::Server(int port):
@@ -84,6 +82,9 @@ void showSocketMsg(const std::string& prefix, int fd)
 	cout << prefix << "\t ip: " << ip << "\t port: " << serverAddr.sin_port << endl;
 }
 
+//初始化socket并自动分配端口号，返回值为套接字fd
+//参数为引用，将被写入分配的端口号 
+//此函数初始化socket时不能设置端口号复用功能，同一端口号被多次绑定导致之前绑定的无法使用 
 int Server::initSocketAutoAssignPort(uint16_t& port)
 {
 	struct sockaddr_in local_addr;
@@ -91,6 +92,7 @@ int Server::initSocketAutoAssignPort(uint16_t& port)
 	local_addr.sin_family = AF_INET;
 	int convert_ret = inet_pton(AF_INET, "0.0.0.0", &local_addr.sin_addr);
 	
+	//区间搜索端口号，直到绑定成功 
 	for(port=50000;port<60000; ++port)
 	{
 		local_addr.sin_port = htons(port);
@@ -185,8 +187,8 @@ void Server::receiveAndTransThread(int server_fd)
 		clients_[clientId].addr = client_addr; //写入客户端地址
 		clients_[clientId].fd =  server_fd; //将与该用户建立连接的套接字保存 
 		//发送注册成功
-		transPack_t temp_pkg;
-		temp_pkg.type = RegisterOK;
+		transPack_t temp_pkg(RegisterOK);
+
 		//发送多次注册成功信号 
 		for(int i=0; i<3; ++i)
 		{
@@ -215,9 +217,9 @@ void Server::receiveAndTransThread(int server_fd)
 		if(len <= 0) continue;
 		if(_pkg->head[0] != 0x66 || _pkg->head[1] != 0xcc)
 			continue;
-		if(_pkg->type == HeartBeat)
+		if(_pkg->type == HeartBeat) //心跳包 
 		{
-			sendto(server_fd,recvbuf, len, 0, (struct sockaddr*)&client_addr, clientLen);
+			sendto(server_fd,recvbuf, len, 0, (struct sockaddr*)&client_addr, clientLen); //回发给客户端 
 			clients_[clientId].lastHeartBeatTime = time(0); //记录客户心跳时间 
     
 		}
@@ -347,17 +349,22 @@ void Server::heartBeatThread()
 				continue;
 			} 
 			std::time_t diff =  time(0) - client->second.lastHeartBeatTime;
-			if( diff >heartBeatInterval+1) 
+			
+			//客户端连接标志 connect复位后，将退出其接收线程，然后自动删除用户
+			//若某些用户未能自动删除，手动删除 
+			 
+			if(diff > heartBeatInterval_ + maxHeartBeatDelay_*3) 
+			{
+				//删除未能正常删除的用户
+				clients_.erase(client);
+			}
+			else if( diff >heartBeatInterval_ + maxHeartBeatDelay_) 
 			{
 				//连接置false，等待线程退出后自动删除用户 
 				client->second.connect = false;
 				cout << "client " << client->first  << "  disconnect." << endl;
 			}
-			if(diff > heartBeatInterval+5) 
-			{
-				//删除未能正常删除的用户
-				clients_.erase(client);
-			} 
+			 
 		}
 		std::this_thread::sleep_for(std::chrono::seconds(heartBeatInterval)); 
 	}

@@ -35,6 +35,13 @@ enum dataType
     LogOut = 12,    //退出登陆
     CalledOffline=13,// 被叫不在线
 	CalledBusy = 14,//被叫忙 
+	
+	
+	//remote control
+	ControlCmd = 20,
+	RobotState = 21,
+	
+	
 };
 
 #pragma pack(push,1)
@@ -65,7 +72,7 @@ typedef struct ClientInfo
 	        //虽然已经保存了客户端的地址，但是该地址只对当时与其建立连接的socket有效
 			//当其他用户向此用户发送消息时，服务器必须使用此fd进行转发，而不是使用接收其他客户消息的fd 
 	sockaddr_in addr; //客户端地址 
-	bool connect; //客户端的连接状态 
+	bool connect; //客户端的连接状态(是否在线) 
 	std::time_t lastHeartBeatTime; //上一次心跳时间
 	uint16_t callingID; //正在通话的ID 
 	ClientInfo()
@@ -105,8 +112,9 @@ private:
 	//客户端注册端口号 
 	const int register_port_; 
 	
+	uint16_t heartBeatInterval_ = 5; //心跳包发送间隔(s)
+	uint16_t maxHeartBeatDelay_ = 2; //心跳包容许延迟时间(s)
 	
-
 };
 
 

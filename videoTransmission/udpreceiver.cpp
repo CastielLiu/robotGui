@@ -13,6 +13,7 @@ UdpReceiver::UdpReceiver():
 
     m_udpSocket = new QUdpSocket();
     m_udpSocket->bind(QHostAddress::Any);
+
     //连接信号槽，udp收到消息后触发槽函数
     connect(m_udpSocket,SIGNAL(readyRead()),this,SLOT(onReadyRead()),Qt::DirectConnection);
 }
@@ -173,7 +174,7 @@ void UdpReceiver::onReadyRead()
             g_ui->statusBar->showMessage(qstr, 3000);
             //可以考虑设置一个弹窗线程，用户选择是否接听
             transPack_t pkg;
-            memcpy(&pkg, m_dataBuf, sizeof(transPack_t));
+            memcpy(&pkg, m_dataBuf, sizeof(transPack_t)); //拷贝接收到的消息！
             pkg.type =  AcceptConnect;
             pkg.length = 0;
             m_udpSocket->writeDatagram((char*)&pkg,sizeof(transPack_t),senderip,senderport);
