@@ -18,9 +18,13 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->label_registerStatus->setOpenClickEvent(true);
     connect(ui->label_registerStatus,SIGNAL(clicked()),this,SLOT(onLableRegisterStatusClicked()));
-    ui->label_registerStatus->setAlignment(Qt::AlignHCenter); //设置label文字居中
-    connect(ui->action_user_id,SIGNAL(triggered()),this,SLOT(setUserId()));
-    connect(ui->action_auto_login,SIGNAL(triggered()),this,SLOT(setAutoLogin()));
+    ui->label_registerStatus->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter); //设置label文字居中
+
+    //连接action信号槽
+    connect(ui->action_user_id,SIGNAL(triggered()),this,SLOT(onActionUserId()));
+    connect(ui->action_auto_login,SIGNAL(triggered()),this,SLOT(onActionAutoLogin()));
+    connect(ui->action_robotCall_id,SIGNAL(triggered()),this,SLOT(onActionRobotCallId()));
+    connect(ui->action_robotControl_id,SIGNAL(triggered()),this,SLOT(onActionRobotControlId()));
 
     this->loadPerformance();//载入用户参数
 
@@ -54,7 +58,7 @@ MainWindow::~MainWindow()
 void MainWindow::startChat(uint16_t id)
 {
     ui->pushButton_call->setChecked(true);
-    ui->pushButton_call->setText("stop");
+    ui->pushButton_call->setText("disconnect");
 
     m_udpSender = new UdpSender();
     m_udpSender->startSend(id);
@@ -64,7 +68,7 @@ void MainWindow::startChat(uint16_t id)
 void MainWindow::stopChat()
 {
     ui->pushButton_call->setChecked(false);
-    ui->pushButton_call->setText("start");
+    ui->pushButton_call->setText("connect");
     m_udpReceiver->stopPlayMv();
     //务必首先判断m_udpSender是否已经被实例化
     if(m_udpSender != nullptr)
@@ -101,17 +105,18 @@ void MainWindow::on_pushButton_call_clicked()
 {
     if(ui->pushButton_call->isChecked())
     {
-        bool ok;
-        uint16_t dstId = ui->lineEdit_dstId->text().toUShort(&ok);
+        uint16_t dstId = g_robotCallId;
 
         if(g_registerStatus != 2 )
-            ui->statusBar->showMessage("please login firstly!",3000);
+            ui->statusBar->showMessage("Please login firstly!",5000);
+        else if(g_robotCallId == 0 )
+            ui->statusBar->showMessage("Please set robot communicate id",5000);
+        else if(g_robotControlId == 0 )
+            ui->statusBar->showMessage("Please set robot control id",5000);
         else if(g_systemStatus == SystemOnThePhone)
-            ui->statusBar->showMessage("Call in progress, No Call!",3000);
-        else if(!ok)
-            ui->statusBar->showMessage(QString("input id error, please input again"),3000);
+            ui->statusBar->showMessage("Call in progress!",5000);
         else if(dstId == g_myId)
-            ui->statusBar->showMessage(QString("can not call yourself!"),3000);
+            ui->statusBar->showMessage(QString("Can not call yourself!"),5000);
         else
         {
             this->startChat(dstId);
@@ -121,7 +126,6 @@ void MainWindow::on_pushButton_call_clicked()
     }
     else
         this->stopChat();
-
 }
 
 //被叫忙
@@ -153,7 +157,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     }
 }
 
-void MainWindow::setUserId()
+void MainWindow::onActionUserId()
 {
     QInputDialog dia(this);
     dia.setWindowTitle("Set User Id");
@@ -166,7 +170,7 @@ void MainWindow::setUserId()
        if(g_myId == 0)
        {
            ui->statusBar->showMessage("error, please input again",1000);
-           setUserId();
+           onActionUserId(); //输入错误后再次调用本函数
        }
        QString msg = QString("Set User Id ") + QString::number(g_myId) + " ok.";
        ui->statusBar->showMessage(msg, 3000);
@@ -185,7 +189,7 @@ void MainWindow::onLableRegisterStatusClicked()
 
 }
 
-void MainWindow::setAutoLogin()
+void MainWindow::onActionAutoLogin()
 {
     int button = QMessageBox::question(this, tr("自动登录设置"),
                                    QString(tr("下次自动登录？")),
@@ -202,8 +206,10 @@ void MainWindow::savePerformance()
     QSettings *config = new QSettings(m_configFile, QSettings::IniFormat);
 
     //config->beginGroup("");
-    config->setValue("user id", g_myId);
-    config->setValue("auto login", QString::number(m_autoRegister));
+    config->setValue("userId", g_myId);
+    config->setValue("autoLogin", QString::number(m_autoRegister));
+    config->setValue("robotCallId", g_robotCallId);
+    config->setValue("robotCotrolId", g_robotControlId);
     //config->endGroup();
     delete config;
 }
@@ -214,10 +220,12 @@ void MainWindow::loadPerformance()
     QSettings *config = new QSettings(m_configFile, QSettings::IniFormat);
     if(config)
     {
-        uint16_t id = config->value(QString("user id")).toUInt();
-        if(id != 0 )
-            g_myId = id;
-        m_autoRegister = config->value("auto login").toBool();
+        uint16_t id = config->value(QString("userId")).toUInt();
+        if(id != 0 )  g_myId = id; //?参数文件中没有参数怎么办？
+
+        m_autoRegister = config->value("autoLogin").toBool();
+        g_robotCallId = config->value("robotCallId").toInt();
+        g_robotControlId = config->value("robotCotrolId").toInt();
 
         QString ip = config->value(QString("server/ip")).toString();
         quint16 port = config->value(QString("server/port")).toUInt();
@@ -226,4 +234,43 @@ void MainWindow::loadPerformance()
     }
     delete config;
 }
+
+void MainWindow::onActionRobotCallId()
+{
+    QInputDialog dialog(this);
+    dialog.setWindowTitle(tr("设置机器人通话ID")); //窗口名称
+    dialog.setLabelText("请输入: "); //输入提示
+    dialog.setInputMode(QInputDialog::TextInput);//可选参数：DoubleInput  TextInput IntInput
+
+    if(dialog.exec() == QInputDialog::Accepted)
+    {
+        bool ok;
+        uint16_t id = dialog.textValue().toUInt(&ok);
+        if(ok)
+            g_robotCallId = id;
+        else
+            onActionRobotCallId();
+    }
+}
+
+void MainWindow::onActionRobotControlId()
+{
+    QInputDialog dialog(this);
+    dialog.setWindowTitle(tr("设置机器人控制ID")); //窗口名称
+    dialog.setLabelText("请输入: "); //输入提示
+
+    dialog.setInputMode(QInputDialog::TextInput);//可选参数：DoubleInput  TextInput IntInput
+
+    if(dialog.exec() == QInputDialog::Accepted)
+    {
+        bool ok;
+        uint16_t id = dialog.textValue().toUInt(&ok);
+        if(ok)
+            g_robotControlId = id;
+        else
+            onActionRobotControlId();
+    }
+}
+
+
 

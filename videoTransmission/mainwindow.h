@@ -25,8 +25,6 @@ public:
     ~MainWindow();
 private slots:
     void on_pushButton_call_clicked();
-    void setUserId();
-    void setAutoLogin();
     void onLableRegisterStatusClicked();
 
     void startChat(uint16_t id);
@@ -34,6 +32,14 @@ private slots:
     void onCalledBusy();
     void logout();
     void login();
+
+    //action slots
+    void onActionUserId();
+    void onActionAutoLogin();
+    void onActionRobotCallId();
+    void onActionRobotControlId();
+
+
 private:
     void closeEvent(QCloseEvent *event);
     void loadPerformance();

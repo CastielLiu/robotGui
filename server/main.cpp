@@ -237,6 +237,11 @@ void Server::receiveAndTransThread(int server_fd)
 			clients_[srcClientId].callingID = dstClientId;
 			clients_[dstClientId].callingID = srcClientId;
 		}
+		else if(_pkg->type == RefuseConnect)
+		{
+			uint16_t dstClientId = ((const transPack_t *)recvbuf)->receiverId;
+			sendto(clients_[dstClientId].fd, (char*)&pkg, sizeof(transPack_t), 0, (struct sockaddr*)&clients_[dstClientId].addr, sizeof(sockaddr_in));
+		}
 		else if(_pkg->type == DisConnect)
 		{
 			uint16_t clientA =  clientId;
@@ -248,6 +253,7 @@ void Server::receiveAndTransThread(int server_fd)
 			transPack_t pkg(DisConnect);
     		sendto(clients_[clientB].fd, (char*)&pkg, sizeof(transPack_t), 0, (struct sockaddr*)&clients_[clientB].addr, sizeof(sockaddr_in));
 		}
+		
 			
 	}
 	cout << "delete client : " << clientId;
@@ -302,6 +308,7 @@ void Server::msgTransmit(const uint8_t* buf, int len)
 		int send_len = sendto(clients_[dstClientId].fd, buf, len, 0, (struct sockaddr*)&clients_[dstClientId].addr, sizeof(sockaddr_in));
 		//cout << "transmitting : " << send_len << " bytes to id: " << dstClientId << "\tport：" << clients_[dstClientId].addr.sin_port << endl;
 	}
+	//callingID 为空，发起呼叫请求 
 	else if(clients_[srcClientId].callingID == 0) 
 	{
 		//向被叫发送请求连接指令 ,按原包头修改指令类型后发送（旨在包含主叫和被叫的信息） 
@@ -311,10 +318,12 @@ void Server::msgTransmit(const uint8_t* buf, int len)
 		pkg.length = 0;
 		
 		sendto(clients_[dstClientId].fd, (char*)&pkg, sizeof(transPack_t), 0, (struct sockaddr*)&clients_[dstClientId].addr, sizeof(sockaddr_in));
-	} 
+	}
 	else //被叫正在与其他用户通话
 	{
-		transPack_t pkg(CalledBusy);
+		transPack_t pkg;
+		memcpy(&pkg, buf, sizeof(transPack_t));
+		pkg.type =  CalledBusy;
 		sendto(clients_[srcClientId].fd, (char*)&pkg, sizeof(transPack_t), 0, (struct sockaddr*)&clients_[srcClientId].addr, sizeof(sockaddr_in));	
 	} 
 	

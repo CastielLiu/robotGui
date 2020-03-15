@@ -3,6 +3,8 @@
 #include <utils.h>
 #include "audiohandler.h"
 #include "vediohandler.h"
+#include "remotecontrol.h"
+#include <QObject>
 
 class UdpSender: public QThread
 {
@@ -13,16 +15,14 @@ public:
     bool startSend(uint16_t dstId);
     void stopSend();
     virtual void run() override;
-    void setDstId(uint16_t id) {m_dstId = id;}
-
-
 
 private:
     QUdpSocket *m_udpSocket;
     AudioHandler *m_audioRecorder;
     VedioHandler *m_vedioCaptor;
+    RemoteControl *m_remoteControler;
 
-    //通信目标id
+    //通话目标id
     uint16_t m_dstId;
 };
 

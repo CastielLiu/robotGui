@@ -3,7 +3,8 @@
 UdpSender::UdpSender():
     m_udpSocket(nullptr),
     m_audioRecorder(nullptr),
-    m_vedioCaptor(nullptr)
+    m_vedioCaptor(nullptr),
+    m_remoteControler(nullptr)
 {
     std::cout << "create UdpSender in thread: " << QThread::currentThreadId() << std::endl;
 }
@@ -27,6 +28,16 @@ bool UdpSender::startSend(uint16_t dstId)
     m_vedioCaptor = new VedioHandler;
     if(!m_vedioCaptor->init("record"))
         return false;
+
+    if(g_openRemoteControl)
+    {
+        m_remoteControler = new RemoteControl;
+        connect(g_ui->widget_control1,SIGNAL(dirKeyPressed(int)),
+                m_remoteControler,SLOT(onDirKeyPressed(int)));
+
+        connect(g_ui->widget_control1,SIGNAL(dirKeyReleased(int)),
+                m_remoteControler,SLOT(onDirKeyReleased(int)));
+    }
 
     this->start();
     return true;
@@ -52,6 +63,12 @@ void UdpSender::stopSend()
         delete m_vedioCaptor;
         m_vedioCaptor = nullptr;
     }
+
+    if(m_remoteControler != nullptr)
+    {
+        delete m_remoteControler;
+        m_remoteControler = nullptr;
+    }
 }
 
 void UdpSender::run()
@@ -66,6 +83,8 @@ void UdpSender::run()
        //发送消息
        m_audioRecorder->sendAudio(m_udpSocket,m_dstId);
        m_vedioCaptor->sendImage(m_udpSocket,m_dstId);
+       if(g_openRemoteControl)
+           m_remoteControler->sendControlCmd(m_udpSocket,g_robotControlId);
        QThread::msleep(20);
        //QThread::sleep(2);
     }

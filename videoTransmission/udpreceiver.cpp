@@ -175,8 +175,13 @@ void UdpReceiver::onReadyRead()
             //可以考虑设置一个弹窗线程，用户选择是否接听
             transPack_t pkg;
             memcpy(&pkg, m_dataBuf, sizeof(transPack_t)); //拷贝接收到的消息！
-            pkg.type =  AcceptConnect;
+            pkg.senderId = g_myId;
+            pkg.receiverId = callerId;
             pkg.length = 0;
+            if(g_canCalled)
+                pkg.type =  AcceptConnect;
+            else
+                pkg.type =  RefuseConnect;
             m_udpSocket->writeDatagram((char*)&pkg,sizeof(transPack_t),senderip,senderport);
             //启动发送数据
 
@@ -184,9 +189,16 @@ void UdpReceiver::onReadyRead()
 
             emit startChatSignal(callerId);
         }
-        else if(CalledOffline == package->type)
+        else if(RefuseConnect == package->type)
         {
             emit calledBusy();
+        }
+        else if(CalledOffline == package->type)
+        {
+            if(package->receiverId == g_robotControlId) //机器人受控端不在线
+                g_ui->statusBar->showMessage(QString("Robot control receiver offline!"));
+            else //视频语音被叫端不在线
+                emit calledBusy();
         }
         else if(DisConnect == package->type)
         {

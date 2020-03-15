@@ -37,7 +37,9 @@ SOURCES += \
     udpsender.cpp \
     myqlabel.cpp \
     cameraframegrabber.cpp \
-    cvimagegraber.cpp
+    cvimagegraber.cpp \
+    remotecontrol.cpp \
+    mywidget.cpp
 
 
 HEADERS += \
@@ -50,7 +52,9 @@ HEADERS += \
     circlebuffer.h \
     myqlabel.h \
     cameraframegrabber.h \
-    cvimagegraber.h
+    cvimagegraber.h \
+    remotecontrol.h \
+    mywidget.h
 
 FORMS += \
         mainwindow.ui

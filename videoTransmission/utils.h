@@ -31,6 +31,10 @@ enum dataType
     LogOut = 12,    //退出登陆
     CalledOffline=13,// 被叫不在线
     CalledBusy = 14,//被叫忙
+
+    //remote control
+    ControlCmd = 20,
+    RobotState = 21,
 };
 
 //数据传输头
@@ -71,8 +75,13 @@ extern quint16 g_registerPort;
 extern int g_registerStatus;
 extern quint16 g_msgPort;
 extern systemStatus g_systemStatus;
-extern uint16_t g_myId;
 extern bool g_isCaller;
+extern const bool g_canCalled;
+extern const bool g_openRemoteControl;
+
+extern uint16_t g_myId;
+extern uint16_t g_robotCallId;
+extern uint16_t g_robotControlId ;
 
 extern uint16_t g_heartBeatInterval ;
 extern uint16_t g_maxHeartBeatDelay ;
