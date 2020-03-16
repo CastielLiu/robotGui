@@ -77,7 +77,7 @@ void MainWindow::stopChat()
         delete m_udpSender;
         m_udpSender = nullptr;
     }
-    m_udpReceiver->sendCmd(DisConnect);
+    m_udpReceiver->sendCmd(PkgType_DisConnect);
     ui->label_showImageMain->clear();
 }
 
@@ -132,10 +132,6 @@ void MainWindow::on_pushButton_call_clicked()
 void MainWindow::onCalledBusy()
 {
     this->stopChat();
-    ui->label_showImageMain->clear();
-
-    ui->pushButton_call->setChecked(false);
-    ui->pushButton_call->setText("start");
 }
 
 //点击叉号时的提示弹窗

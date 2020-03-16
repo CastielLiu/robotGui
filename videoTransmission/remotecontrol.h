@@ -10,20 +10,28 @@
 
 #pragma pack(push,1)
 
-typedef struct ControlCmdPkg
+typedef struct ControlCmd
 {
-    transPack_t header;
     int8_t xSpeed; //前进后退的速度
     int8_t zSpeed; //左右旋转的速度
+}controlCmd_t;
 
-    ControlCmdPkg()
+typedef struct  ControlCmdPkg
+{
+    pkgHeader_t header;
+    controlCmd_t cmd;
+
+    ControlCmdPkg(bool isSender=false)
     {
-        header.type = ControlCmd;
-        header.length = sizeof(ControlCmdPkg) - sizeof(transPack_t);
-        header.senderId = g_myId;
+        if(isSender)
+        {
+            header.type =  PkgType_ControlCmd;
+            header.length = sizeof(ControlCmdPkg) - sizeof(pkgHeader_t);
+            header.senderId = g_myId;
+        }
     }
 
-} controlCmdPkg_t;
+}controlCmdPkg_t;
 #pragma pack(pop)
 
 
@@ -40,7 +48,7 @@ public slots:
     void onDirKeyReleased(int key);
 
 private:
-    controlCmdPkg_t m_ctrlCmd; //控制指令
+     controlCmdPkg_t m_ctrlCmdPkg; //控制指令
 
     int8_t xSpeed;
     int8_t zSpeed;

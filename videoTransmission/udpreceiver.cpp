@@ -8,7 +8,7 @@ UdpReceiver::UdpReceiver():
     std::cout << "create UdpReceiver in thread: " << QThread::currentThreadId() << std::endl;
 
     //利用每帧图片的数据量确定缓冲区的大小
-    m_maxBufLength = 640*480*3+sizeof(transPack_t);
+    m_maxBufLength = 640*480*3+sizeof(pkgHeader_t);
     m_dataBuf = new char[m_maxBufLength];
 
     m_udpSocket = new QUdpSocket();
@@ -46,8 +46,8 @@ void UdpReceiver::registerToServer()
 void UdpReceiver::registerToServerThread()
 {
     qDebug() << "registerToServerThread in: " << QThread::currentThread() ;
-    transPack_t package;
-    package.type = RequestRegister;
+    pkgHeader_t package;
+    package.type = PkgType_RequestRegister;
     package.senderId = g_myId;
     int cnt = 0;
     g_registerStatus = 1;
@@ -79,7 +79,7 @@ void UdpReceiver::registerToServerThread()
 void UdpReceiver::confirmRegister(quint16 serverPort)
 {
     qDebug() << "confirmRegister... port:" <<  serverPort;
-    transPack_t package(RequestRegister);
+    pkgHeader_t package(PkgType_RequestRegister);
     package.senderId = g_myId;
     for(int i=0; i<3; ++i)
     {
@@ -94,7 +94,7 @@ void UdpReceiver::confirmRegister(quint16 serverPort)
 void UdpReceiver::logout()
 {
     //发送退出登陆信号，服务器收到后将客户端从列表中删除
-    transPack_t LogOutPkg(LogOut);
+    pkgHeader_t LogOutPkg(PkgType_LogOut);
     m_udpSocket->writeDatagram((char *)&LogOutPkg,
                sizeof(LogOutPkg), g_serverIp,g_msgPort);
 
@@ -140,10 +140,10 @@ void UdpReceiver::stopPlayMv()
 
 }
 
-void UdpReceiver::sendCmd(dataType cmdType)
+void UdpReceiver::sendCmd(PkgType cmdType)
 {
-    transPack_t pkg(cmdType);
-    m_udpSocket->writeDatagram((char*)&pkg,sizeof(transPack_t),g_serverIp,g_msgPort);
+    pkgHeader_t pkg(cmdType);
+    m_udpSocket->writeDatagram((char*)&pkg,sizeof(pkgHeader_t),g_serverIp,g_msgPort);
 }
 
 //udp 数据读取函数
@@ -161,10 +161,30 @@ void UdpReceiver::onReadyRead()
             continue;
         if(len <=0 ) continue;
 
-        transPack_t* package = (transPack_t*)m_dataBuf;
+        pkgHeader_t* package = (pkgHeader_t*)m_dataBuf;
         //std::cout << "package->type:" << int(package->type) << std::endl;
 
-        if(RequestConnect == package->type)
+        if(PkgType_ResponseRegister == package->type) //服务器回应注册,包含新端口号
+        {
+            quint16 serverPort =
+                m_dataBuf[sizeof(pkgHeader_t)]+m_dataBuf[sizeof(pkgHeader_t)+1]*256;
+
+            confirmRegister(serverPort);
+        }
+        else if(PkgType_RegisterOK == package->type) //服务器回应注册成功
+        {
+            g_msgPort = senderport; //记录服务器数据端口号
+            g_registerStatus = 2;
+            //启动心跳线程
+            std::thread t(&UdpReceiver::heartBeatThread,this);
+            t.detach();
+        }
+        else if(PkgType_RegisterFail == package->type) //服务器回应注册失败
+        {
+            qDebug() << "register failed!" ;
+            g_registerStatus = 0;
+        }
+        else if(PkgType_RequestConnect == package->type) //请求连接
         {
             //请求连接一般有很多条，确保只接受处理一次
             if(SystemOnThePhone == g_systemStatus)
@@ -173,61 +193,38 @@ void UdpReceiver::onReadyRead()
             QString qstr = QString("you have a new call. ID: ") + QString::number(callerId);
             g_ui->statusBar->showMessage(qstr, 3000);
             //可以考虑设置一个弹窗线程，用户选择是否接听
-            transPack_t pkg;
-            memcpy(&pkg, m_dataBuf, sizeof(transPack_t)); //拷贝接收到的消息！
+            pkgHeader_t pkg;
+            memcpy(&pkg, m_dataBuf, sizeof(pkgHeader_t)); //拷贝接收到的消息！
             pkg.senderId = g_myId;
             pkg.receiverId = callerId;
             pkg.length = 0;
             if(g_canCalled)
-                pkg.type =  AcceptConnect;
+                pkg.type =  PkgType_AcceptConnect;
             else
-                pkg.type =  RefuseConnect;
-            m_udpSocket->writeDatagram((char*)&pkg,sizeof(transPack_t),senderip,senderport);
+                pkg.type =  PkgType_RefuseConnect;
+            m_udpSocket->writeDatagram((char*)&pkg,sizeof(pkgHeader_t),senderip,senderport);
+
             //启动发送数据
-
-            qDebug() << "accept called! .....";
-
             emit startChatSignal(callerId);
         }
-        else if(RefuseConnect == package->type)
+        else if(PkgType_RefuseConnect == package->type) // 拒绝连接，请求被拒
         {
             emit calledBusy();
         }
-        else if(CalledOffline == package->type)
+        else if(PkgType_CalledOffline == package->type)
         {
             if(package->receiverId == g_robotControlId) //机器人受控端不在线
                 g_ui->statusBar->showMessage(QString("Robot control receiver offline!"));
             else //视频语音被叫端不在线
                 emit calledBusy();
         }
-        else if(DisConnect == package->type)
+        else if(PkgType_DisConnect == package->type)
         {
             g_ui->statusBar->showMessage(QString("Call disconnected"), 3000);
             emit stopChatSignal();
-            //std::cout <<  "DisConnect" << std::endl;
+            //std::cout <<  "PkgType_DisConnect" << std::endl;
         }
-        else if(ResponseRegister == package->type)
-        {
-            quint16 serverPort =
-                m_dataBuf[sizeof(transPack_t)]+m_dataBuf[sizeof(transPack_t)+1]*256;
-
-            confirmRegister(serverPort);
-        }
-
-        else if(RegisterOK == package->type)
-        {
-            g_msgPort = senderport; //记录服务器数据端口号
-            g_registerStatus = 2;
-            //启动心跳线程
-            std::thread t(&UdpReceiver::heartBeatThread,this);
-            t.detach();
-        }
-        else if(RegisterFail == package->type)
-        {
-            qDebug() << "register failed!" ;
-            g_registerStatus = 0;
-        }
-        else if(HeartBeat == package->type)
+        else if(PkgType_HeartBeat == package->type)
         {
             m_heartBeatMutex.lock();
             m_serverLastHeartBeatTime = time(0);
@@ -235,12 +232,12 @@ void UdpReceiver::onReadyRead()
         }
         //以上消息类型为指令消息
         //以下消息类型为通话消息
-        else if(Video == package->type)
+        else if(PkgType_Video == package->type)
         {
             if(SystemOnThePhone == g_systemStatus)
                 handleVedioMsg(m_dataBuf);
         }
-        else if(Audio == package->type)
+        else if(PkgType_Audio == package->type)
         {
             if(SystemOnThePhone == g_systemStatus)
                 handleAudioMsg(m_dataBuf);
@@ -252,17 +249,17 @@ void UdpReceiver::onReadyRead()
 
 void UdpReceiver::handleVedioMsg(char* const buf)
 {
-    transPack_t* package = (transPack_t*)buf;
+    pkgHeader_t* package = (pkgHeader_t*)buf;
     int len = package->length;
-    m_vedioPlayer->appendData(buf+sizeof(transPack_t),len);
+    m_vedioPlayer->appendData(buf+sizeof(pkgHeader_t),len);
 }
 
 void UdpReceiver::handleAudioMsg(char* const buf)
 {
-    transPack_t* package = (transPack_t*)buf;
+    pkgHeader_t* package = (pkgHeader_t*)buf;
     int len = package->length;
     //std::cout << len << " bytes add to audioBuf" << std::endl;
-    m_audioPlayer->appendData(buf+sizeof(transPack_t),len);
+    m_audioPlayer->appendData(buf+sizeof(pkgHeader_t),len);
 }
 
 //音频和视频播放
@@ -280,7 +277,7 @@ void UdpReceiver::run(void)
 void UdpReceiver::heartBeatThread()
 {
     m_serverLastHeartBeatTime = time(nullptr); //此处必须初始化
-    transPack_t heartBeatPkg(HeartBeat);
+    pkgHeader_t heartBeatPkg(PkgType_HeartBeat);
     while(g_registerStatus == 2)
     {
         m_heartBeatMutex.lock();

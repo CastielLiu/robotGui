@@ -90,19 +90,19 @@ void AudioHandler::sendAudio(QUdpSocket* sockect, uint16_t receiverId)
     else
     {
         //从m_recoderBuffer中拷贝60ms的音频并发送
-        char *sendData = new char[sizeof(transPack_t)+AUDIO_LEN_60ms];
+        char *sendData = new char[sizeof(pkgHeader_t)+AUDIO_LEN_60ms];
 
-        transPack_t *package = (transPack_t *)sendData;
+        pkgHeader_t *package = (pkgHeader_t *)sendData;
         package->head[0] = 0x66;
         package->head[1] = 0xcc;
-        package->type = Audio;
+        package->type = PkgType_Audio;
         package->length = AUDIO_LEN_60ms;
         package->checkNum = 0;
         package->senderId = g_myId;
         package->receiverId = receiverId;
 
-        memcpy(sendData+sizeof(transPack_t),&m_recoderBuffer.data()[m_currentSendIndex], AUDIO_LEN_60ms);
-        sockect->writeDatagram(sendData,sizeof(transPack_t)+AUDIO_LEN_60ms,g_serverIp,g_msgPort);
+        memcpy(sendData+sizeof(pkgHeader_t),&m_recoderBuffer.data()[m_currentSendIndex], AUDIO_LEN_60ms);
+        sockect->writeDatagram(sendData,sizeof(pkgHeader_t)+AUDIO_LEN_60ms,g_serverIp,g_msgPort);
 
         //std::cout << "send data in thread: " << QThread::currentThreadId()  << "g_msgPort:" << g_msgPort << std::endl;
         m_currentSendIndex += AUDIO_LEN_60ms;

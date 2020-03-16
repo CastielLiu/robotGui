@@ -30,6 +30,7 @@ Server::~Server()
 
 //初始化socket返回句柄
 //ip为本地ip，端口默认为0，由系统自动分配 
+//time_out 为阻塞接收等待时长，默认为0 
 int Server::initSocket(const int port, const std::string ip, int time_out)
 {
 	struct sockaddr_in local_addr;
@@ -343,7 +344,6 @@ void Server::printThread(int interval)
 
 void Server::heartBeatThread()
 {
-	int heartBeatInterval = 5; //心跳间隔5s 
 	while(run_flag)
 	{
 		cout << "clients size: " << clients_.size() << "\t sending heart beat pkg...\n";
@@ -375,7 +375,7 @@ void Server::heartBeatThread()
 			}
 			 
 		}
-		std::this_thread::sleep_for(std::chrono::seconds(heartBeatInterval)); 
+		std::this_thread::sleep_for(std::chrono::seconds(heartBeatInterval_)); 
 	}
 
 }

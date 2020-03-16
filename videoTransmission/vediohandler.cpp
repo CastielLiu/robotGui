@@ -161,12 +161,12 @@ void VedioHandler::sendImage(QUdpSocket *sockect, uint16_t receiverId)
     imageByteArray.append(buffer.data()); //此处多了一遍数据复制，应该没有方式以效率高，未深入研究
     */
 
-    transPack_t header(Video) ;
+    pkgHeader_t header(PkgType_Video) ;
     header.length = imageByteArray.size();
     header.senderId = g_myId;
     header.receiverId = receiverId;
 
-    QByteArray sendArray = QByteArray((char*)&header, sizeof(transPack_t)) + imageByteArray;
+    QByteArray sendArray = QByteArray((char*)&header, sizeof(pkgHeader_t)) + imageByteArray;
 
     sockect->writeDatagram(sendArray,sendArray.size(), g_serverIp, g_msgPort);
     //qDebug() << "send one frame image, size: " << imageByteArray.size();

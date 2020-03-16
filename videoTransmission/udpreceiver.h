@@ -19,7 +19,7 @@ public:
     void registerToServer();
     void confirmRegister(quint16 port);
     void logout();
-    void sendCmd(dataType);
+    void sendCmd(PkgType );
 private slots:
     void onReadyRead();
 
