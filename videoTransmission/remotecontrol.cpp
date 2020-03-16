@@ -1,10 +1,9 @@
 #include "remotecontrol.h"
 
-RemoteControl::RemoteControl():
-    m_ctrlCmdPkg(true) //sender
+RemoteControl::RemoteControl()
 {
-    xSpeed = 127;
-    zSpeed = 127;
+    m_xSpeed = 127;
+    m_zSpeed = 127;
 }
 RemoteControl::~RemoteControl()
 {
@@ -21,22 +20,20 @@ void RemoteControl::sendControlCmd(QUdpSocket* sockect, uint16_t receiverId)
 //方向键按下后修改控制指令
 void RemoteControl::onDirKeyPressed(int key)
 {
-    qDebug() << "onDirKeyPressed";
     QMutexLocker lock(&m_mutex);
     if(key == Qt::Key_Up)
-        m_ctrlCmdPkg.cmd.xSpeed = xSpeed;
+        m_ctrlCmdPkg.cmd.xSpeed = m_xSpeed;
     else if(key == Qt::Key_Down)
-        m_ctrlCmdPkg.cmd.xSpeed = -xSpeed;
+        m_ctrlCmdPkg.cmd.xSpeed = -m_xSpeed;
     else if(key == Qt::Key_Left)
-        m_ctrlCmdPkg.cmd.zSpeed = zSpeed;
+        m_ctrlCmdPkg.cmd.zSpeed = m_zSpeed;
     else if(key == Qt::Key_Right)
-        m_ctrlCmdPkg.cmd.zSpeed = -zSpeed;
+        m_ctrlCmdPkg.cmd.zSpeed = -m_zSpeed;
 }
 
 //方向键松开后控制指令置零
 void RemoteControl::onDirKeyReleased(int key)
 {
-    qDebug() << "onDirKeyReleased";
     QMutexLocker lock(&m_mutex);
     if(key == Qt::Key_Up)
         m_ctrlCmdPkg.cmd.xSpeed = 0;

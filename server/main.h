@@ -36,7 +36,6 @@ enum dataType
     CalledOffline=13,// 被叫不在线
 	CalledBusy = 14,//被叫忙 
 	
-	
 	//remote control
 	ControlCmd = 20,
 	RobotState = 21,

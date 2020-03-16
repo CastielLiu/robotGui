@@ -218,15 +218,16 @@ void Server::receiveAndTransThread(int server_fd)
 		if(len <= 0) continue;
 		if(_pkg->head[0] != 0x66 || _pkg->head[1] != 0xcc)
 			continue;
+		
+		//std::cout << "received msg, sender id: " << _pkg->senderId << "\t type: " << int(_pkg->type) << std::endl;
+		
 		if(_pkg->type == HeartBeat) //心跳包 
 		{
 			sendto(server_fd,recvbuf, len, 0, (struct sockaddr*)&client_addr, clientLen); //回发给客户端 
 			clients_[clientId].lastHeartBeatTime = time(0); //记录客户心跳时间 
     
 		}
-		else if(_pkg->type == Video || _pkg->type == Audio)
-			msgTransmit(recvbuf, len);
-		else if(_pkg->type == LogOut) 
+		else if(_pkg->type == LogOut)
 		{
 			cout << "client logout...."<< endl;
 			clients_[clientId].connect = false;
@@ -237,6 +238,7 @@ void Server::receiveAndTransThread(int server_fd)
 			uint16_t dstClientId = ((const transPack_t *)recvbuf)->receiverId;
 			clients_[srcClientId].callingID = dstClientId;
 			clients_[dstClientId].callingID = srcClientId;
+			cout << "connected " << srcClientId << "\t" << dstClientId << endl;
 		}
 		else if(_pkg->type == RefuseConnect)
 		{
@@ -254,8 +256,8 @@ void Server::receiveAndTransThread(int server_fd)
 			transPack_t pkg(DisConnect);
     		sendto(clients_[clientB].fd, (char*)&pkg, sizeof(transPack_t), 0, (struct sockaddr*)&clients_[clientB].addr, sizeof(sockaddr_in));
 		}
-		
-			
+		else
+			msgTransmit(recvbuf, len);	
 	}
 	cout << "delete client : " << clientId;
 	removeClient(clientId);

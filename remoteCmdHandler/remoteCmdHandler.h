@@ -4,6 +4,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <string.h>
+#include <iostream>
 #include "utils.h"
 #include <thread>
 #include <chrono>
@@ -12,35 +14,39 @@
 
 #pragma pack(push,1)
 
-typedef struct ControlCmdPkg
+typedef struct ControlCmd
 {
-    transPack_t header;
     int8_t xSpeed; //前进后退的速度
     int8_t zSpeed; //左右旋转的速度
+}controlCmd_t;
 
-    ControlCmdPkg(bool isSender=false)
-    {
-        if(isSender)
-        {
-            header.type = ControlCmd;
-            header.length = sizeof(ControlCmdPkg) - sizeof(transPack_t);
-            header.senderId = g_myId;
-        }
-    }
-} controlCmdPkg_t;
+typedef struct  ControlCmdPkg
+{
+    pkgHeader_t header;
+    controlCmd_t cmd;
+
+}controlCmdPkg_t;
+
 #pragma pack(pop)
 
+typedef void(*cmdCallBack_t)(controlCmd_t);
 
 class RemoteCmdHandler
 {
 public:
 	RemoteCmdHandler();
 	~RemoteCmdHandler();
-	bool init();
-	
-private：
-	int initSocket(const int port, const std::string ip, int time_out); 
-	bool registerToServer();
+	bool start();
+	void stop();
+	void bindCallbackFunction(cmdCallBack_t fun){m_cmd_callback = fun;}
+		
+private: 
+	void receiveThread(const int fd);
+	void confirmRegister(const int fd, struct sockaddr_in addr);
+	int initSocket(const int port=0, const std::string ip="0.0.0.0", int time_out=0);
+	bool registerToServer(const int fd, struct sockaddr_in addr);
+	void heartBeatThread(const int fd, struct sockaddr_in addr); 
+
 private:
 	int m_fd;
 	std::string m_serverIp;
@@ -55,8 +61,10 @@ private:
 	
 	std::mutex m_heartBeatMutex;
     std::time_t m_serverLastHeartBeatTime; //服务器上次心跳时间 
-    int m_heartBeatInterval; //心跳间隔 
-    int m_maxHeartBeatDelay; //最长心跳延迟 
+    const int m_heartBeatInterval; //心跳间隔 
+    const int m_maxHeartBeatDelay; //最长心跳延迟 
+    const int m_registerTimeOut; //注册到服务器超时时间 
+    cmdCallBack_t m_cmd_callback;
 };
 
 

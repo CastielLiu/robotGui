@@ -51,14 +51,14 @@ void UdpReceiver::registerToServerThread()
     package.senderId = g_myId;
     int cnt = 0;
     g_registerStatus = 1;
+    qDebug() << "registering to server...";
     while(g_registerStatus == 1) //登陆中(循环登录)
     {
-        qDebug() << "send register msg...";
         m_udpSocket->writeDatagram((char *)&package,
                    sizeof(package), g_serverIp,g_registerPort);
 
         QThread::msleep(1000);
-        if(++cnt > 10)
+        if(++cnt > 15)
         {
             g_registerStatus = 0;
             g_ui->label_registerStatus->setText("login");
@@ -214,8 +214,10 @@ void UdpReceiver::onReadyRead()
         else if(PkgType_CalledOffline == package->type)
         {
             if(package->receiverId == g_robotControlId) //机器人受控端不在线
-                g_ui->statusBar->showMessage(QString("Robot control receiver offline!"));
-            else //视频语音被叫端不在线
+                g_ui->statusBar->showMessage(QString("Robot control receiver offline!"),2000);
+            else if(g_ignoreCalledOffline) //视频语音被叫端不在线
+                g_ui->statusBar->showMessage(QString("Called offline, but you ignore it"),2000);
+            else
                 emit calledBusy();
         }
         else if(PkgType_DisConnect == package->type)
@@ -278,6 +280,8 @@ void UdpReceiver::heartBeatThread()
 {
     m_serverLastHeartBeatTime = time(nullptr); //此处必须初始化
     pkgHeader_t heartBeatPkg(PkgType_HeartBeat);
+    heartBeatPkg.senderId = g_myId;
+
     while(g_registerStatus == 2)
     {
         m_heartBeatMutex.lock();

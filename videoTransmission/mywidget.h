@@ -6,6 +6,12 @@
 #include <QKeyEvent>
 #include <QDebug>
 
+/*自定义MyWidget继承自QWidget
+ * 重写键盘事件函数，捕获方向键并发出信号
+ *
+ *
+ */
+
 class MyWidget : public QWidget
 {
     Q_OBJECT

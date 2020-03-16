@@ -1,13 +1,23 @@
 #include "remoteCmdHandler.h"
 
-RemoteCmdHandler::RemoteCmdHandler()
+RemoteCmdHandler::RemoteCmdHandler():
+	m_heartBeatInterval(5),
+    m_maxHeartBeatDelay(3),
+    m_cmd_callback(NULL),
+	m_registerTimeOut(15) 
 {
 	m_serverIp = "202.5.17.216";
 	m_registerPort = 8617;
 	m_myId = 5050;
+	
+}
+RemoteCmdHandler::~RemoteCmdHandler()
+{
+	this->stop();
 }
 
-bool RemoteCmdHandler::init()
+//启动远程控制处理器 
+bool RemoteCmdHandler::start()
 {
 	m_fd = initSocket(); //初始化socket 
 	
@@ -25,12 +35,17 @@ bool RemoteCmdHandler::init()
 	
 	//启动数据接收线程，在向服务器发送数据之前无法接收消息 
 	std::thread t(&RemoteCmdHandler::receiveThread, this, m_fd);
+	t.detach();
 	
-	等待 
-	
-	registerToServer()
-	
+	bool ok = this->registerToServer(m_fd,m_registerAddr);
+	return ok;
 }
+
+void RemoteCmdHandler::stop()
+{
+	m_runFlag = false;
+}
+
 
 //数据接收线程 
 //注册到服务器时，此线程用于接收服务器注册地址发送的回应注册信息
@@ -43,7 +58,7 @@ void RemoteCmdHandler::receiveThread(const int fd)
 {
 	const int BufLen = 50;
 	char *recvBuf = new char[BufLen];
-	const transPack_t *package = (const transPack_t *)recvbuf;
+	const PkgHeader *header = (const PkgHeader *)recvBuf;
 	
 	struct sockaddr_in addr;
 	socklen_t socklen; 
@@ -51,58 +66,65 @@ void RemoteCmdHandler::receiveThread(const int fd)
 	m_runFlag = true;
 	while(m_runFlag)
 	{
-		int len = recvfrom(fd, recvbuf, BufLen,0,(struct sockaddr*)&addr, &socklen);
+		int len = recvfrom(fd, recvBuf, BufLen,0,(struct sockaddr*)&addr, &socklen);
 		if(len <=0 ) continue;
-		if(package->head[0] != 0x66 || package->head[1] != 0xcc)continue;
+		if(header->head[0] != 0x66 || header->head[1] != 0xcc)continue;
 		
-		if(ResponseRegister == package->type) //服务器回应注册,包含新端口号
+		//std::cout << "received msg, type: " << int(header->type) << std::endl;
+		
+		if(PkgType_ResponseRegister == header->type) //服务器回应注册,包含新端口号
 	    {
 	        uint16_t serverPort =
-	            recvBuf[sizeof(transPack_t)]+recvBuf[sizeof(transPack_t)+1]*256;
+	            recvBuf[sizeof(PkgHeader)]+recvBuf[sizeof(PkgHeader)+1]*256;
 			addr.sin_port = htons(serverPort);
 			this->m_msgAddr =  addr; //保存服务器消息传输地址 
 	        confirmRegister(fd, m_msgAddr); 
 	    }
-	    else if(RegisterOK == package->type) //服务器回应注册成功
+	    else if(PkgType_RegisterOK == header->type) //服务器回应注册成功
 	    {
 	    	m_isRegisterOk = true; 
 	    	
 	        //启动心跳线程
-	        std::thread t(&RemoteCmdHandler::heartBeatThread,this);
+	        std::thread t(&RemoteCmdHandler::heartBeatThread,this, fd, m_msgAddr); 
 	        t.detach();
 	    }
-	    else if(RegisterFail == package->type) //服务器回应注册失败
+	    else if(PkgType_RegisterFail == header->type) //服务器回应注册失败
 	    {
 	        std::cout << "register failed!" << std::endl;
 	    }
-	    else if(RequestConnect == package->type) //请求连接
+	    else if(PkgType_RequestConnect == header->type) //请求连接
 	    {
-	    	uint16_t callerId = package->senderId;
-        
-            transPack_t pkg;
-            memcpy(&pkg, recvbuf, sizeof(transPack_t)); //拷贝接收到的消息！
-            pkg.senderId = g_myId;
+	    	uint16_t callerId = header->senderId;
+            pkgHeader_t pkg;
+            memcpy(&pkg, recvBuf, sizeof(pkgHeader_t)); //拷贝接收到的消息！
+            pkg.senderId = this->m_myId;
             pkg.receiverId = callerId;
             pkg.length = 0;
-            pkg.type = AcceptConnect; 
-            sendto(fd, (char *)&pkg, sizeof(pkg),
-					(struct sockaddr*)&addr, sizeof(addr));
-		} 	
-		else if(HeartBeat == package->type) //心跳包 
+            pkg.type = PkgType_AcceptConnect; 
+            //sendto(fd, (char *)&pkg, 0,  sizeof(pkg), (struct sockaddr*)&addr, sizeof(addr));
+            int len = sendto(fd, (char *)&pkg, sizeof(pkgHeader_t),0 , (struct sockaddr*)&addr, sizeof(addr));
+		}
+		else if(PkgType_HeartBeat == header->type) //心跳包 
 		{
 			m_heartBeatMutex.lock();
             m_serverLastHeartBeatTime = time(0);
             m_heartBeatMutex.unlock();
 		}
-		else if(ControlCmd == package->type) //控制指令
+		else if(PkgType_ControlCmd == header->type) //控制指令
 		{
-			
-			
-			//此处使用一个函数指针，向外发布消息的函数 
+			if(m_cmd_callback == NULL)
+				std::cout << "please bind callback function!" << std::endl;
+			else	
+			{
+				controlCmdPkg_t *cmdPkg = (controlCmdPkg_t *)recvBuf;
+				m_cmd_callback(cmdPkg->cmd);
+			}
 		} 
+		
 	}
 	
 	delete [] recvBuf;
+	recvBuf = NULL;
 }
 
 //确认注册
@@ -110,12 +132,12 @@ void RemoteCmdHandler::receiveThread(const int fd)
 //此函数首先向serverPort再次发送注册信息，以与服务器的消息转发socket建立连接
 void RemoteCmdHandler::confirmRegister(const int fd, struct sockaddr_in addr)
 {
-    transPack_t package(RequestRegister);
+    PkgHeader package(PkgType_RequestRegister);
     package.senderId = m_myId;
     for(int i=0; i<3; ++i)
     {
-    	sendto(fd, (char *)&package, sizeof(package),
-				(struct sockaddr*)&addr, sizeof(addr));
+    	int len = sendto(fd, (char *)&package, sizeof(package), 0, 
+					(struct sockaddr*)&addr, sizeof(addr));
 		
 		std::this_thread::sleep_for(std::chrono::milliseconds(200)); 
     }
@@ -165,50 +187,54 @@ int RemoteCmdHandler::initSocket(const int port, const std::string ip, int time_
 
 bool RemoteCmdHandler::registerToServer(const int fd, struct sockaddr_in addr)
 {
-    transPack_t package(RequestRegister);
+    PkgHeader package(PkgType_RequestRegister);
     package.senderId = m_myId;
     
     int cnt = 0;
     m_isRegisterOk = false;
+    float repeatInterval = 0.5; //s
+    
+    std::cout << "registering to server..." << std::endl;
+    
     while(!m_isRegisterOk) //(循环登录)
     {
-        std::cout << "send register msg..." << std::endl;
         
-        sendto(fd, (char *)&package, sizeof(package),
+        
+        sendto(fd, (char *)&package, sizeof(package), 0, 
 				(struct sockaddr*)&addr, sizeof(addr));
 		
-		std::this_thread::sleep_for(std::chrono::milliseconds(200)); 
+		std::this_thread::sleep_for(std::chrono::milliseconds(int(repeatInterval*1000))); 
 
-		if(++cnt > 50)
+		if(++cnt > m_registerTimeOut/repeatInterval)
 		{
 			std::cout << "register time out...";
 			return false;
 		}
     }
+    std::cout << "Successfully registered to server." << std::endl;
     return true;
 }
-
 
 //向服务器定时发送心跳包，并判断上次接收到服务器心跳包是否超时 
 void RemoteCmdHandler::heartBeatThread(const int fd, struct sockaddr_in addr)
 {
     m_serverLastHeartBeatTime = time(NULL); //此处必须初始化
-    transPack_t heartBeatPkg(HeartBeat);
+    PkgHeader heartBeatPkg(PkgType_HeartBeat);
+    heartBeatPkg.senderId = m_myId;
     
     while(m_runFlag && m_isRegisterOk)
     {
         m_heartBeatMutex.lock();
-        //qDebug() << m_serverLastHeartBeatTime << "\t" << m_serverLastHeartBeatTime-time(0) ;
         bool disconnect = time(0) - m_serverLastHeartBeatTime > m_heartBeatInterval + m_maxHeartBeatDelay;
         m_heartBeatMutex.unlock();
         if(disconnect)
         {
             m_isRegisterOk = false;
-            qDebug() << "server is shutdown" ;
+            std::cout << "server is shutdown" << std::endl;
             return;
         }
 
-        sendto(fd, (char *)&heartBeatPkg, sizeof(heartBeatPkg),
+        sendto(fd, (char *)&heartBeatPkg, sizeof(heartBeatPkg),0,
 				(struct sockaddr*)&addr, sizeof(addr));
 				
         std::this_thread::sleep_for(std::chrono::seconds(m_heartBeatInterval)); 
