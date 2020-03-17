@@ -60,6 +60,22 @@
           </spacer>
          </item>
          <item>
+          <widget class="QWidget" name="widget_img" native="true">
+           <property name="minimumSize">
+            <size>
+             <width>40</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="sizeIncrement">
+            <size>
+             <width>4</width>
+             <height>3</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QWidget" name="widget" native="true">
            <layout class="QVBoxLayout" name="verticalLayout">
             <item>

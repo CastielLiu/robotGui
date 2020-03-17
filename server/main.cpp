@@ -126,7 +126,7 @@ void Server::receiveRegisterThread()
 			continue;
 		if(recvbuf[0] != 0x66 || recvbuf[1] != 0xcc)
 			continue;
-		if(pkg->type != RequestRegister)
+		if(pkg->type != PkgType_RequestRegister)
 			continue;
 		
 		// 收到客户端请求注册的信息 
@@ -149,7 +149,7 @@ void Server::receiveRegisterThread()
 		transPack_t pkg;
 		int headerLen = sizeof(transPack_t); 
 		pkg.length = 2;
-		pkg.type = ResponseRegister;
+		pkg.type = PkgType_ResponseRegister;
 		char *buf = new char[headerLen+pkg.length];
 		memcpy(buf, &pkg, headerLen);
 
@@ -181,14 +181,14 @@ void Server::receiveAndTransThread(int server_fd)
 		//cout << "new thread start to receive msgs..." << endl;
 		int len = recvfrom(server_fd, recvbuf, BufLen1,0,(struct sockaddr*)&client_addr, &clientLen);
 		cout << "new thread received msgs. length: " << len << endl;
-		if(recvbuf[0] != 0x66 || recvbuf[1] != 0xcc || pkg->type != RequestRegister)
+		if(recvbuf[0] != 0x66 || recvbuf[1] != 0xcc || pkg->type != PkgType_RequestRegister)
 			continue;
 		clientId = pkg->senderId;
 		clients_[clientId].connect = true; //连接成功
 		clients_[clientId].addr = client_addr; //写入客户端地址
 		clients_[clientId].fd =  server_fd; //将与该用户建立连接的套接字保存 
 		//发送注册成功
-		transPack_t temp_pkg(RegisterOK);
+		transPack_t temp_pkg(PkgType_RegisterOK);
 
 		//发送多次注册成功信号 
 		for(int i=0; i<3; ++i)
@@ -221,18 +221,17 @@ void Server::receiveAndTransThread(int server_fd)
 		
 		//std::cout << "received msg, sender id: " << _pkg->senderId << "\t type: " << int(_pkg->type) << std::endl;
 		
-		if(_pkg->type == HeartBeat) //心跳包 
+		if(_pkg->type == PkgType_HeartBeat) //心跳包 
 		{
 			sendto(server_fd,recvbuf, len, 0, (struct sockaddr*)&client_addr, clientLen); //回发给客户端 
 			clients_[clientId].lastHeartBeatTime = time(0); //记录客户心跳时间 
-    
 		}
-		else if(_pkg->type == LogOut)
+		else if(_pkg->type == PkgType_LogOut)
 		{
 			cout << "client logout...."<< endl;
 			clients_[clientId].connect = false;
 		}
-		else if(_pkg->type == AcceptConnect) //被叫用户接受连接 
+		else if(_pkg->type == PkgType_AcceptConnect) //被叫用户接受连接 
 		{
 			uint16_t srcClientId = ((const transPack_t *)recvbuf)->senderId;
 			uint16_t dstClientId = ((const transPack_t *)recvbuf)->receiverId;
@@ -240,12 +239,12 @@ void Server::receiveAndTransThread(int server_fd)
 			clients_[dstClientId].callingID = srcClientId;
 			cout << "connected " << srcClientId << "\t" << dstClientId << endl;
 		}
-		else if(_pkg->type == RefuseConnect)
+		else if(_pkg->type == PkgType_RefuseConnect)
 		{
 			uint16_t dstClientId = ((const transPack_t *)recvbuf)->receiverId;
 			sendto(clients_[dstClientId].fd, (char*)&pkg, sizeof(transPack_t), 0, (struct sockaddr*)&clients_[dstClientId].addr, sizeof(sockaddr_in));
 		}
-		else if(_pkg->type == DisConnect)
+		else if(_pkg->type == PkgType_DisConnect)
 		{
 			uint16_t clientA =  clientId;
 			//A方请求断开，清除A中存放的B的Id，并向B发送断开连接 
@@ -253,9 +252,11 @@ void Server::receiveAndTransThread(int server_fd)
 			if(clientB == 0) //clientA没有正在通话的客户 
 				continue; 
 			clients_[clientA].callingID = 0; //清除A中B的ID 
-			transPack_t pkg(DisConnect);
+			transPack_t pkg(PkgType_DisConnect);
     		sendto(clients_[clientB].fd, (char*)&pkg, sizeof(transPack_t), 0, (struct sockaddr*)&clients_[clientB].addr, sizeof(sockaddr_in));
 		}
+		else if(pkg->type == PkgType_RequestRegister) 
+			continue ;
 		else
 			msgTransmit(recvbuf, len);	
 	}
@@ -297,7 +298,7 @@ void Server::msgTransmit(const uint8_t* buf, int len)
 		//向主叫用户回复 ,回复时按原包头修改指令类型后返回
 		transPack_t pkg;
 		memcpy(&pkg, buf, sizeof(transPack_t));
-		pkg.type =  CalledOffline;
+		pkg.type =  PkgType_CalledOffline;
 		pkg.length = 0;
 		
 		sendto(clients_[srcClientId].fd, (char*)&pkg, sizeof(transPack_t), 0, (struct sockaddr*)&clients_[srcClientId].addr, sizeof(sockaddr_in));
@@ -317,7 +318,7 @@ void Server::msgTransmit(const uint8_t* buf, int len)
 		//向被叫发送请求连接指令 ,按原包头修改指令类型后发送（旨在包含主叫和被叫的信息） 
 		transPack_t pkg;
 		memcpy(&pkg, buf, sizeof(transPack_t));
-		pkg.type =  RequestConnect;
+		pkg.type =  PkgType_RequestConnect;
 		pkg.length = 0;
 		
 		sendto(clients_[dstClientId].fd, (char*)&pkg, sizeof(transPack_t), 0, (struct sockaddr*)&clients_[dstClientId].addr, sizeof(sockaddr_in));
@@ -326,7 +327,7 @@ void Server::msgTransmit(const uint8_t* buf, int len)
 	{
 		transPack_t pkg;
 		memcpy(&pkg, buf, sizeof(transPack_t));
-		pkg.type =  CalledBusy;
+		pkg.type =  PkgType_CalledBusy;
 		sendto(clients_[srcClientId].fd, (char*)&pkg, sizeof(transPack_t), 0, (struct sockaddr*)&clients_[srcClientId].addr, sizeof(sockaddr_in));	
 	} 
 	
@@ -379,7 +380,6 @@ void Server::heartBeatThread()
 		}
 		std::this_thread::sleep_for(std::chrono::seconds(heartBeatInterval_)); 
 	}
-
 }
 
 //系统中断信号捕获

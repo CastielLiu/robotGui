@@ -20,6 +20,6 @@ int main()
 	{
 		std::this_thread::sleep_for(std::chrono::seconds(200)); 
 	} 
-		
+	handler.stop(); 
 	return 0;
 }

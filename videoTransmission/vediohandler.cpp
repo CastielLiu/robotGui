@@ -103,6 +103,7 @@ bool VedioHandler::init(const std::string& mode)
     {
         m_imageBuffer.setSize(5);
         m_myQlabel = new MyQLabel(g_ui->label_showImageMain);
+
         connect(m_myQlabel,SIGNAL(clicked()),this,SLOT(modifyShowMode()));
         m_myQlabel->setGeometry(0,0,128,96);
         m_myQlabel->setOpenMoveEvent(true);

@@ -63,6 +63,4 @@ void MyQLabel::mouseMoveEvent(QMouseEvent *event)
         this->move(m_formerWidgetPos+dis);
         m_moveOk = true;
     }
-
-
 }

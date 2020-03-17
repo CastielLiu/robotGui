@@ -13,7 +13,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->setupUi(this);
     g_ui = ui; //初始化全局ui指针便于在外部调用ui
-    this->setWindowTitle("视频聊天工具");
+    this->setWindowTitle("机器人远程工具");
     this->setWindowIcon(QIcon(":/images/icon"));
 
     ui->label_registerStatus->setOpenClickEvent(true);

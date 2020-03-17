@@ -33,8 +33,8 @@ enum PkgType
     PkgType_CalledBusy = 14,//被叫忙
 
     //remote control
-    PkgType_ControlCmd = 20,
-    PkgType_RobotState = 21,
+    PkgType_ControlCmd = 20, //控制指令
+    PkgType_RobotState = 21, //机器人状态数据
 };
 
 //数据传输头
