@@ -40,6 +40,10 @@ private slots:
     void onActionRobotControlId();
 
 
+    void on_checkBox_vedio_stateChanged(int arg1);
+
+    void on_checkBox_audio_stateChanged(int arg1);
+
 private:
     void closeEvent(QCloseEvent *event);
     void loadPerformance();

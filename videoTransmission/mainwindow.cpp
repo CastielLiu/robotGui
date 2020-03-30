@@ -15,6 +15,7 @@ MainWindow::MainWindow(QWidget *parent) :
     g_ui = ui; //初始化全局ui指针便于在外部调用ui
     this->setWindowTitle("机器人远程工具");
     this->setWindowIcon(QIcon(":/images/icon"));
+    this->setFixedSize(this->width(),this->height());
 
     ui->label_registerStatus->setOpenClickEvent(true);
     connect(ui->label_registerStatus,SIGNAL(clicked()),this,SLOT(onLableRegisterStatusClicked()));
@@ -268,5 +269,22 @@ void MainWindow::onActionRobotControlId()
     }
 }
 
+void MainWindow::on_checkBox_vedio_stateChanged(int arg1)
+{
+    if(!m_udpSender) return;
 
+    if(arg1)
+        m_udpSender->openVedio();
+    else
+        m_udpSender->closeVedio();
+}
 
+void MainWindow::on_checkBox_audio_stateChanged(int arg1)
+{
+    if(!m_udpSender) return;
+
+    if(arg1)
+        m_udpSender->openAudio();
+    else
+        m_udpSender->closeAudio();
+}

@@ -16,19 +16,30 @@ VedioHandler::VedioHandler():
     m_imageCapture(nullptr),
     m_imageGrabber(nullptr),
     m_cvImageGrabber(nullptr),
-    m_myQlabel(nullptr)
-
+    m_myQlabel(nullptr),
+    m_isVedioOpen(false)
 {
-
+    m_imageBuffer.setSize(10);
+    m_imgScale = 0.5;
 }
 
 VedioHandler::~VedioHandler()
 {
     this->stopCapture();
+    if(m_myQlabel != nullptr)
+    {
+        //qDebug() << "m_myQlabel->hide()";
+        m_myQlabel->clear();
+        m_myQlabel->hide();
+        delete  m_myQlabel;
+        m_myQlabel = nullptr;
+    }
 }
 
 void VedioHandler::stopCapture()
 {
+    m_isVedioOpen = false;
+
     if(m_camera != nullptr)
     {
         m_camera->stop();
@@ -42,7 +53,7 @@ void VedioHandler::stopCapture()
     }
     if(m_imageCapture != nullptr)
     {
-        delete  m_imageCapture;
+        delete m_imageCapture;
         m_imageCapture = nullptr;
     }
     if(m_imageGrabber != nullptr)
@@ -55,22 +66,12 @@ void VedioHandler::stopCapture()
         m_cvImageGrabber->closeCamera();
         delete m_cvImageGrabber;
     }
-    if(m_myQlabel != nullptr)
-    {
-        //qDebug() << "m_myQlabel->hide()";
-        m_myQlabel->clear();
-        m_myQlabel->hide();
-        delete  m_myQlabel;
-        m_myQlabel = nullptr;
-    }
 }
 
 bool VedioHandler::init(const std::string& mode)
 {
     if(mode == "record")
     {
-        m_imageBuffer.setSize(5);
-
     #if(WHAT_CAMERE_TOOL == QCAMERA_IMAGE_CAPTURE)
         m_camera = new QCamera;//摄像头
         m_camera->setCaptureMode(QCamera::CaptureVideo);
@@ -101,7 +102,6 @@ bool VedioHandler::init(const std::string& mode)
     }
     else if(mode == "play")
     {
-        m_imageBuffer.setSize(5);
         m_myQlabel = new MyQLabel(g_ui->label_showImageMain);
 
         connect(m_myQlabel,SIGNAL(clicked()),this,SLOT(modifyShowMode()));
@@ -118,14 +118,40 @@ bool VedioHandler::init(const std::string& mode)
     }
 }
 
+//启动视频传输
+bool VedioHandler::startVedioTransmission()
+{
+    if(m_isVedioOpen) return false;
+    if(this->init("record"))
+    {
+        m_isVedioOpen = true;
+        return true;
+    }
+    return false;
+}
+
+bool VedioHandler::stopVedioTransmission()
+{
+    if(m_isVedioOpen)
+    {
+        m_isVedioOpen = false;
+        this->stopCapture();
+        return true;
+    }
+    return false;
+}
+
 /***************** 视频获取和发送相关代码 *********************/
 
+//从本地图片缓存区中读取一张图片然后发送  QCameraImageCapture，CameraFrameGrabber
+//或者直接从摄像头读取图片然后发送       CvImageGraber
 void VedioHandler::sendImage(QUdpSocket *sockect, uint16_t receiverId)
 {
+    if(!m_isVedioOpen)
+        return;
     QByteArray imageByteArray;// QByteArray类提供了一个字节数组（字节流）。对使用自定义数据来操作内存区域是很有用的
     QBuffer Buffer(&imageByteArray);// QBuffer(QByteArray * byteArray, QObject * parent = 0)
     Buffer.open(QIODevice::ReadWrite);
-
 
 #if(WHAT_CAMERE_TOOL == QCAMERA_IMAGE_CAPTURE)
     std::shared_ptr<QImage> imgPtr;
@@ -143,25 +169,18 @@ void VedioHandler::sendImage(QUdpSocket *sockect, uint16_t receiverId)
     if(!ok) return;
     imgPtr->save(&Buffer,"JPG");
 #elif(WHAT_CAMERE_TOOL == CV_IMAGE_GRABER)
-
     std::shared_ptr<QImage> imgPtr = std::shared_ptr<QImage>(new QImage(m_cvImageGrabber->capture()));
     if(imgPtr->isNull()) return;
+
+    QSize size = imgPtr->size();
+    *imgPtr = imgPtr->scaled(int(size.width()*m_imgScale),int(size.height()*m_imgScale));
 
     m_tempImageMutex.lock();
     m_tempImage = imgPtr;
     m_tempImageMutex.unlock();
-
     imgPtr->save(&Buffer,"JPG");//用于直接将一张图片保存在QByteArray中
+
 #endif
-
-    /* //QImage转QByteArray 方式2
-    QBuffer buffer;
-    buffer.open(QIODevice::ReadWrite);
-    image.save(&buffer,"JPG");
-    QByteArray imageByteArray;
-    imageByteArray.append(buffer.data()); //此处多了一遍数据复制，应该没有方式以效率高，未深入研究
-    */
-
     pkgHeader_t header(PkgType_Video) ;
     header.length = imageByteArray.size();
     header.senderId = g_myId;
@@ -170,12 +189,13 @@ void VedioHandler::sendImage(QUdpSocket *sockect, uint16_t receiverId)
     QByteArray sendArray = QByteArray((char*)&header, sizeof(pkgHeader_t)) + imageByteArray;
 
     sockect->writeDatagram(sendArray,sendArray.size(), g_serverIp, g_msgPort);
-    //qDebug() << "send one frame image, size: " << imageByteArray.size();
+
+    //auto timeNow=std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+    //qDebug() << "send one frame image, size: " << imageByteArray.size() <<"\t"<< timeNow.count();
 }
 
-//本地摄像头图片捕获槽函数
+//QCameraImageCapture  摄像头图片捕获槽函数
 //图片捕获后放入发送缓存区，等待发送
-//显示本地图片
 void VedioHandler::onImageCaptured(int id,QImage image)
 {
     Q_UNUSED(id);
@@ -183,10 +203,11 @@ void VedioHandler::onImageCaptured(int id,QImage image)
 }
 
 //将本地捕获的图片保存至缓冲区，等待发送以及显示
+//此函数用于 发送图片捕获信号 与 图片捕获 不在同一位置时的情况
 void VedioHandler::writeImageToBuffer(QImage& image)
 {
     QSize size = image.size();
-    image = image.scaled(size.width()/2,size.height()/2);
+    image = image.scaled(int(size.width()*m_imgScale),int(size.height()*m_imgScale));
     std::shared_ptr<QImage> imgPtr = std::shared_ptr<QImage>(new QImage(image));
 
     m_imageMutex.lock();
@@ -220,6 +241,7 @@ void VedioHandler::onImageGrabed(const QVideoFrame &frame)
 //将接收到的图片保存至缓冲区
 void VedioHandler::appendData(char* const buf, int len)
 {
+    static uint32_t imgCnt = 1;
     //qDebug() << "void VedioHandler::appendData(char* const buf, int len):" << len;
     //先将图片字节数据转换为图片QImage，然后添加到缓冲区
     QByteArray imageByteArray(buf,len);
@@ -237,9 +259,13 @@ void VedioHandler::appendData(char* const buf, int len)
     QMutexLocker locker(&m_imageMutex);
 
     bool ok = m_imageBuffer.write(imgPtr);
-    //if(ok)
-    //    qDebug() << "received one image and write to imageBuffer ok. size:" << image.size()
-    //             << "image len: " << len;
+    if(ok)
+    {
+        g_ui->lineEdit_imgCnt->setText(QString::number(++imgCnt));
+        //    qDebug() << "received one image and write to imageBuffer ok. size:" << image.size()
+        //             << "image len: " << len;
+    }
+
 }
 
 void VedioHandler::playVedio()

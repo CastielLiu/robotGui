@@ -1,1 +1,1 @@
-cmd /c "scp * root@202.5.17.216:/root/wendao/remoteCmdHandler && exit"
+cmd /c "scp * ubuntu@62.234.114.48:/home/ubuntu/wendao/remoteCmdHandler && exit"

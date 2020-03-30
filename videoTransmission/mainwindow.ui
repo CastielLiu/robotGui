@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>915</width>
+    <width>1196</width>
     <height>671</height>
    </rect>
   </property>
@@ -16,7 +16,7 @@
   <widget class="QWidget" name="centralWidget">
    <layout class="QHBoxLayout" name="horizontalLayout_3">
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,3,1">
+     <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="3,10,2">
       <item>
        <widget class="QWidget" name="widget_left" native="true">
         <property name="styleSheet">
@@ -79,6 +79,24 @@
           <widget class="QWidget" name="widget" native="true">
            <layout class="QVBoxLayout" name="verticalLayout">
             <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_6">
+              <item>
+               <widget class="QLabel" name="label">
+                <property name="text">
+                 <string>视频计数器：</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="lineEdit_imgCnt">
+                <property name="focusPolicy">
+                 <enum>Qt::NoFocus</enum>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
              <layout class="QHBoxLayout" name="horizontalLayout_7">
               <item>
                <widget class="QPushButton" name="pushButton_call">
@@ -117,6 +135,20 @@
                  </size>
                 </property>
                </spacer>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="checkBox_audio">
+                <property name="text">
+                 <string>音频</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="checkBox_vedio">
+                <property name="text">
+                 <string>视频</string>
+                </property>
+               </widget>
               </item>
              </layout>
             </item>
@@ -329,13 +361,13 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>915</width>
+     <width>1196</width>
      <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_setting">
     <property name="title">
-     <string>setting</string>
+     <string>设置</string>
     </property>
     <addaction name="action_user_id"/>
     <addaction name="action_robotCall_id"/>

@@ -39,6 +39,8 @@ public:
 	bool start();
 	void stop();
 	void bindCallbackFunction(cmdCallBack_t fun){m_cmd_callback = fun;}
+	void setServerAddr(const std::string& ip, uint16_t port);
+	void setRobotId(uint16_t id);
 		
 private: 
 	void receiveThread(const int fd);

@@ -22,11 +22,14 @@ bool UdpSender::startSend(uint16_t dstId)
     m_dstId = dstId;
 
     m_audioRecorder = new AudioHandler;
-    if(!m_audioRecorder->init("record"))
+    bool openAudio = g_ui->checkBox_audio->isChecked();
+    if(openAudio && !m_audioRecorder->startAudioTransmission())
         return false;
 
     m_vedioCaptor = new VedioHandler;
-    if(!m_vedioCaptor->init("record"))
+    bool openVedio = g_ui->checkBox_vedio->isChecked();
+    //qDebug() << "g_ui->checkBox_vedio->isChecked(): " << openVedio;
+    if(openVedio && !m_vedioCaptor->startVedioTransmission())
         return false;
 
     if(g_openRemoteControl)
@@ -77,18 +80,44 @@ void UdpSender::run()
     //在run函数内部分配内存以保证socket使用线程与socket所在线程一致
     m_udpSocket = new QUdpSocket();
     std::cout << "UdpSender: create QUdpSocket in thread: " << QThread::currentThreadId() << std::endl;
-
+    uint32_t cnt = 0;
     while (!this->isInterruptionRequested())
     {
-       //发送消息
+       if(cnt%3==0)
+           m_vedioCaptor->sendImage(m_udpSocket,m_dstId);
+
        m_audioRecorder->sendAudio(m_udpSocket,m_dstId);
-       m_vedioCaptor->sendImage(m_udpSocket,m_dstId);
+
        if(g_openRemoteControl)
            m_remoteControler->sendControlCmd(m_udpSocket,g_robotControlId);
-       QThread::msleep(20);
-       //QThread::sleep(2);
+       QThread::msleep(50);
+       ++cnt;
     }
     m_udpSocket->close();
     delete m_udpSocket;
     m_udpSocket = nullptr;
+}
+
+void UdpSender::openVedio()
+{
+    if(m_vedioCaptor)
+        m_vedioCaptor->startVedioTransmission();
+}
+
+void UdpSender::closeVedio()
+{
+    if(m_vedioCaptor)
+        m_vedioCaptor->stopVedioTransmission();
+}
+
+void UdpSender::openAudio()
+{
+    if(m_audioRecorder)
+        m_audioRecorder->startAudioTransmission();
+}
+
+void UdpSender::closeAudio()
+{
+    if(m_audioRecorder)
+        m_audioRecorder->stopAudioTransmission();
 }

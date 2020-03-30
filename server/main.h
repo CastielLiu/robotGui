@@ -18,6 +18,8 @@
 
 #include <signal.h>
 
+#define ROBOT_TEST_ID 5050
+
 enum dataType
 {
     PkgType_Video=0,          // ”∆µœ˚œ¢

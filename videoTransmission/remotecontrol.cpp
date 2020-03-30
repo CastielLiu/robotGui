@@ -2,8 +2,14 @@
 
 RemoteControl::RemoteControl()
 {
+    //机器人可用速度范围 -127~127
+    //设置机器人速度绝对值，方向由按键决定
     m_xSpeed = 127;
     m_zSpeed = 127;
+
+    //初始化控制指令为0
+    m_ctrlCmdPkg.cmd.xSpeed = 0;
+    m_ctrlCmdPkg.cmd.zSpeed = 0;
 }
 RemoteControl::~RemoteControl()
 {

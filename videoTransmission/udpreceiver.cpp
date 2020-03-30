@@ -199,13 +199,14 @@ void UdpReceiver::onReadyRead()
             pkg.receiverId = callerId;
             pkg.length = 0;
             if(g_canCalled)
+            {
                 pkg.type =  PkgType_AcceptConnect;
+                //启动发送数据
+                emit startChatSignal(callerId);
+            }
             else
                 pkg.type =  PkgType_RefuseConnect;
             m_udpSocket->writeDatagram((char*)&pkg,sizeof(pkgHeader_t),senderip,senderport);
-
-            //启动发送数据
-            emit startChatSignal(callerId);
         }
         else if(PkgType_RefuseConnect == package->type) // 拒绝连接，请求被拒
         {

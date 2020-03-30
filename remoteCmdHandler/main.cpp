@@ -13,7 +13,11 @@ void cmdCallback(controlCmd_t cmd)
 int main()
 {
 	RemoteCmdHandler handler;
+	handler.setServerAddr("62.234.114.48",8617);
+	handler.setRobotId(5050);
 	handler.bindCallbackFunction(&cmdCallback);
+	
+	
 	if(!handler.start())
 		return 0;
 	while(true)

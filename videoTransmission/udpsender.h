@@ -16,6 +16,12 @@ public:
     void stopSend();
     virtual void run() override;
 
+    void openVedio();
+    void closeVedio();
+
+    void openAudio();
+    void closeAudio();
+
 private:
     QUdpSocket *m_udpSocket;
     AudioHandler *m_audioRecorder;

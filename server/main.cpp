@@ -291,7 +291,10 @@ void Server::msgTransmit(const uint8_t* buf, int len)
 {
 	uint16_t srcClientId = ((const transPack_t *)buf)->senderId;
 	uint16_t dstClientId = ((const transPack_t *)buf)->receiverId;
-
+	
+	if(dstClientId == ROBOT_TEST_ID) //机器人端测试ID
+		return; 
+	
 	auto it = clients_.find(dstClientId);
 	if (it == clients_.end()) //未查找到目标客户端 
 	{

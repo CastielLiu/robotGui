@@ -18,6 +18,7 @@
 #include "cameraframegrabber.h"
 #include "cvimagegraber.h"
 #include "circlebuffer.h"
+#include <chrono>
 
 class VedioHandler : public QObject
 {
@@ -26,16 +27,17 @@ public:
     VedioHandler();
     ~VedioHandler();
     bool init(const std::string &mode);
-    void stopCapture();
 
     void sendImage(QUdpSocket *sockect, uint16_t receiverId);
+    bool startVedioTransmission();
+    bool stopVedioTransmission();
 
     void appendData(char* const buf, int len);
     void playVedio();
 
 private:
     void writeImageToBuffer(QImage& image);
-
+    void stopCapture();
 private slots:
     void onImageCaptured(int id, QImage image);
     void modifyShowMode();
@@ -46,6 +48,9 @@ private:
     QCameraImageCapture * m_imageCapture;//截图部件
     CameraFrameGrabber *m_imageGrabber;
     CvImageGraber *m_cvImageGrabber;
+
+    bool m_isVedioOpen;
+    float m_imgScale;
 
     //m_imageBuffer 作为发送器存放要发送的图片
     //作为接收器存放接收到的图片

@@ -6,9 +6,6 @@ RemoteCmdHandler::RemoteCmdHandler():
     m_cmd_callback(NULL),
 	m_registerTimeOut(15) 
 {
-	m_serverIp = "202.5.17.216";
-	m_registerPort = 8617;
-	m_myId = 5050;
 	
 }
 RemoteCmdHandler::~RemoteCmdHandler()
@@ -16,9 +13,31 @@ RemoteCmdHandler::~RemoteCmdHandler()
 	this->stop();
 }
 
+void RemoteCmdHandler::setServerAddr(const std::string& ip, uint16_t port)
+{
+	m_serverIp = ip;
+	m_registerPort = port;
+}
+
+void RemoteCmdHandler::setRobotId(uint16_t id)
+{
+	m_myId = id;
+}
+
 //启动远程控制处理器 
 bool RemoteCmdHandler::start()
 {
+	if(m_serverIp.length()==0)
+	{
+		std::cout << "please set server addr first!" << std::endl;
+		return false;
+	}
+	if(m_myId==0)
+	{
+		std::cout << "please set robot id first!" << std::endl;
+		return false;
+	}
+	
 	m_fd = initSocket(); //初始化socket 
 	
 	//配置服务器地址 (注册地址) 

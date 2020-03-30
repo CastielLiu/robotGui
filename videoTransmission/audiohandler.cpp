@@ -1,29 +1,33 @@
 #include "audiohandler.h"
 
 AudioHandler::AudioHandler():
-    m_input(nullptr),
-    m_tempRecorderBuf(nullptr)
+    m_sampleRate(8000),
+    m_channelCount(1),
+    m_sampleSize(16),
+    m_audioTimePerFrame(60),
+    m_audioSizePerFrame(m_sampleRate*m_channelCount*m_sampleSize/8*m_audioTimePerFrame/1000),
+    m_maxAudioBufLen(m_audioSizePerFrame*50),
+    m_isAudioOpen(false),
+    m_input(nullptr)
 {
      std::cout << "create AudioHandler in thread: " << QThread::currentThreadId() << std::endl;
+     m_audioBuffer = new char[m_maxAudioBufLen];
 }
 
 AudioHandler::~AudioHandler()
 {
-    if(m_tempRecorderBuf!=nullptr)
-        delete [] m_tempRecorderBuf;
-    if(m_input != nullptr)
-    {
-        m_input->stop();
-        delete m_input;
-    }
+    this->stopAudioTransmission();
+    delete [] m_audioBuffer;
 }
 
 bool AudioHandler::init(const std::string& mode)
 {
     if(mode == "record")//录制
-        startRead(8000,1,16);
+    {
+        startRead(m_sampleRate,m_channelCount,m_sampleSize);
+    }
     else if(mode == "play")//播放
-        configPlayer(8000,1,16,100);
+        configPlayer(m_sampleRate,m_channelCount,m_sampleSize,1.0);
     else
     {
         qDebug() << "AudioHandler init mode: play or record!";
@@ -33,15 +37,42 @@ bool AudioHandler::init(const std::string& mode)
 }
 
 /* 以下为捕获声音相关函数 */
+bool AudioHandler::startAudioTransmission()
+{
+    if(m_isAudioOpen) return false;
+
+    if(this->init("record"))
+    {
+        m_isAudioOpen = true;
+        return true;
+    }
+    return false;
+}
+
+bool AudioHandler::stopAudioTransmission()
+{
+    if(!m_isAudioOpen) return false;
+
+    m_isAudioOpen = false;
+
+    if(m_input != nullptr)
+    {
+        m_input->stop();
+        delete m_input;
+    }
+
+    if(m_file.isOpen())
+        m_file.close();
+    return true;
+}
+
 void AudioHandler::startRead(int samplerate, int channelcount, int samplesize)
 {
     //std::cout << "start reading audio..." << std::endl;
-    m_tempRecorderBuf = new char[960];
 
     QAudioFormat format = setAudioFormat(samplerate,channelcount,samplesize);
     m_input = new QAudioInput(format,this);
     m_inputDevice = m_input->start();
-
     connect(m_inputDevice,SIGNAL(readyRead()),this,SLOT(onReadyRead()));
 }
 
@@ -59,70 +90,64 @@ QAudioFormat AudioHandler::setAudioFormat(int samplerate, int channelcount, int 
 
 void AudioHandler::onReadyRead()
 {
-    // read audio from input device
-    qint64 len = m_inputDevice->read(m_tempRecorderBuf,960);
-    if(len <=0 )
-        return;
     QMutexLocker locker(&m_audioSendMutex);
 
-    //录制缓冲区溢出，清空数据并重置发送指针
-    if(m_recoderBuffer.size() > MAX_AUDIO_BUF_LEN )
-    {
-        m_recoderBuffer.clear();
-        m_currentSendIndex = 0;
-        return;
-    }
-    m_recoderBuffer.append(m_tempRecorderBuf,len);
+    // read audio from input device
+    int remained = m_maxAudioBufLen - m_writeIndex; //buf末尾空闲位置个数
+
+    qint64 len;
+    if(remained < m_audioSizePerFrame) //剩余空间不足以放下一帧语音
+        len =m_inputDevice->read(m_audioBuffer+m_writeIndex,remained); //只读出一部分
+    else
+        len =m_inputDevice->read(m_audioBuffer+m_writeIndex,m_audioSizePerFrame);
+
+    m_writeIndex += len; //更新写指针位置
+    m_writeIndex%=m_maxAudioBufLen;
 }
 
-//发送60ms的音频数据
 /*
  * sockect   @sockect指针
  * receiverId @消息接受者id
  */
 void AudioHandler::sendAudio(QUdpSocket* sockect, uint16_t receiverId)
 {
+    if(!m_isAudioOpen) return;
+
     QMutexLocker locker(&m_audioSendMutex);
 
-    //剩余语音长度小于60ms，不发送
-    if(m_recoderBuffer.size() < m_currentSendIndex + AUDIO_LEN_60ms)
+    //剩余语音长度不足一帧，不发送
+    int canSendLen = (m_writeIndex-m_readIndex+m_maxAudioBufLen)%m_maxAudioBufLen;
+    if(canSendLen < m_audioSizePerFrame)
         return;
-    else
-    {
-        //从m_recoderBuffer中拷贝60ms的音频并发送
-        char *sendData = new char[sizeof(pkgHeader_t)+AUDIO_LEN_60ms];
 
-        pkgHeader_t *package = (pkgHeader_t *)sendData;
-        package->head[0] = 0x66;
-        package->head[1] = 0xcc;
-        package->type = PkgType_Audio;
-        package->length = AUDIO_LEN_60ms;
-        package->checkNum = 0;
-        package->senderId = g_myId;
-        package->receiverId = receiverId;
+    //从buffer中拷贝一帧音频并发送
+    char *sendData = new char[sizeof(pkgHeader_t)+m_audioSizePerFrame];
 
-        memcpy(sendData+sizeof(pkgHeader_t),&m_recoderBuffer.data()[m_currentSendIndex], AUDIO_LEN_60ms);
-        sockect->writeDatagram(sendData,sizeof(pkgHeader_t)+AUDIO_LEN_60ms,g_serverIp,g_msgPort);
+    pkgHeader_t *package = (pkgHeader_t *)sendData;
+    package->head[0] = 0x66;
+    package->head[1] = 0xcc;
+    package->type = PkgType_Audio;
+    package->length = m_audioSizePerFrame;
+    package->checkNum = 0;
+    package->senderId = g_myId;
+    package->receiverId = receiverId;
 
-        //std::cout << "send data in thread: " << QThread::currentThreadId()  << "g_msgPort:" << g_msgPort << std::endl;
-        m_currentSendIndex += AUDIO_LEN_60ms;
-        //qDebug()<<m_currentSendIndex;
-        delete []sendData;
+    memcpy(sendData+sizeof(pkgHeader_t),m_audioBuffer+m_readIndex , m_audioSizePerFrame);
+    m_readIndex += m_audioSizePerFrame;
+    m_readIndex %= m_maxAudioBufLen;
+    locker.unlock();
 
-        //发送索引超出最大期望值，重置缓冲区
-        if(m_currentSendIndex > MAX_AUDIO_BUF_LEN)
-        {
-            // 将m_recoderBuffer右侧剩余的字节赋值给新的m_recoderBuffer
-            m_recoderBuffer = m_recoderBuffer.right(m_recoderBuffer.size()-MAX_AUDIO_BUF_LEN);
-            m_currentSendIndex -= MAX_AUDIO_BUF_LEN;
-        }
-    }
+    sockect->writeDatagram(sendData,sizeof(pkgHeader_t)+m_audioSizePerFrame,g_serverIp,g_msgPort);
+
+    //std::cout << "send data in thread: " << QThread::currentThreadId()  << "g_msgPort:" << g_msgPort << std::endl;
+
+    delete []sendData;
 }
 
 
 /* 以下为播放声音相关函数 */
 
-void AudioHandler::configPlayer(int sampleRate, int channelCount, int sampleSize,int volumn)
+void AudioHandler::configPlayer(int sampleRate, int channelCount, int sampleSize,qreal volumn)
 {
     QMutexLocker locker(&m_audioPlayMutex);
 
@@ -145,36 +170,40 @@ void AudioHandler::configPlayer(int sampleRate, int channelCount, int sampleSize
 //将收到的语音消息添加进语音缓冲区，等待播放
 void AudioHandler::appendData(char* const buf, int len)
 {
+    /*if(!m_file.isOpen())
+    {
+        QString file_name = QDir::currentPath() +"/audio";
+        g_ui->statusBar->showMessage(file_name);
+        m_file.setFileName(file_name);
+        bool ok = m_file.open(QIODevice::WriteOnly);
+        g_ui->statusBar->showMessage(file_name+" " + QString::number(ok));
+    }
+    m_file.write(buf,len);*/
+
     QMutexLocker locker(&m_audioPlayMutex);
-    m_PCMDataBuffer.append(buf, len);
-    //qDebug()<< "m_PCMDataBuffer.append";
+
+    int remained = m_maxAudioBufLen - m_writeIndex; //buf末尾空闲位置个数
+    if(remained < len) //空间不足
+    {
+        memcpy(m_audioBuffer+m_writeIndex,buf,remained); //先拷贝一部分到buf尾部
+        memcpy(m_audioBuffer,buf+remained,len-remained); //再拷贝剩下的到buf头部
+
+    }
+    else //空间足够，直接拷贝
+        memcpy(m_audioBuffer+m_writeIndex,buf,len);
+    m_writeIndex += len; //更新写指针位置
+    m_writeIndex = m_writeIndex%m_maxAudioBufLen;
 }
 
 void AudioHandler::playAudio()
 {
     QMutexLocker locker(&m_audioPlayMutex);
-    //qDebug()<<m_currentPlayIndex << "\t" << m_PCMDataBuffer.size();
-    //剩余语音长度小于60ms，不播放
-    if(m_PCMDataBuffer.size() < m_currentPlayIndex + AUDIO_LEN_60ms)
+    int canPlayLen = (m_writeIndex-m_readIndex+m_maxAudioBufLen)%m_maxAudioBufLen;
+    if(canPlayLen < 3*m_audioSizePerFrame) //可播放长度小于一帧音频长度的3倍
         return;
-    else
-    {
-        //从m_PCMDataBuffer中拷贝60ms的音频并播放
-       /* char *writeData = new char[AUDIO_LEN_60ms];
-        memcpy(writeData,&m_PCMDataBuffer.data()[m_currentPlayIndex], AUDIO_LEN_60ms);
-        m_AudioIo->write(writeData, AUDIO_LEN_60ms);
-        delete [] writeData;*/
 
-        m_AudioIo->write(&m_PCMDataBuffer.data()[m_currentPlayIndex], AUDIO_LEN_60ms);
-        m_currentPlayIndex += AUDIO_LEN_60ms;
-
-        //索引超出最大期望值，重置缓冲区
-        if(m_currentPlayIndex > MAX_AUDIO_BUF_LEN)
-        {
-            // 将m_PCMDataBuffer右侧剩余的字节赋值给新的m_PCMDataBuffer
-            m_PCMDataBuffer = m_PCMDataBuffer.right(m_PCMDataBuffer.size()-MAX_AUDIO_BUF_LEN);
-            m_currentPlayIndex -= MAX_AUDIO_BUF_LEN;
-        }
-    }
+    qint64 len = m_AudioIo->write(m_audioBuffer+m_readIndex , canPlayLen);
+    m_readIndex += len;
+    m_readIndex = m_readIndex%m_maxAudioBufLen;
 }
 
