@@ -8,7 +8,7 @@ std::shared_ptr<QImage> VedioHandler::m_tempImage = nullptr;
 #define CAMERA_FRAME_GRABER 2
 #define CV_IMAGE_GRABER 3
 
-#define WHAT_CAMERE_TOOL CV_IMAGE_GRABER
+#define WHAT_CAMERE_TOOL QCAMERA_IMAGE_CAPTURE
 
 VedioHandler::VedioHandler():
     m_camera(nullptr),
@@ -20,7 +20,7 @@ VedioHandler::VedioHandler():
     m_isVedioOpen(false)
 {
     m_imageBuffer.setSize(10);
-    m_imgScale = 0.5;
+    m_imgScale = 0.4;
 }
 
 VedioHandler::~VedioHandler()
@@ -207,8 +207,11 @@ void VedioHandler::onImageCaptured(int id,QImage image)
 void VedioHandler::writeImageToBuffer(QImage& image)
 {
     QSize size = image.size();
-    image = image.scaled(int(size.width()*m_imgScale),int(size.height()*m_imgScale));
-    std::shared_ptr<QImage> imgPtr = std::shared_ptr<QImage>(new QImage(image));
+    size.setWidth(int(size.width() * m_imgScale));
+    size.setHeight(int(size.height() * m_imgScale));
+
+    std::shared_ptr<QImage> imgPtr =
+            std::shared_ptr<QImage>(new QImage(image.scaled(size)));
 
     m_imageMutex.lock();
     m_imageBuffer.write(imgPtr);
@@ -242,30 +245,23 @@ void VedioHandler::onImageGrabed(const QVideoFrame &frame)
 void VedioHandler::appendData(char* const buf, int len)
 {
     static uint32_t imgCnt = 1;
-    //qDebug() << "void VedioHandler::appendData(char* const buf, int len):" << len;
+
     //先将图片字节数据转换为图片QImage，然后添加到缓冲区
-    QByteArray imageByteArray(buf,len);
+    QByteArray imageByteArray = QByteArray::fromRawData(buf,len); //不拷贝
+    //QByteArray imageByteArray(buf,len); //拷贝
     QBuffer buffer(&imageByteArray);
     buffer.open(QIODevice::ReadOnly);
     QImageReader reader(&buffer,"JPG");
-
-    //qDebug() << "receive " <<imageByteArray ;
 
     //读取图片，通过拷贝构造函数生成智能指针
     std::shared_ptr<QImage> imgPtr = std::shared_ptr<QImage>(new QImage(reader.read()));
     // qDebug() << reader.errorString() << " " << reader.error();
 
-
     QMutexLocker locker(&m_imageMutex);
 
     bool ok = m_imageBuffer.write(imgPtr);
-    if(ok)
-    {
-        g_ui->lineEdit_imgCnt->setText(QString::number(++imgCnt));
-        //    qDebug() << "received one image and write to imageBuffer ok. size:" << image.size()
-        //             << "image len: " << len;
-    }
 
+    g_ui->lineEdit_imgCnt->setText(QString::number(++imgCnt));
 }
 
 void VedioHandler::playVedio()
@@ -274,8 +270,9 @@ void VedioHandler::playVedio()
     std::shared_ptr<QImage> imgPtr;
 
     QMutexLocker locker(&m_imageMutex);
-   // qDebug() << "data cnt in buffer: " << m_imageBuffer.getDataCnt();
+
     bool ok = m_imageBuffer.read(imgPtr);
+
     locker.unlock();
 
     //image=image.convertToFormat(QImage::Format_RGB888);
@@ -286,7 +283,7 @@ void VedioHandler::playVedio()
             g_ui->label_showImageMain->setPixmap(
                         QPixmap::fromImage(m_tempImage->scaled(g_ui->label_showImageMain->size())));
         m_tempImageMutex.unlock();
-        if(ok)
+        if(ok && !imgPtr->isNull())
             m_myQlabel->setPixmap(QPixmap::fromImage(imgPtr->scaled(m_myQlabel->size())));
     }
     else //我方小图
@@ -296,7 +293,7 @@ void VedioHandler::playVedio()
             m_myQlabel->setPixmap(QPixmap::fromImage(m_tempImage->scaled(m_myQlabel->size())));
         m_tempImageMutex.unlock();
 
-        if(ok)
+        if(ok && !imgPtr->isNull())
             g_ui->label_showImageMain->setPixmap(
                         QPixmap::fromImage(imgPtr->scaled(g_ui->label_showImageMain->size())));
     }

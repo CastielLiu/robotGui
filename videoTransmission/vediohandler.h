@@ -52,10 +52,12 @@ private:
     bool m_isVedioOpen;
     float m_imgScale;
 
-    //m_imageBuffer 作为发送器存放要发送的图片
+    //m_imageBuffer
+    //作为发送器存放要发送的图片
     //作为接收器存放接收到的图片
     QMutex m_imageMutex;
     CircleBuffer<std::shared_ptr<QImage> > m_imageBuffer;
+    std::shared_ptr<QImage> m_receivedImage = nullptr;
 
     //类静态成员函数需要在类的外部分配内存空间
     //m_tempImage 存放本地捕获的图片，用于显示
