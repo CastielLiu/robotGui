@@ -12,7 +12,7 @@ QHostAddress g_serverIp;
 quint16 g_registerPort; //服务器接收注册信息的端口号
 
 quint16 g_msgPort;                   //服务器接收数据的端口号
-int g_registerStatus = 0;  //客户端注册状态 0未注册，1注册中，2已注册
+int g_registerStatus = RegisterStatus_None;
 bool g_isCaller = false;  //当前是否为主叫方
 
 uint16_t g_robotCallId = 0; //机器人视频通话ID

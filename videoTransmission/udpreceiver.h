@@ -5,6 +5,7 @@
 #include "audiohandler.h"
 #include "vediohandler.h"
 #include <ctime>
+#include <QTimer>
 
 class UdpReceiver: public QThread
 {
@@ -28,11 +29,15 @@ signals:
     void stopChatSignal();
     void logoutSignal();
     void calledBusy();
+    void updateRegisterStatus(int status);
+    void showMsgInStatusBar(const QString& msg,int timeout=0);
 private:
     void handleVedioMsg(char * const buf);
     void handleAudioMsg(char * const buf);
     void registerToServerThread();
+    void registerToServerInMainThread();
     void heartBeatThread();
+    void timerEvent(QTimerEvent *event) override;
 
 private:
     QUdpSocket *m_udpSocket;
@@ -44,6 +49,7 @@ private:
 
     QMutex m_heartBeatMutex;
     std::time_t m_serverLastHeartBeatTime = 0;
+    int m_registerTimerId;
 };
 
 #endif // UDPRECEIVER_H

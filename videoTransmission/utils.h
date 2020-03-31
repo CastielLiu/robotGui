@@ -13,6 +13,14 @@
 #include <QThread>
 #include <thread>
 
+//客户端注册状态 0未注册，1注册中，2已注册
+enum RegisterStatus
+{
+    RegisterStatus_None = 0, //未注册
+    RegisterStatus_Ing = 1, //注册中
+    RegisterStatus_Ok = 2, //已注册
+};
+
 // 消息类型
 enum PkgType
 {

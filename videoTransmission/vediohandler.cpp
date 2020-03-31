@@ -8,7 +8,7 @@ std::shared_ptr<QImage> VedioHandler::m_tempImage = nullptr;
 #define CAMERA_FRAME_GRABER 2
 #define CV_IMAGE_GRABER 3
 
-#define WHAT_CAMERE_TOOL QCAMERA_IMAGE_CAPTURE
+#define WHAT_CAMERE_TOOL CV_IMAGE_GRABER
 
 VedioHandler::VedioHandler():
     m_camera(nullptr),
@@ -20,7 +20,7 @@ VedioHandler::VedioHandler():
     m_isVedioOpen(false)
 {
     m_imageBuffer.setSize(10);
-    m_imgScale = 0.4;
+    m_imgScale = 0.5;
 }
 
 VedioHandler::~VedioHandler()

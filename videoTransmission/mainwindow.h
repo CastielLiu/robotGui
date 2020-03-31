@@ -32,16 +32,15 @@ private slots:
     void onCalledBusy();
     void logout();
     void login();
+    void updateRegisterStatus(int status);
+    void showMsgInStatusBar(const QString& msg,int timeout=0);
 
     //action slots
     void onActionUserId();
     void onActionAutoLogin();
     void onActionRobotCallId();
     void onActionRobotControlId();
-
-
     void on_checkBox_vedio_stateChanged(int arg1);
-
     void on_checkBox_audio_stateChanged(int arg1);
 
 private:

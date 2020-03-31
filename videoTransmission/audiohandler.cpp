@@ -6,7 +6,7 @@ AudioHandler::AudioHandler():
     m_sampleSize(16),
     m_audioTimePerFrame(60),
     m_audioSizePerFrame(m_sampleRate*m_channelCount*m_sampleSize/8*m_audioTimePerFrame/1000),
-    m_maxAudioBufLen(m_audioSizePerFrame*50),
+    m_maxAudioBufLen(m_audioSizePerFrame*500),
     m_isAudioOpen(false),
     m_input(nullptr)
 {

@@ -100,7 +100,7 @@ private:
 	int initSocket(const int port=0, const std::string ip = "0.0.0.0", int time_out=0); 
 	int initSocketAutoAssignPort(uint16_t& port);
 	void receiveRegisterThread();
-	void receiveAndTransThread(int server_fd); 
+	void receiveAndTransThread(int server_fd, uint16_t clientId);
 	
 	void heartBeatThread();
 	void printThread(int interval); 

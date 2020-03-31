@@ -37,40 +37,68 @@ UdpReceiver::~UdpReceiver()
 //此处只需启动一个注册线程
 void UdpReceiver::registerToServer()
 {
-    std::thread t(&UdpReceiver::registerToServerThread,this);
-    t.detach();
+    //std::thread t(&UdpReceiver::registerToServerThread,this);
+    //t.detach();
+    registerToServerInMainThread();
 }
 
 //注册到服务器线程函数
 //此线程循环发送请求注册信息到服务器，直到注册成功或超时
+//经测试，在新线程中发送注册消息可实现用户注册，
+//但当同时执行两个应用时，第二个无法注册,提示无法在子线程blabla
 void UdpReceiver::registerToServerThread()
 {
-    qDebug() << "registerToServerThread in: " << QThread::currentThread() ;
+    emit this->updateRegisterStatus(RegisterStatus_Ing);
+
+    std::cout << "registerToServerThread in: " << QThread::currentThread() << std::endl;
     pkgHeader_t package;
     package.type = PkgType_RequestRegister;
     package.senderId = g_myId;
+    package.receiverId = 0;
     int cnt = 0;
-    g_registerStatus = 1;
+
     qDebug() << "registering to server...";
-    while(g_registerStatus == 1) //登陆中(循环登录)
+    while(g_registerStatus == RegisterStatus_Ing) //登陆中(循环登录)
     {
         m_udpSocket->writeDatagram((char *)&package,
                    sizeof(package), g_serverIp,g_registerPort);
 
         QThread::msleep(1000);
-        if(++cnt > 15)
+        //qDebug() << "bytesAvailable::" << m_udpSocket->bytesAvailable();
+        if(++cnt > 10)
         {
-            g_registerStatus = 0;
-            g_ui->label_registerStatus->setText("login");
+            emit this->updateRegisterStatus(RegisterStatus_None);
+
             qDebug() << "login time out!";
             break;
         }
     }
-    if(g_registerStatus == 2) //登录成功
-    {
-        g_ui->label_registerStatus->setText("logout");
-    }
+}
 
+void UdpReceiver::registerToServerInMainThread()
+{
+    emit updateRegisterStatus(RegisterStatus_Ing);
+
+    pkgHeader_t package(PkgType_RequestRegister);
+    package.senderId = g_myId;
+    package.receiverId = 0;
+
+    m_udpSocket->writeDatagram((char *)&package,
+               sizeof(package), g_serverIp,g_registerPort);
+    m_registerTimerId = this->startTimer(10000); //启动10s定时器
+}
+
+void UdpReceiver::timerEvent(QTimerEvent *event)
+{
+    if(event->timerId() == m_registerTimerId)
+    {
+        killTimer(m_registerTimerId);//一定要关掉定时器，否则将被循环触发
+        if(g_registerStatus != RegisterStatus_Ok)
+        {
+            qDebug() << "register overtime!";
+            emit this->updateRegisterStatus(RegisterStatus_None);
+        }
+    }
 }
 
 //确认注册
@@ -81,6 +109,7 @@ void UdpReceiver::confirmRegister(quint16 serverPort)
     qDebug() << "confirmRegister... port:" <<  serverPort;
     pkgHeader_t package(PkgType_RequestRegister);
     package.senderId = g_myId;
+    package.receiverId = 0;
     for(int i=0; i<3; ++i)
     {
         qDebug() << "try to send msg to new port:" <<  serverPort;
@@ -97,8 +126,6 @@ void UdpReceiver::logout()
     pkgHeader_t LogOutPkg(PkgType_LogOut);
     m_udpSocket->writeDatagram((char *)&LogOutPkg,
                sizeof(LogOutPkg), g_serverIp,g_msgPort);
-
-    g_registerStatus = 0;
     stopPlayMv();
 }
 
@@ -174,7 +201,7 @@ void UdpReceiver::onReadyRead()
         else if(PkgType_RegisterOK == package->type) //服务器回应注册成功
         {
             g_msgPort = senderport; //记录服务器数据端口号
-            g_registerStatus = 2;
+            emit this->updateRegisterStatus(RegisterStatus_Ok);
             //启动心跳线程
             std::thread t(&UdpReceiver::heartBeatThread,this);
             t.detach();
@@ -182,7 +209,7 @@ void UdpReceiver::onReadyRead()
         else if(PkgType_RegisterFail == package->type) //服务器回应注册失败
         {
             qDebug() << "register failed!" ;
-            g_registerStatus = 0;
+            emit this->updateRegisterStatus(RegisterStatus_None);
         }
         else if(PkgType_RequestConnect == package->type) //请求连接
         {
@@ -230,7 +257,7 @@ void UdpReceiver::onReadyRead()
         else if(PkgType_HeartBeat == package->type)
         {
             m_heartBeatMutex.lock();
-            m_serverLastHeartBeatTime = time(0);
+            m_serverLastHeartBeatTime = time(nullptr);
             m_heartBeatMutex.unlock();
         }
         //以上消息类型为指令消息
@@ -283,7 +310,7 @@ void UdpReceiver::heartBeatThread()
     pkgHeader_t heartBeatPkg(PkgType_HeartBeat);
     heartBeatPkg.senderId = g_myId;
 
-    while(g_registerStatus == 2)
+    while(g_registerStatus == RegisterStatus_Ok)
     {
         m_heartBeatMutex.lock();
         //qDebug() << m_serverLastHeartBeatTime << "\t" << m_serverLastHeartBeatTime-time(0) ;

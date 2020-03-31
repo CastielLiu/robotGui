@@ -20,6 +20,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->label_registerStatus->setOpenClickEvent(true);
     connect(ui->label_registerStatus,SIGNAL(clicked()),this,SLOT(onLableRegisterStatusClicked()));
     ui->label_registerStatus->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter); //设置label文字居中
+    ui->checkBox_audio->setCheckState(Qt::CheckState::Checked);
 
     //连接action信号槽
     connect(ui->action_user_id,SIGNAL(triggered()),this,SLOT(onActionUserId()));
@@ -35,12 +36,10 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_udpReceiver,SIGNAL(stopChatSignal()),this,SLOT(stopChat()));
     connect(m_udpReceiver,SIGNAL(logoutSignal()),this,SLOT(logout()));
     connect(m_udpReceiver,SIGNAL(calledBusy()),this,SLOT(onCalledBusy()));
+    connect(m_udpReceiver,SIGNAL(updateRegisterStatus(int)),this,SLOT(updateRegisterStatus(int)));
 
     if(m_autoRegister)
-    {
-        m_udpReceiver->registerToServer();
-        ui->label_registerStatus->setText("logging in");
-    }
+        this->login();
 
     //debug
 }
@@ -61,7 +60,7 @@ void MainWindow::startChat(uint16_t id)
     ui->pushButton_call->setChecked(true);
     ui->pushButton_call->setText("disconnect");
 
-    m_udpSender = new UdpSender();
+    m_udpSender = new UdpSender;
     m_udpSender->startSend(id);
     m_udpReceiver->startPlayMv();
 }
@@ -86,21 +85,33 @@ void MainWindow::stopChat()
 //与服务器失去连接被动退出
 void MainWindow::logout()
 {
-    g_registerStatus = 0;
+    this->updateRegisterStatus(RegisterStatus_None);
     this->stopChat();
     m_udpReceiver->logout();
 
-    ui->label_registerStatus->setText("login");
 }
 
 void MainWindow::login()
 {
-    g_registerStatus =1;
-    ui->label_registerStatus->setText("logging in, click cancel");
-    //qDebug() << "click event in thread" << QThread::currentThread() ;
+    this->updateRegisterStatus(RegisterStatus_Ing);
     m_udpReceiver->registerToServer();
 }
 
+void MainWindow::updateRegisterStatus(int status)
+{
+    g_registerStatus = status;
+    if(RegisterStatus_None == g_registerStatus)
+        ui->label_registerStatus->setText("login");
+    else if(RegisterStatus_Ing == g_registerStatus)
+        ui->label_registerStatus->setText("logging in, click cancel");
+    else if(RegisterStatus_Ok == g_registerStatus)
+        ui->label_registerStatus->setText("logout");
+}
+
+void MainWindow::showMsgInStatusBar(const QString& msg,int timeout)
+{
+    ui->statusBar->showMessage(msg, timeout);
+}
 
 void MainWindow::on_pushButton_call_clicked()
 {
@@ -108,7 +119,7 @@ void MainWindow::on_pushButton_call_clicked()
     {
         uint16_t dstId = g_robotCallId;
 
-        if(g_registerStatus != 2 )
+        if(g_registerStatus != RegisterStatus_Ok )
             ui->statusBar->showMessage("Please login firstly!",5000);
         else if(g_robotCallId == 0 )
             ui->statusBar->showMessage("Please set robot communicate id",5000);
@@ -132,6 +143,7 @@ void MainWindow::on_pushButton_call_clicked()
 //被叫忙
 void MainWindow::onCalledBusy()
 {
+    showMsgInStatusBar("The subscriber you dialed is offline!",3000);
     this->stopChat();
 }
 
@@ -154,47 +166,12 @@ void MainWindow::closeEvent(QCloseEvent *event)
     }
 }
 
-void MainWindow::onActionUserId()
-{
-    QInputDialog dia(this);
-    dia.setWindowTitle("Set User Id");
-    dia.setLabelText("Please input id: ");
-    dia.setInputMode(QInputDialog::TextInput);//可选参数：DoubleInput  TextInput
-    dia.setTextValue(QString::number(g_myId));
-    if(dia.exec() == QInputDialog::Accepted)
-    {
-       g_myId = dia.textValue().toUInt();
-       if(g_myId == 0)
-       {
-           ui->statusBar->showMessage("error, please input again",1000);
-           onActionUserId(); //输入错误后再次调用本函数
-       }
-       QString msg = QString("Set User Id ") + QString::number(g_myId) + " ok.";
-       ui->statusBar->showMessage(msg, 3000);
-    }
-}
-
 void MainWindow::onLableRegisterStatusClicked()
 {
-    //0未登陆，1登陆中，2已登录
-    if(g_registerStatus == 0)
+    if(g_registerStatus == RegisterStatus_None)
         this->login();
-    else if(g_registerStatus == 1)
+    else if(g_registerStatus != RegisterStatus_None)
         this->logout();
-    else if(g_registerStatus == 2)
-        this->logout();
-
-}
-
-void MainWindow::onActionAutoLogin()
-{
-    int button = QMessageBox::question(this, tr("自动登录设置"),
-                                   QString(tr("下次自动登录？")),
-                                   QMessageBox::Yes | QMessageBox::No);
-    if (button == QMessageBox::No)
-        m_autoRegister = true;
-    else
-        m_autoRegister = false;
 }
 
 void MainWindow::savePerformance()
@@ -232,12 +209,44 @@ void MainWindow::loadPerformance()
     delete config;
 }
 
+void MainWindow::onActionUserId()
+{
+    QInputDialog dia(this);
+    dia.setWindowTitle("Set User Id");
+    dia.setLabelText("Please input id: ");
+    dia.setInputMode(QInputDialog::TextInput);//可选参数：DoubleInput  TextInput
+    dia.setTextValue(QString::number(g_myId));
+    if(dia.exec() == QInputDialog::Accepted)
+    {
+       g_myId = dia.textValue().toUInt();
+       if(g_myId == 0)
+       {
+           ui->statusBar->showMessage("error, please input again",1000);
+           onActionUserId(); //输入错误后再次调用本函数
+       }
+       QString msg = QString("Set User Id ") + QString::number(g_myId) + " ok.";
+       ui->statusBar->showMessage(msg, 3000);
+    }
+}
+
+void MainWindow::onActionAutoLogin()
+{
+    int button = QMessageBox::question(this, tr("自动登录设置"),
+                                   QString(tr("下次自动登录？")),
+                                   QMessageBox::Yes | QMessageBox::No);
+    if (button == QMessageBox::Yes)
+        m_autoRegister = true;
+    else
+        m_autoRegister = false;
+}
+
 void MainWindow::onActionRobotCallId()
 {
     QInputDialog dialog(this);
     dialog.setWindowTitle(tr("设置机器人通话ID")); //窗口名称
     dialog.setLabelText("请输入: "); //输入提示
     dialog.setInputMode(QInputDialog::TextInput);//可选参数：DoubleInput  TextInput IntInput
+    dialog.setTextValue(QString::number(g_robotCallId));
 
     if(dialog.exec() == QInputDialog::Accepted)
     {
@@ -255,8 +264,8 @@ void MainWindow::onActionRobotControlId()
     QInputDialog dialog(this);
     dialog.setWindowTitle(tr("设置机器人控制ID")); //窗口名称
     dialog.setLabelText("请输入: "); //输入提示
-
     dialog.setInputMode(QInputDialog::TextInput);//可选参数：DoubleInput  TextInput IntInput
+    dialog.setTextValue(QString::number(g_robotControlId));
 
     if(dialog.exec() == QInputDialog::Accepted)
     {

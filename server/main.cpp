@@ -20,12 +20,10 @@ bool Server::run_flag = true;
 Server::Server(int port):
 	register_port_(port)
 {
-
 }
 
 Server::~Server()
 {
-
 }
 
 //初始化socket返回句柄
@@ -111,7 +109,7 @@ int Server::initSocketAutoAssignPort(uint16_t& port)
 void Server::receiveRegisterThread()
 {
 	int register_fd = initSocket(register_port_); //初始化注册socket 
-	showSocketMsg("register sockect ",register_fd);
+	//showSocketMsg("register sockect ",register_fd);
 	
 	const int BufLen =20;
 	uint8_t *recvbuf = new uint8_t [BufLen];
@@ -133,17 +131,27 @@ void Server::receiveRegisterThread()
 		uint16_t clientId = pkg->senderId;
 		auto it = clients_.find(clientId);
 		if (it != clients_.end()) //查找到目标客户端 ,表明已经注册
+		{
+			//cout << "client id: " << clientId << "has in map\n";
 			continue; 
-		
-		cout << "receiveRegisterMsg, client id:  " << pkg->senderId << "\t msg len:" << len << endl;
+		}
+			
+		cout << "client id:  " << pkg->senderId  << " request register... " << endl;
 		
 		clientInfo_t client;
 		client.addr = client_addr;
 		client.connect = false; //此时客户端与服务端还未建立真正的连接 
 		clients_[clientId] = client; //新注册的客户端填入map 
-		//为新注册的客户端新创建一个服务套接字
+		
+		//cout << "write clientId: " << clientId << "to map\n";
+		 	
 		uint16_t new_port;
+		
+		//为新注册的客户端新创建一个服务套接字
 		int server_fd = initSocketAutoAssignPort(new_port);
+		//启动接收和转发线程 
+		std::thread t(&Server::receiveAndTransThread,this,server_fd, clientId);
+		t.detach();
 		
 		//向客户端回应为其分配的新端口号信息 
 		transPack_t pkg;
@@ -157,10 +165,6 @@ void Server::receiveRegisterThread()
 		buf[headerLen+1] = new_port/256;
 		sendto(register_fd, buf, headerLen+pkg.length, 0, 
 				(struct sockaddr*)&client_addr, sizeof(sockaddr_in));
-		
-		//启动接收和转发线程 
-		std::thread t(&Server::receiveAndTransThread,this,server_fd);
-		t.detach();
 	}
 	
 	delete [] recvbuf;
@@ -168,51 +172,57 @@ void Server::receiveRegisterThread()
 
 //接收客户端信息并进行转发的线程 
 //客户端断开连接后关闭线程 
-void Server::receiveAndTransThread(int server_fd)
+void Server::receiveAndTransThread(int server_fd, uint16_t clientId)
 {
 	const int BufLen1 =2*sizeof(transPack_t);
 	uint8_t *recvbuf = new uint8_t [BufLen1];
 	const transPack_t *pkg = (const transPack_t *)recvbuf;
 	struct sockaddr_in client_addr;
 	socklen_t clientLen = sizeof(client_addr);
-	uint16_t clientId;
-	while(run_flag)
+	
+	//配置为非阻塞，并设置超时时间 
+	struct timeval timeout;
+    timeout.tv_sec = 10;//秒
+    //timeout.tv_usec = 0;//微秒
+    setsockopt(server_fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+    
+	cout << "new thread start to receive msgs..." << endl;
+	int len = recvfrom(server_fd, recvbuf, BufLen1,0,(struct sockaddr*)&client_addr, &clientLen);
+	if(len <=0 || //接收超时 
+	   recvbuf[0] != 0x66 || recvbuf[1] != 0xcc || //包头错误 
+	   pkg->type != PkgType_RequestRegister ||  //指令错误 
+	   clientId != pkg->senderId ) //id不匹配 
 	{
-		//cout << "new thread start to receive msgs..." << endl;
-		int len = recvfrom(server_fd, recvbuf, BufLen1,0,(struct sockaddr*)&client_addr, &clientLen);
-		cout << "new thread received msgs. length: " << len << endl;
-		if(recvbuf[0] != 0x66 || recvbuf[1] != 0xcc || pkg->type != PkgType_RequestRegister)
-			continue;
-		clientId = pkg->senderId;
-		clients_[clientId].connect = true; //连接成功
-		clients_[clientId].addr = client_addr; //写入客户端地址
-		clients_[clientId].fd =  server_fd; //将与该用户建立连接的套接字保存 
-		//发送注册成功
-		transPack_t temp_pkg(PkgType_RegisterOK);
+		removeClient(clientId); //删除用户
+		return; 
+	} 
+	
+	clients_[clientId].connect = true; //连接成功
+	clients_[clientId].addr = client_addr; //写入客户端地址
+	clients_[clientId].fd =  server_fd; //将与该用户建立连接的套接字保存 
+	//发送注册成功
+	transPack_t temp_pkg(PkgType_RegisterOK);
 
-		//发送多次注册成功信号 
-		for(int i=0; i<3; ++i)
-		{
-			cout << "clientId: "<< clientId << " register ok.  addr " << clients_[clientId].addr.sin_port << endl; 
-			sendto(server_fd,(char*)&temp_pkg, sizeof(temp_pkg), 0, (struct sockaddr*)&client_addr, sizeof(sockaddr_in));
-			usleep(50000);
-		}
-		break;
+	//发送多次注册成功信号 
+	for(int i=0; i<3; ++i)
+	{
+		sendto(server_fd,(char*)&temp_pkg, sizeof(temp_pkg), 0, (struct sockaddr*)&client_addr, sizeof(sockaddr_in));
+		usleep(50000);
 	}
+	cout << "clientId: "<< clientId << " register ok ^-^ ^-^ ^-^ ^-^ ^-^ ^-^" << endl; 
 	 
 	delete [] recvbuf;
 	const int BufLen2 = 100000;
 	recvbuf = new uint8_t [BufLen2];
 	const transPack_t *_pkg = (const transPack_t *)recvbuf;
 	
-	//配置为非阻塞，并设置超时时间 
-	struct timeval timeout;
-    timeout.tv_sec = 1;//秒
-    //timeout.tv_usec = 0;//微秒
+	timeout.tv_sec = 1;//秒
     setsockopt(server_fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
-	    
+    
 	while(run_flag && clients_[clientId].connect)
 	{
+		//此处接收应为非阻塞，超时后检查 run_flag 以及用户的连接状态
+		//否则1.程序无法正常退出，2.用户退出后还在等待接收数据 
 		int len = recvfrom(server_fd, recvbuf, BufLen2,0,(struct sockaddr*)&client_addr, &clientLen);
 		//cout << "received msgs len:" << len  << "  type: " << int(_pkg->type) << endl;
 		if(len <= 0) continue;
@@ -276,7 +286,7 @@ void Server::removeClient(uint16_t id)
 
 void Server::run()
 {
-	std::thread t1 = std::thread(&Server::printThread,this,5);
+	std::thread t1 = std::thread(&Server::printThread,this,15);
 	t1.detach();
 	
 	std::thread t2 = std::thread(&Server::heartBeatThread,this);
@@ -292,7 +302,8 @@ void Server::msgTransmit(const uint8_t* buf, int len)
 	uint16_t srcClientId = ((const transPack_t *)buf)->senderId;
 	uint16_t dstClientId = ((const transPack_t *)buf)->receiverId;
 	
-	if(dstClientId == ROBOT_TEST_ID) //机器人端测试ID
+	if(dstClientId == ROBOT_TEST_ID || //机器人端测试ID
+	   dstClientId == 0) //保留ID 
 		return; 
 	
 	auto it = clients_.find(dstClientId);
@@ -352,7 +363,7 @@ void Server::heartBeatThread()
 {
 	while(run_flag)
 	{
-		cout << "clients size: " << clients_.size() << "\t sending heart beat pkg...\n";
+		//cout << "clients size: " << clients_.size() << "\t sending heart beat pkg...\n";
 		for(auto client =clients_.begin(); client!= clients_.end(); ++client)
 		{
 			//cout << "id: " << client->first <<endl;
@@ -368,10 +379,10 @@ void Server::heartBeatThread()
 			//客户端连接标志 connect复位后，将退出其接收线程，然后自动删除用户
 			//若某些用户未能自动删除，手动删除 
 			 
-			if(diff > heartBeatInterval_ + maxHeartBeatDelay_*3) 
+			if(diff > heartBeatInterval_ + maxHeartBeatDelay_*10) 
 			{
 				//删除未能正常删除的用户
-				clients_.erase(client);
+				removeClient(client->first);
 			}
 			else if( diff >heartBeatInterval_ + maxHeartBeatDelay_) 
 			{
