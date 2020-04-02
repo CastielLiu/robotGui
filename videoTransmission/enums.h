@@ -1,17 +1,8 @@
-#ifndef UTILS_H
-#define UTILS_H
-
-#include "ui_mainwindow.h"
+#ifndef ENUMS_H_
+#define ENUMS_H_
 
 #include<iostream>
-#include<sstream>
-#include<stdint.h>
-#include<cstring>
-#include <QObject>
-#include <QtNetwork/QUdpSocket>
-#include <QHostAddress>
-#include <QThread>
-#include <thread>
+
 
 //客户端注册状态 0未注册，1注册中，2已注册
 enum RegisterStatus
@@ -45,29 +36,6 @@ enum PkgType
     PkgType_RobotState = 21, //机器人状态数据
 };
 
-//数据传输头
-#pragma pack(push,1)
-typedef struct PkgHeader
-{
-    uint8_t head[2];
-    uint16_t length;
-    uint8_t type;
-    uint8_t checkNum;
-
-    uint16_t senderId;
-    uint16_t receiverId;
-
-    PkgHeader(PkgType t = PkgType_NoneType)
-    {
-        head[0] = 0x66;
-        head[1] = 0xcc;
-        type = t;
-        length = checkNum = 0;
-    }
-} pkgHeader_t;
-
-#pragma pack(pop)
-
 enum systemStatus
 {
     SystemIdle,       //空闲
@@ -78,29 +46,4 @@ enum systemStatus
     SystemAccepted, //请求被接受
 };
 
-
-extern QHostAddress g_serverIp;
-extern quint16 g_registerPort;
-extern int g_registerStatus;
-extern quint16 g_msgPort;
-extern systemStatus g_systemStatus;
-extern bool g_isCaller;
-extern const bool g_canCalled;
-extern const bool g_openRemoteControl;
-extern const bool g_ignoreCalledOffline;
-
-extern uint16_t g_myId;
-extern uint16_t g_robotCallId;
-extern uint16_t g_robotControlId ;
-
-extern uint16_t g_heartBeatInterval ;
-extern uint16_t g_maxHeartBeatDelay ;
-
-//extern bool
-extern Ui::MainWindow *g_ui;
-
-int ipConvert(const std::string& ip_str);
-std::string ipConvert(const int ip_int);
-
-
-#endif // UTILS_H
+#endif // ENUMS_H_

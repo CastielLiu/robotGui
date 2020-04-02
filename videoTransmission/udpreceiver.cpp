@@ -37,9 +37,14 @@ UdpReceiver::~UdpReceiver()
 //此处只需启动一个注册线程
 void UdpReceiver::registerToServer()
 {
-    //std::thread t(&UdpReceiver::registerToServerThread,this);
-    //t.detach();
+#if 0
+    //子线程注册，无法同时执行两个应用，第二个应用无法注册
+    std::thread t(&UdpReceiver::registerToServerThread,this);
+    t.detach();
+#else
+    //主线程注册
     registerToServerInMainThread();
+#endif
 }
 
 //注册到服务器线程函数
@@ -68,8 +73,8 @@ void UdpReceiver::registerToServerThread()
         if(++cnt > 10)
         {
             emit this->updateRegisterStatus(RegisterStatus_None);
+            emit this->showMsgInStatusBar("login timeout...",4000);
 
-            qDebug() << "login time out!";
             break;
         }
     }
@@ -95,7 +100,7 @@ void UdpReceiver::timerEvent(QTimerEvent *event)
         killTimer(m_registerTimerId);//一定要关掉定时器，否则将被循环触发
         if(g_registerStatus != RegisterStatus_Ok)
         {
-            qDebug() << "register overtime!";
+            emit showMsgInStatusBar(QString("register overtime!"),3000);
             emit this->updateRegisterStatus(RegisterStatus_None);
         }
     }
@@ -106,13 +111,13 @@ void UdpReceiver::timerEvent(QTimerEvent *event)
 //此函数首先向serverPort再次发送注册信息，以与服务器的消息转发socket建立连接
 void UdpReceiver::confirmRegister(quint16 serverPort)
 {
-    qDebug() << "confirmRegister... port:" <<  serverPort;
+    //qDebug() << "confirmRegister... port:" <<  serverPort;
     pkgHeader_t package(PkgType_RequestRegister);
     package.senderId = g_myId;
     package.receiverId = 0;
     for(int i=0; i<3; ++i)
     {
-        qDebug() << "try to send msg to new port:" <<  serverPort;
+        //qDebug() << "try to send msg to new port:" <<  serverPort;
         m_udpSocket->writeDatagram((char *)&package,
                    sizeof(package), g_serverIp,serverPort);
         QThread::msleep(50);
@@ -218,7 +223,7 @@ void UdpReceiver::onReadyRead()
                 continue;
             uint16_t callerId = package->senderId;
             QString qstr = QString("you have a new call. ID: ") + QString::number(callerId);
-            g_ui->statusBar->showMessage(qstr, 3000);
+            emit showMsgInStatusBar(qstr,5000);
             //可以考虑设置一个弹窗线程，用户选择是否接听
             pkgHeader_t pkg;
             memcpy(&pkg, m_dataBuf, sizeof(pkgHeader_t)); //拷贝接收到的消息！
@@ -242,15 +247,15 @@ void UdpReceiver::onReadyRead()
         else if(PkgType_CalledOffline == package->type)
         {
             if(package->receiverId == g_robotControlId) //机器人受控端不在线
-                g_ui->statusBar->showMessage(QString("Robot control receiver offline!"),2000);
+                emit showMsgInStatusBar(QString("Robot control receiver offline!"),3000);
             else if(g_ignoreCalledOffline) //视频语音被叫端不在线
-                g_ui->statusBar->showMessage(QString("Called offline, but you ignore it"),2000);
+                emit showMsgInStatusBar(QString("Called offline, but you ignore it"),3000);
             else
                 emit calledBusy();
         }
         else if(PkgType_DisConnect == package->type)
         {
-            g_ui->statusBar->showMessage(QString("Call disconnected"), 3000);
+            emit showMsgInStatusBar(QString("Call disconnected"), 3000);
             emit stopChatSignal();
             //std::cout <<  "PkgType_DisConnect" << std::endl;
         }

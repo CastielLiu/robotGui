@@ -27,6 +27,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->action_auto_login,SIGNAL(triggered()),this,SLOT(onActionAutoLogin()));
     connect(ui->action_robotCall_id,SIGNAL(triggered()),this,SLOT(onActionRobotCallId()));
     connect(ui->action_robotControl_id,SIGNAL(triggered()),this,SLOT(onActionRobotControlId()));
+    connect(ui->action_about,SIGNAL(triggered()),this,SLOT(onActionAbout()));
 
     this->loadPerformance();//载入用户参数
 
@@ -37,6 +38,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_udpReceiver,SIGNAL(logoutSignal()),this,SLOT(logout()));
     connect(m_udpReceiver,SIGNAL(calledBusy()),this,SLOT(onCalledBusy()));
     connect(m_udpReceiver,SIGNAL(updateRegisterStatus(int)),this,SLOT(updateRegisterStatus(int)));
+    connect(m_udpReceiver,SIGNAL(showMsgInStatusBar(const QString&,int)),
+            this,SLOT(showMsgInStatusBar(const QString&,int)));
 
     if(m_autoRegister)
         this->login();
@@ -278,6 +281,11 @@ void MainWindow::onActionRobotControlId()
     }
 }
 
+void MainWindow::onActionAbout()
+{
+    QMessageBox::about(this,tr("关于"),tr("castiel_liu@outlook.com"));
+}
+
 void MainWindow::on_checkBox_vedio_stateChanged(int arg1)
 {
     if(!m_udpSender) return;
@@ -296,4 +304,9 @@ void MainWindow::on_checkBox_audio_stateChanged(int arg1)
         m_udpSender->openAudio();
     else
         m_udpSender->closeAudio();
+}
+
+void MainWindow::updateRobotStatus(const QString& qstr)
+{
+    ui->label_robotStatus->setText(qstr);
 }

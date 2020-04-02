@@ -1,6 +1,6 @@
 #ifndef UDPSENDER_H
 #define UDPSENDER_H
-#include <utils.h>
+#include <enums.h>
 #include "audiohandler.h"
 #include "vediohandler.h"
 #include "remotecontrol.h"

@@ -1,7 +1,7 @@
 #ifndef UDPRECEIVER_H
 #define UDPRECEIVER_H
 #include <QThread>
-#include <utils.h>
+#include <enums.h>
 #include "audiohandler.h"
 #include "vediohandler.h"
 #include <ctime>

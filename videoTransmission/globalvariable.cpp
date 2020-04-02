@@ -1,7 +1,11 @@
-#include"enums.h"
+#include "globalvariable.h"
 
+
+/**********条件变量***********/
 const bool g_canCalled = true; //是否启用被叫
 const bool g_openRemoteControl = true; //是否启动远程控制
+
+
 uint16_t g_myId = 123;   // 注：分配客户端id时保留0
 uint16_t g_heartBeatInterval = 5; //心跳包发送间隔(s)，需与服务器保持一致
 uint16_t g_maxHeartBeatDelay = 3; //心跳包容许延迟时间(s)
@@ -19,4 +23,9 @@ uint16_t g_robotCallId = 0; //机器人视频通话ID
 uint16_t g_robotControlId = 0;//机器人远程控制ID
 
 Ui::MainWindow *g_ui;
+
+
+/***** 跨线程传递变量   ****/
+
+//QImage
 

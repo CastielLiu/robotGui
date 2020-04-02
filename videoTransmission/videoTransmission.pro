@@ -30,7 +30,6 @@ CONFIG += c++11
 SOURCES += \
     main.cpp \
     mainwindow.cpp \
-    utils.cpp \
     udpreceiver.cpp \
     audiohandler.cpp \
     vediohandler.cpp \
@@ -39,12 +38,12 @@ SOURCES += \
     cameraframegrabber.cpp \
     cvimagegraber.cpp \
     remotecontrol.cpp \
-    mywidget.cpp
+    mywidget.cpp \
+    globalvariable.cpp
 
 
 HEADERS += \
         mainwindow.h \
-    utils.h \
     udpreceiver.h \
     audiohandler.h \
     vediohandler.h \
@@ -54,7 +53,10 @@ HEADERS += \
     cameraframegrabber.h \
     cvimagegraber.h \
     remotecontrol.h \
-    mywidget.h
+    mywidget.h \
+    globalvariable.h \
+    structs.h \
+    enums.h
 
 FORMS += \
         mainwindow.ui

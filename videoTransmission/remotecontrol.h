@@ -1,11 +1,13 @@
 #ifndef REMOTECONTROL_H
 #define REMOTECONTROL_H
 #include <QUdpSocket>
-#include <utils.h>
+#include <enums.h>
 #include <QByteArray>
 #include <QObject>
 #include <QMutex>
 #include <QMutexLocker>
+#include <structs.h>
+#include <globalvariable.h>
 
 
 #pragma pack(push,1)

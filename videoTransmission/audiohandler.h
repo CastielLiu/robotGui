@@ -12,7 +12,7 @@
 #include <iostream>
 #include <string>
 #include <QUdpSocket>
-#include <utils.h>
+#include <globalvariable.h>
 #include <QDir>
 
 

@@ -12,7 +12,7 @@
 #include <QBuffer>
 #include <QImageReader>
 #include <vector>
-#include "utils.h"
+#include "globalvariable.h"
 #include <myqlabel.h>
 #include <memory>
 #include "cameraframegrabber.h"

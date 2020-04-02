@@ -196,6 +196,13 @@
           </spacer>
          </item>
          <item>
+          <widget class="QLabel" name="label_robotStatus">
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="MyWidget" name="widget_control1" native="true">
            <layout class="QVBoxLayout" name="verticalLayout_2">
             <item>
@@ -373,6 +380,7 @@
     <addaction name="action_robotCall_id"/>
     <addaction name="action_robotControl_id"/>
     <addaction name="action_auto_login"/>
+    <addaction name="action_about"/>
    </widget>
    <addaction name="menu_setting"/>
   </widget>
@@ -408,6 +416,11 @@
   <action name="actionddd">
    <property name="text">
     <string>ddd</string>
+   </property>
+  </action>
+  <action name="action_about">
+   <property name="text">
+    <string>关于</string>
    </property>
   </action>
  </widget>

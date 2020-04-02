@@ -99,7 +99,7 @@ int Server::initSocketAutoAssignPort(uint16_t& port)
 		int ret = bind(fd, (struct sockaddr*)&local_addr,sizeof(local_addr));
 		if(ret == 0)
 		{
-			cout << "AutoAssignPort: " << port << endl;
+			cout << "auto assign port: " << port << endl;
 			return fd;
 		}
 	}

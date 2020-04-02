@@ -2,7 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "utils.h"
+#include "enums.h"
 #include "udpreceiver.h"
 #include "udpsender.h"
 #include <QCloseEvent>
@@ -34,12 +34,16 @@ private slots:
     void login();
     void updateRegisterStatus(int status);
     void showMsgInStatusBar(const QString& msg,int timeout=0);
+    void updateRobotStatus(const QString& str);
 
     //action slots
     void onActionUserId();
     void onActionAutoLogin();
     void onActionRobotCallId();
     void onActionRobotControlId();
+    void onActionAbout();
+
+    //checkbox
     void on_checkBox_vedio_stateChanged(int arg1);
     void on_checkBox_audio_stateChanged(int arg1);
 
