@@ -12,6 +12,7 @@
 #include <QThread>
 #include <thread>
 #include <QImage>
+#include <QMutex>
 #include "enums.h"
 #include "structs.h"
 
@@ -33,5 +34,10 @@ extern uint16_t g_heartBeatInterval ;
 extern uint16_t g_maxHeartBeatDelay ;
 
 extern Ui::MainWindow *g_ui;
+
+extern std::shared_ptr<QImage> g_myImage;   //我方图像
+extern QMutex g_myImageMutex;
+extern std::shared_ptr<QImage> g_otherImage;//对方图像
+extern QMutex g_otherImageMutex;
 
 #endif // GLOBAL_VARIABLE_H

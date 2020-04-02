@@ -47,10 +47,16 @@ private slots:
     void on_checkBox_vedio_stateChanged(int arg1);
     void on_checkBox_audio_stateChanged(int arg1);
 
+    void enableImageDisplay(bool status);
+    void enableMyImageLabel(bool status);
+    void switchImagePosition();
+
 private:
-    void closeEvent(QCloseEvent *event);
+    void closeEvent(QCloseEvent *event) override;
     void loadPerformance();
     void savePerformance();
+    void timerEvent(QTimerEvent *event) override;
+    void displayImage();
 
 private:
     Ui::MainWindow *ui;
@@ -60,6 +66,10 @@ private:
 
     bool m_autoRegister;
     QString m_configFile;
+
+    MyQLabel *m_imageLabel;
+    bool m_myImageBig ;
+    int m_imageDisplayTimer =0;
 
 };
 

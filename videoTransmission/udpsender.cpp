@@ -98,12 +98,14 @@ void UdpSender::run()
     m_udpSocket = nullptr;
 }
 
+//动态开启视频
 void UdpSender::openVedio()
 {
     if(m_vedioCaptor)
         m_vedioCaptor->startVedioTransmission();
 }
 
+//动态关闭视频
 void UdpSender::closeVedio()
 {
     if(m_vedioCaptor)

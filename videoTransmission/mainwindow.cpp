@@ -7,7 +7,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow),
     m_udpReceiver(nullptr),
     m_udpSender(nullptr),
-    m_configFile("config")
+    m_configFile("config"),
+    m_imageLabel(nullptr)
 {
     std::cout << "create MainWindow in thread: " << QThread::currentThreadId() << std::endl;
 
@@ -40,11 +41,11 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_udpReceiver,SIGNAL(updateRegisterStatus(int)),this,SLOT(updateRegisterStatus(int)));
     connect(m_udpReceiver,SIGNAL(showMsgInStatusBar(const QString&,int)),
             this,SLOT(showMsgInStatusBar(const QString&,int)));
+    connect(m_udpReceiver,SIGNAL(enableMyImageLabel(bool)),this,SLOT(enableMyImageLabel(bool)));
+    connect(m_udpReceiver,SIGNAL(enableImageDisplay(bool)),this,SLOT(enableImageDisplay(bool)));
 
     if(m_autoRegister)
         this->login();
-
-    //debug
 }
 
 MainWindow::~MainWindow()
@@ -291,9 +292,18 @@ void MainWindow::on_checkBox_vedio_stateChanged(int arg1)
     if(!m_udpSender) return;
 
     if(arg1)
+    {
+        //enableImageDisplay(true); //启动所有视频显示
         m_udpSender->openVedio();
+    }
     else
+    {
         m_udpSender->closeVedio();
+        //enableImageDisplay(false); //关闭所有视频显示
+        g_myImageMutex.lock();
+        g_myImage = nullptr;
+        g_myImageMutex.unlock();
+    }
 }
 
 void MainWindow::on_checkBox_audio_stateChanged(int arg1)
@@ -309,4 +319,97 @@ void MainWindow::on_checkBox_audio_stateChanged(int arg1)
 void MainWindow::updateRobotStatus(const QString& qstr)
 {
     ui->label_robotStatus->setText(qstr);
+}
+
+//启动、关闭图片显示小窗口
+void MainWindow::enableMyImageLabel(bool open)
+{
+    m_myImageBig = false;
+    if(open)
+    {
+        if(m_imageLabel != nullptr)
+            return;
+        m_imageLabel = new MyQLabel(ui->label_showImageMain);
+        connect(m_imageLabel,SIGNAL(clicked()),this,SLOT(switchImagePosition()));
+        m_imageLabel->setGeometry(0,0,128,96);
+        m_imageLabel->setOpenMoveEvent(true);
+        m_imageLabel->setOpenClickEvent(true);
+        m_imageLabel->show();
+    }
+    else if(m_imageLabel != nullptr)
+    {
+        delete m_imageLabel;
+        m_imageLabel = nullptr;
+    }
+}
+
+//切换我方图片与对方图片位置
+void MainWindow::switchImagePosition()
+{
+    m_myImageBig = !m_myImageBig;
+
+    m_imageLabel->clear();
+    ui->label_showImageMain->clear();
+}
+
+void MainWindow::enableImageDisplay(bool status)
+{
+    //判断m_imageDisplayTimer是否为0，防止重复启动
+    if(status && m_imageDisplayTimer==0)
+    {
+        enableMyImageLabel(true);
+        //启动定时器并设置循环时间ms
+        m_imageDisplayTimer = startTimer(50);
+    }
+    else
+    {
+        killTimer(m_imageDisplayTimer);
+        m_imageDisplayTimer = 0;
+        QThread::msleep(50); //等待myImageLabel空闲后再失能
+        enableMyImageLabel(false);
+    }
+}
+
+void MainWindow::displayImage()
+{
+   // qDebug() << "enableImageDisplay" ;
+    QMutexLocker locker1(&g_myImageMutex);
+    if(g_myImage!= nullptr && !g_myImage->isNull())
+    {
+        if(m_myImageBig)
+            ui->label_showImageMain->setPixmap(
+                    QPixmap::fromImage(g_myImage->scaled(ui->label_showImageMain->size())));
+        else
+            m_imageLabel->setPixmap(QPixmap::fromImage(g_myImage->scaled(m_imageLabel->size())));
+
+    }
+    else if(g_myImage == nullptr) //本地图片指针为空，表明本地摄像头未启动
+    {
+        if(m_myImageBig) ui->label_showImageMain->clear();
+        else m_imageLabel->clear();
+    }
+
+    locker1.unlock();
+
+    QMutexLocker locker2(&g_otherImageMutex);
+    if(g_otherImage!= nullptr && !g_otherImage->isNull())
+    {
+
+        if(!m_myImageBig)
+            ui->label_showImageMain->setPixmap(
+                    QPixmap::fromImage(g_otherImage->scaled(ui->label_showImageMain->size())));
+        else
+            m_imageLabel->setPixmap(QPixmap::fromImage(g_otherImage->scaled(m_imageLabel->size())));
+
+    }
+    locker2.unlock();
+
+}
+
+//定时器溢出事件函数
+void MainWindow::timerEvent(QTimerEvent *event)
+{
+    if(event->timerId() == m_imageDisplayTimer)
+       displayImage();
+
 }

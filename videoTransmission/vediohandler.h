@@ -33,14 +33,12 @@ public:
     bool stopVedioTransmission();
 
     void appendData(char* const buf, int len);
-    void playVedio();
 
 private:
     void writeImageToBuffer(QImage& image);
     void stopCapture();
 private slots:
     void onImageCaptured(int id, QImage image);
-    void modifyShowMode();
     void onImageGrabed(const QVideoFrame &frame);
 private:
     QCamera *m_camera;//摄像头
@@ -59,18 +57,6 @@ private:
     CircleBuffer<std::shared_ptr<QImage> > m_imageBuffer;
     std::shared_ptr<QImage> m_receivedImage = nullptr;
 
-    //类静态成员函数需要在类的外部分配内存空间
-    //m_tempImage 存放本地捕获的图片，用于显示
-    //由于图片是在record模式下捕获，在play模式下播放，所以一定要使用静态成员。
-    static QMutex m_tempImageMutex;
-    static std::shared_ptr<QImage> m_tempImage;
-
-    //QMutex m_myImageMutex, m_heImageMutex;
-    //CircleBuffer<std::shared_ptr<QImage>> m_myImageBuffer;//我方图片缓冲区
-    //CircleBuffer<std::shared_ptr<QImage>> m_heImageBuffer;//对方图片缓冲区
-
-    MyQLabel *m_myQlabel; //可捕获鼠标事件的label用于显示图片，可拖动，点击
-    bool m_myImageBig = false; //我方图片为大图
 };
 
 #endif // VEDIOHANDLER_H

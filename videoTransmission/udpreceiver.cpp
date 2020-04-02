@@ -150,6 +150,9 @@ void UdpReceiver::startPlayMv()
 void UdpReceiver::stopPlayMv()
 {
     g_systemStatus = SystemIdle;
+    g_otherImageMutex.lock();
+    g_otherImage = nullptr;
+    g_otherImageMutex.unlock();
 
     if(this->isRunning())
     {
@@ -300,13 +303,13 @@ void UdpReceiver::handleAudioMsg(char* const buf)
 //音频和视频播放
 void UdpReceiver::run(void)
 {
+    emit enableImageDisplay(true);
     while (!this->isInterruptionRequested())
     {
         m_audioPlayer->playAudio();
-        m_vedioPlayer->playVedio();
         QThread::msleep(30);
     }
-
+    emit enableImageDisplay(false);
 }
 
 void UdpReceiver::heartBeatThread()

@@ -31,6 +31,8 @@ signals:
     void calledBusy();
     void updateRegisterStatus(int status);
     void showMsgInStatusBar(const QString& msg,int timeout=0);
+    void enableMyImageLabel(bool );
+    void enableImageDisplay(bool );
 private:
     void handleVedioMsg(char * const buf);
     void handleAudioMsg(char * const buf);
