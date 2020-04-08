@@ -29,6 +29,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->action_robotCall_id,SIGNAL(triggered()),this,SLOT(onActionRobotCallId()));
     connect(ui->action_robotControl_id,SIGNAL(triggered()),this,SLOT(onActionRobotControlId()));
     connect(ui->action_about,SIGNAL(triggered()),this,SLOT(onActionAbout()));
+    connect(ui->action_debugConfig,SIGNAL(triggered()),this,SLOT(onActionDebugConfig()));
 
     this->loadPerformance();//载入用户参数
 
@@ -164,8 +165,11 @@ void MainWindow::closeEvent(QCloseEvent *event)
     else if (button == QMessageBox::Yes)
     {
         savePerformance();
-        event->accept();  //接受退出信号，程序退出
+        if(g_registerStatus != RegisterStatus_None)
+            this->logout();
         QThread::sleep(1); //等待清理线程完毕
+        event->accept();  //接受退出信号，程序退出
+
         std::cout << "exit ok" << std::endl;
     }
 }
@@ -411,5 +415,68 @@ void MainWindow::timerEvent(QTimerEvent *event)
 {
     if(event->timerId() == m_imageDisplayTimer)
        displayImage();
+}
 
+void MainWindow::onActionDebugConfig()
+{
+    ui->checkBox_canCalled->setCheckState(Qt::CheckState::Checked);
+    ui->checkBox_remoteControl->setCheckState(Qt::CheckState::Checked);
+    ui->checkBox_ignoreCalledOffline->setCheckState(Qt::CheckState::Checked);
+
+    ui->stackedWidget->setCurrentIndex(stackWidget_DebugPage);
+}
+
+
+void MainWindow::on_pushButton_debugPageOk_clicked()
+{
+    g_canCalled = ui->checkBox_canCalled->isChecked();
+    g_openRemoteControl =  ui->checkBox_remoteControl->isChecked();
+    g_ignoreCalledOffline = ui->checkBox_ignoreCalledOffline->isChecked();
+    ui->stackedWidget->setCurrentIndex(stackWidget_MainPage);
+}
+
+//按键事件
+void MainWindow::on_pushButton_Up_pressed()
+{
+    //qDebug() << "on_pushButton_Up_pressed";
+    static QKeyEvent event( QEvent::KeyPress,Qt::Key_Up, Qt::NoModifier);
+    emit ui->widget_control1->keyPressEvent(&event);
+}
+void MainWindow::on_pushButton_Up_released()
+{
+    static QKeyEvent event( QEvent::KeyRelease,Qt::Key_Up, Qt::NoModifier);
+    emit ui->widget_control1->keyReleaseEvent(&event);
+}
+
+void MainWindow::on_pushButton_Down_pressed()
+{
+    static QKeyEvent event( QEvent::KeyPress,Qt::Key_Down, Qt::NoModifier);
+    emit ui->widget_control1->keyPressEvent(&event);
+}
+void MainWindow::on_pushButton_Down_released()
+{
+    static QKeyEvent event( QEvent::KeyRelease,Qt::Key_Down, Qt::NoModifier);
+    emit ui->widget_control1->keyReleaseEvent(&event);
+}
+
+void MainWindow::on_pushButton_Left_pressed()
+{
+    static QKeyEvent event( QEvent::KeyPress,Qt::Key_Left, Qt::NoModifier);
+    emit ui->widget_control1->keyPressEvent(&event);
+}
+void MainWindow::on_pushButton_Left_released()
+{
+    static QKeyEvent event( QEvent::KeyRelease,Qt::Key_Left, Qt::NoModifier);
+    emit ui->widget_control1->keyReleaseEvent(&event);
+}
+
+void MainWindow::on_pushButton_Right_pressed()
+{
+    static QKeyEvent event( QEvent::KeyPress,Qt::Key_Right, Qt::NoModifier);
+    emit ui->widget_control1->keyPressEvent(&event);
+}
+void MainWindow::on_pushButton_Right_released()
+{
+    static QKeyEvent event( QEvent::KeyRelease,Qt::Key_Right, Qt::NoModifier);
+    emit ui->widget_control1->keyReleaseEvent(&event);
 }

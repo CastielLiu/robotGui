@@ -10,11 +10,15 @@ void cmdCallback(controlCmd_t cmd)
 }
 
 
-int main()
+int main(int argc,char**argv) 
 {
+	int myPort = 5050;
+	if(argc >1)
+		myPort = atoi(argv[1]);
+	
 	RemoteCmdHandler handler;
 	handler.setServerAddr("62.234.114.48",8617);
-	handler.setRobotId(5050);
+	handler.setRobotId(myPort);
 	handler.bindCallbackFunction(&cmdCallback);
 	
 	

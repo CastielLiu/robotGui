@@ -12,7 +12,7 @@ enum RegisterStatus
     RegisterStatus_Ok = 2, //已注册
 };
 
-// 消息类型
+// 传输消息类型
 enum PkgType
 {
     PkgType_Video=0,          //视频消息
@@ -36,6 +36,7 @@ enum PkgType
     PkgType_RobotState = 21, //机器人状态数据
 };
 
+//系统状态
 enum systemStatus
 {
     SystemIdle,       //空闲
@@ -44,6 +45,15 @@ enum systemStatus
     SystemRunning,  //正在通话
     SystemRefused,  //请求被拒绝
     SystemAccepted, //请求被接受
+};
+
+//stackWidget index
+
+enum stackWidgetIndex
+{
+    stackWidget_MainPage = 0, //主页面
+    stackWidget_DebugPage =1, //调试页面
+
 };
 
 #endif // ENUMS_H_

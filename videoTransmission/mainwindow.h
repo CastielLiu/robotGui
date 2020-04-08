@@ -10,6 +10,7 @@
 #include <myqlabel.h>
 #include <QInputDialog>
 #include <QSettings>
+#include <QKeyEvent>
 
 
 namespace Ui {
@@ -22,7 +23,7 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
+    ~MainWindow() override;
 private slots:
     void on_pushButton_call_clicked();
     void onLableRegisterStatusClicked();
@@ -42,6 +43,7 @@ private slots:
     void onActionRobotCallId();
     void onActionRobotControlId();
     void onActionAbout();
+    void onActionDebugConfig();
 
     //checkbox
     void on_checkBox_vedio_stateChanged(int arg1);
@@ -50,6 +52,17 @@ private slots:
     void enableImageDisplay(bool status);
     void enableMyImageLabel(bool status);
     void switchImagePosition();
+
+    void on_pushButton_debugPageOk_clicked();
+
+    void on_pushButton_Up_pressed();
+    void on_pushButton_Up_released();
+    void on_pushButton_Down_pressed();
+    void on_pushButton_Down_released();
+    void on_pushButton_Left_pressed();
+    void on_pushButton_Left_released();
+    void on_pushButton_Right_pressed();
+    void on_pushButton_Right_released();
 
 private:
     void closeEvent(QCloseEvent *event) override;

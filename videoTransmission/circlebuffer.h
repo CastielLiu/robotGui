@@ -80,7 +80,7 @@ public:
     }
 
     //设置缓冲区工作模式
-    bool setMode(int mode){ m_mode = mode;}
+    void setMode(int mode){ m_mode = mode;}
 
     bool read(T& data)
     {
