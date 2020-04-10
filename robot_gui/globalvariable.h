@@ -19,6 +19,7 @@
 extern bool g_canCalled;
 extern bool g_openRemoteControl;
 extern bool g_ignoreCalledOffline;
+extern bool g_isRemoteTerminal;
 
 extern QHostAddress g_serverIp;
 extern quint16 g_registerPort;

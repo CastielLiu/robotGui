@@ -11,6 +11,7 @@
 #include <QInputDialog>
 #include <QSettings>
 #include <QKeyEvent>
+#include <biologicalradar.h>
 
 
 namespace Ui {
@@ -44,6 +45,7 @@ private slots:
     void onActionRobotControlId();
     void onActionAbout();
     void onActionDebugConfig();
+    void onActionBiologicalRadar();
 
     //checkbox
     void on_checkBox_vedio_stateChanged(int arg1);
@@ -64,6 +66,10 @@ private slots:
     void on_pushButton_Right_pressed();
     void on_pushButton_Right_released();
 
+    void on_comboBox_availaleSerial_activated(const QString &arg1);
+
+    void on_pushButton_radarOpenSerial_clicked(bool checked);
+
 private:
     void closeEvent(QCloseEvent *event) override;
     void loadPerformance();
@@ -76,6 +82,7 @@ private:
     QUdpSocket *m_udpSocket;
     UdpReceiver *m_udpReceiver;
     UdpSender *m_udpSender;
+    BiologicalRadar *m_radar;
 
     bool m_autoRegister;
     QString m_configFile;

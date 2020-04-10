@@ -5,6 +5,7 @@
 bool g_canCalled = true; //是否启用被叫
 bool g_openRemoteControl = true; //是否启动远程控制
 bool g_ignoreCalledOffline = false; //是否忽略被叫离线
+bool g_isRemoteTerminal = true;  //是否为远程端
 
 uint16_t g_myId = 123;   // 注：分配客户端id时保留0
 uint16_t g_heartBeatInterval = 5; //心跳包发送间隔(s)，需与服务器保持一致

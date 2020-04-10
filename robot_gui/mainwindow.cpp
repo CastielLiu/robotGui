@@ -8,13 +8,14 @@ MainWindow::MainWindow(QWidget *parent) :
     m_udpReceiver(nullptr),
     m_udpSender(nullptr),
     m_configFile("config"),
-    m_imageLabel(nullptr)
+    m_imageLabel(nullptr),
+    m_radar(nullptr)
 {
     std::cout << "create MainWindow in thread: " << QThread::currentThreadId() << std::endl;
 
     ui->setupUi(this);
     g_ui = ui; //初始化全局ui指针便于在外部调用ui
-    this->setWindowTitle("机器人远程工具");
+    this->setWindowTitle("机器人用户界面");
     this->setWindowIcon(QIcon(":/images/icon"));
     this->setFixedSize(this->width(),this->height());
 
@@ -30,7 +31,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->action_robotControl_id,SIGNAL(triggered()),this,SLOT(onActionRobotControlId()));
     connect(ui->action_about,SIGNAL(triggered()),this,SLOT(onActionAbout()));
     connect(ui->action_debugConfig,SIGNAL(triggered()),this,SLOT(onActionDebugConfig()));
-
+    connect(ui->action_biologicalRadar,SIGNAL(triggered()),this,SLOT(onActionBiologicalRadar()));
     this->loadPerformance();//载入用户参数
 
     //实例化接收器
@@ -425,6 +426,7 @@ void MainWindow::onActionDebugConfig()
     ui->checkBox_canCalled->setCheckState(Qt::CheckState::Checked);
     ui->checkBox_remoteControl->setCheckState(Qt::CheckState::Checked);
     ui->checkBox_ignoreCalledOffline->setCheckState(Qt::CheckState::Checked);
+    ui->checkBox_isRemoteTerminal->setCheckState(Qt::CheckState::Checked);
 
     ui->stackedWidget->setCurrentIndex(stackWidget_DebugPage);
 }
@@ -435,6 +437,7 @@ void MainWindow::on_pushButton_debugPageOk_clicked()
     g_canCalled = ui->checkBox_canCalled->isChecked();
     g_openRemoteControl =  ui->checkBox_remoteControl->isChecked();
     g_ignoreCalledOffline = ui->checkBox_ignoreCalledOffline->isChecked();
+    g_isRemoteTerminal = ui->checkBox_isRemoteTerminal->isChecked();
     ui->stackedWidget->setCurrentIndex(stackWidget_MainPage);
 }
 
@@ -482,4 +485,47 @@ void MainWindow::on_pushButton_Right_released()
 {
     static QKeyEvent event( QEvent::KeyRelease,Qt::Key_Right, Qt::NoModifier);
     emit ui->widget_control1->keyReleaseEvent(&event);
+}
+
+//工具：生物雷达
+void MainWindow::onActionBiologicalRadar()
+{
+    emit ui->comboBox_availaleSerial->activated("activated");
+}
+
+void MainWindow::on_comboBox_availaleSerial_activated(const QString &arg1)
+{
+    ui->comboBox_availaleSerial->clear();
+    QStringList list;
+    foreach(const QSerialPortInfo& info, QSerialPortInfo::availablePorts())
+        list << info.portName();
+    qSort(list.begin(),list.end());
+    ui->comboBox_availaleSerial->addItems(list);
+}
+
+void MainWindow::on_pushButton_radarOpenSerial_clicked(bool checked)
+{
+    QString serialPort = ui->comboBox_availaleSerial->currentText();
+    if(serialPort.isEmpty()) return;
+
+    if(checked)
+    {
+        m_radar = new BiologicalRadar();
+        bool ok = m_radar->openSerial(serialPort);
+        if(!ok)
+        {
+            delete m_radar;
+            m_radar = nullptr;
+            ui->pushButton_radarOpenSerial->setChecked(false);
+            return;
+        }
+        ui->pushButton_radarOpenSerial->setText(tr("关闭串口"));
+    }
+    else
+    {
+        ui->pushButton_radarOpenSerial->setText(tr("打开串口"));
+        m_radar->closeSerial();
+        delete m_radar;
+        m_radar = nullptr;
+    }
 }
