@@ -23,9 +23,11 @@ uint16_t g_robotControlId = 0;//机器人远程控制ID
 Ui::MainWindow *g_ui;
 
 /***** 跨线程传递变量   ****/
-
 std::shared_ptr<QImage> g_myImage = nullptr;   //我方图像
 QMutex g_myImageMutex;
 std::shared_ptr<QImage> g_otherImage = nullptr;//对方图像
 QMutex g_otherImageMutex;
+
+bool g_isOpenVedio = false;
+bool g_isOpenAudio = true;
 

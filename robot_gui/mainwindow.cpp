@@ -45,6 +45,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_udpReceiver,SIGNAL(enableMyImageLabel(bool)),this,SLOT(enableMyImageLabel(bool)));
     connect(m_udpReceiver,SIGNAL(enableImageDisplay(bool)),this,SLOT(enableImageDisplay(bool)));
 
+    ui->widget_control1->setFocus(); //设置焦点
+
     if(m_autoRegister)
         this->login();
 }
@@ -293,8 +295,8 @@ void MainWindow::onActionAbout()
 
 void MainWindow::on_checkBox_vedio_stateChanged(int arg1)
 {
+    g_isOpenVedio = bool(arg1);
     if(!m_udpSender) return;
-
     if(arg1)
     {
         //enableImageDisplay(true); //启动所有视频显示
@@ -312,6 +314,7 @@ void MainWindow::on_checkBox_vedio_stateChanged(int arg1)
 
 void MainWindow::on_checkBox_audio_stateChanged(int arg1)
 {
+    g_isOpenAudio = bool(arg1);
     if(!m_udpSender) return;
 
     if(arg1)

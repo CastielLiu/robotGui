@@ -37,9 +37,6 @@ typedef struct  ControlCmdPkg
 /*机器人运动控制，用x轴的平移和z轴的旋转表示
  * -127 < xSpeed < 127 接收方根据最大速度进行线性转换
  * -127 < zSpeed < 127
- *
- *
- *
  */
 
 class RemoteControl :public QObject

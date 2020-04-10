@@ -22,15 +22,13 @@ bool UdpSender::startSend(uint16_t dstId)
     m_dstId = dstId;
 
     m_audioRecorder = new AudioHandler;
-    bool openAudio = g_ui->checkBox_audio->isChecked();
-    if(openAudio && !m_audioRecorder->startAudioTransmission())
-        return false;
+    if(g_isOpenAudio)
+        m_audioRecorder->startAudioTransmission();
 
     m_vedioCaptor = new VedioHandler;
-    bool openVedio = g_ui->checkBox_vedio->isChecked();
-    //qDebug() << "g_ui->checkBox_vedio->isChecked(): " << openVedio;
-    if(openVedio && !m_vedioCaptor->startVedioTransmission())
-        return false;
+
+    if(g_isOpenVedio)
+        m_vedioCaptor->startVedioTransmission();
 
     if(g_openRemoteControl)
     {

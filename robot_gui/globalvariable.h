@@ -20,7 +20,6 @@ extern bool g_canCalled;
 extern bool g_openRemoteControl;
 extern bool g_ignoreCalledOffline;
 
-
 extern QHostAddress g_serverIp;
 extern quint16 g_registerPort;
 extern int g_registerStatus;
@@ -40,5 +39,8 @@ extern std::shared_ptr<QImage> g_myImage;   //我方图像
 extern QMutex g_myImageMutex;
 extern std::shared_ptr<QImage> g_otherImage;//对方图像
 extern QMutex g_otherImageMutex;
+
+extern bool g_isOpenVedio;
+extern bool g_isOpenAudio;
 
 #endif // GLOBAL_VARIABLE_H
