@@ -3,7 +3,7 @@
 BiologicalRadar::BiologicalRadar():
     mSerial(nullptr)
 {
-
+    qRegisterMetaType<bioRadarData_t>("bioRadarData"); //注册自定义消息
 }
 BiologicalRadar::~BiologicalRadar()
 {
@@ -47,8 +47,47 @@ void BiologicalRadar::run()
 
 }
 
+uint8_t sumCheck(const uint8_t* buf,int len)
+{
+    uint8_t sum = 0;
+    for(int i=0; i<len; ++i)
+        sum += buf[i];
+    return sum;
+}
+
 void BiologicalRadar::onSerialReadyRead()
 {
     QByteArray datas = mSerial->readAll();
-    qDebug() << datas;
+    if(datas.length()<3) return;
+
+    const uint8_t *buf = (const uint8_t*)(datas.data());
+
+    if(buf[0]!=0x66 || buf[1]!=0xCC)
+    {
+        qDebug() << "header error" ;
+        return;
+    }
+
+    int pkgLen = buf[2];
+    if(datas.length() < 3+pkgLen+1) //接收到的数据包不完整
+        return;
+
+    if(sumCheck(buf+2,pkgLen+1) != buf[3+pkgLen])
+    {
+        qDebug() << "datas check failed";
+        return;
+    }
+
+    int pkgID = buf[3];
+    if(pkgID == 0x01)
+    {
+        mRadarData.heartBeatRate = buf[4];
+        mRadarData.breathRate = buf[5];
+        mRadarData.temperature = (buf[6]*256 + buf[7])*0.1;
+        mRadarData.bloodPressureH = buf[8];
+        mRadarData.bloodPressureL = buf[9];
+        mRadarData.bloodOxygen = buf[10];
+
+        emit updateData(mRadarData);
+    }
 }

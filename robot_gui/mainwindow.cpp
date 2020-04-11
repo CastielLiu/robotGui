@@ -490,7 +490,18 @@ void MainWindow::on_pushButton_Right_released()
 //工具：生物雷达
 void MainWindow::onActionBiologicalRadar()
 {
-    emit ui->comboBox_availaleSerial->activated("activated");
+    ui->stackedWidget->setCurrentIndex(stackWidget_BioRadarPage);
+    ui->label_bioRadarTitle->setAlignment(Qt::AlignCenter);
+
+    if(g_isRemoteTerminal) //作为远程端
+    {
+        ui->widget_bioRadarSerial->hide(); //隐藏串口widget
+    }
+    else //本地端
+    {
+        ui->widget_bioRadarSerial->show(); //显示串口widget
+        emit ui->comboBox_availaleSerial->activated("activated"); //刷新可用串口
+    }
 }
 
 void MainWindow::on_comboBox_availaleSerial_activated(const QString &arg1)
@@ -511,6 +522,8 @@ void MainWindow::on_pushButton_radarOpenSerial_clicked(bool checked)
     if(checked)
     {
         m_radar = new BiologicalRadar();
+        connect(m_radar,SIGNAL(updateData(bioRadarData_t)),this,SLOT(onBioRadarUpdateData(bioRadarData_t)));
+
         bool ok = m_radar->openSerial(serialPort);
         if(!ok)
         {
@@ -528,4 +541,18 @@ void MainWindow::on_pushButton_radarOpenSerial_clicked(bool checked)
         delete m_radar;
         m_radar = nullptr;
     }
+}
+
+void MainWindow::onBioRadarUpdateData(bioRadarData_t data)
+{
+    ui->lineEdit_breathRate->setText(QString::number(data.breathRate));
+    ui->lineEdit_temperature->setText(QString::number(data.temperature));
+    QString bloodPressure = QString::number(data.bloodPressureH)+" / "+QString::number(data.bloodPressureL);
+    ui->lineEdit_bloodPressure->setText(bloodPressure);
+    ui->lineEdit_heartBeatReat->setText(QString::number(data.heartBeatRate));
+}
+
+void MainWindow::on_pushButton_bioRadarExit_clicked()
+{
+    ui->stackedWidget->setCurrentIndex(stackWidget_MainPage);
 }

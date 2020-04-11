@@ -56,7 +56,6 @@ private slots:
     void switchImagePosition();
 
     void on_pushButton_debugPageOk_clicked();
-
     void on_pushButton_Up_pressed();
     void on_pushButton_Up_released();
     void on_pushButton_Down_pressed();
@@ -65,10 +64,12 @@ private slots:
     void on_pushButton_Left_released();
     void on_pushButton_Right_pressed();
     void on_pushButton_Right_released();
-
     void on_comboBox_availaleSerial_activated(const QString &arg1);
-
     void on_pushButton_radarOpenSerial_clicked(bool checked);
+
+    void onBioRadarUpdateData(bioRadarData_t data);
+
+    void on_pushButton_bioRadarExit_clicked();
 
 private:
     void closeEvent(QCloseEvent *event) override;

@@ -53,7 +53,7 @@ enum stackWidgetIndex
 {
     stackWidget_MainPage = 0, //主页面
     stackWidget_DebugPage =1, //调试页面
-
+    stackWidget_BioRadarPage = 2, //生物雷达界面
 };
 
 #endif // ENUMS_H_
