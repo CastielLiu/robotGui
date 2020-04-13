@@ -34,7 +34,6 @@ UdpReceiver::~UdpReceiver()
 }
 
 //注册到服务器
-//此处只需启动一个注册线程
 void UdpReceiver::registerToServer()
 {
 #if 0

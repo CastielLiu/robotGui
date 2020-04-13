@@ -425,7 +425,7 @@ void MainWindow::onActionDebugConfig()
 {
     ui->checkBox_canCalled->setCheckState(Qt::CheckState::Checked);
     ui->checkBox_remoteControl->setCheckState(Qt::CheckState::Checked);
-    ui->checkBox_ignoreCalledOffline->setCheckState(Qt::CheckState::Checked);
+    ui->checkBox_ignoreCalledOffline->setCheckState(Qt::CheckState::Unchecked);
     ui->checkBox_isRemoteTerminal->setCheckState(Qt::CheckState::Checked);
 
     ui->stackedWidget->setCurrentIndex(stackWidget_DebugPage);

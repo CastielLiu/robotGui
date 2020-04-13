@@ -174,6 +174,10 @@ void Server::receiveRegisterThread()
 //客户端断开连接后关闭线程 
 void Server::receiveAndTransThread(int server_fd, uint16_t clientId)
 {
+	//首先接收客户端的确认注册消息，
+	//确认注册与注册消息类型一致，
+	//注册消息由客户端发送到服务器的公用注册端口号 
+	//确认注册消息由客户端发送到服务器为该客户端分配的新端口号 
 	const int BufLen1 =2*sizeof(transPack_t);
 	uint8_t *recvbuf = new uint8_t [BufLen1];
 	const transPack_t *pkg = (const transPack_t *)recvbuf;
@@ -190,12 +194,14 @@ void Server::receiveAndTransThread(int server_fd, uint16_t clientId)
 	int len = recvfrom(server_fd, recvbuf, BufLen1,0,(struct sockaddr*)&client_addr, &clientLen);
 	if(len <=0 || //接收超时 
 	   recvbuf[0] != 0x66 || recvbuf[1] != 0xcc || //包头错误 
-	   pkg->type != PkgType_RequestRegister ||  //指令错误 
+	   pkg->type != PkgType_RequestRegister ||  //指令错误 应为确认注册消息包 
 	   clientId != pkg->senderId ) //id不匹配 
 	{
 		removeClient(clientId); //删除用户
 		return; 
 	} 
+	
+	std::cout << "received confirm register msg." << std:: endl; 
 	
 	clients_[clientId].connect = true; //连接成功
 	clients_[clientId].addr = client_addr; //写入客户端地址
@@ -233,6 +239,7 @@ void Server::receiveAndTransThread(int server_fd, uint16_t clientId)
 		
 		if(_pkg->type == PkgType_HeartBeat) //心跳包 
 		{
+			cout << "received client heartbeat :" << clientId << endl;
 			sendto(server_fd,recvbuf, len, 0, (struct sockaddr*)&client_addr, clientLen); //回发给客户端 
 			clients_[clientId].lastHeartBeatTime = time(0); //记录客户心跳时间 
 		}
