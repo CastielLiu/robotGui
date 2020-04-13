@@ -500,11 +500,11 @@ void MainWindow::onActionBiologicalRadar()
     else //本地端
     {
         ui->widget_bioRadarSerial->show(); //显示串口widget
-        emit ui->comboBox_availaleSerial->activated("activated"); //刷新可用串口
+        updateAvailaleSerial(); //刷新可用串口
     }
 }
 
-void MainWindow::on_comboBox_availaleSerial_activated(const QString &arg1)
+void MainWindow::updateAvailaleSerial()
 {
     ui->comboBox_availaleSerial->clear();
     QStringList list;
@@ -530,13 +530,16 @@ void MainWindow::on_pushButton_radarOpenSerial_clicked(bool checked)
             delete m_radar;
             m_radar = nullptr;
             ui->pushButton_radarOpenSerial->setChecked(false);
+            QMessageBox::warning(this,"WARNING",tr("打开串口失败！\n串口可能被占用！"),QMessageBox::Ok);
             return;
         }
         ui->pushButton_radarOpenSerial->setText(tr("关闭串口"));
+        ui->comboBox_availaleSerial->setDisabled(true);
     }
     else
     {
         ui->pushButton_radarOpenSerial->setText(tr("打开串口"));
+        ui->comboBox_availaleSerial->setDisabled(false);
         m_radar->closeSerial();
         delete m_radar;
         m_radar = nullptr;
