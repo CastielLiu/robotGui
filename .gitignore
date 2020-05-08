@@ -1,4 +1,4 @@
 build-*
 test/
 debug*
-videoTransmission/videoTransmission.pro.user
+robot_gui/robot_gui.pro.user

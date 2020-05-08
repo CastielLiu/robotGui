@@ -12,6 +12,8 @@ QT       += serialport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
+message($$[QT_VERSION])
+
 TARGET = robotGui
 TEMPLATE = app
 
@@ -72,6 +74,11 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 RESOURCES += \
     res.qrc
-
-INCLUDEPATH += C:\opencv\build\include
-LIBS += C:\opencv\opencv-build\bin\libopencv_*
+win32{
+    message("current os is win32")
+    INCLUDEPATH += C:\opencv\build\include
+    LIBS += C:\opencv\opencv-build\bin\libopencv_*
+}
+unix{
+    message("current os is unix")
+}

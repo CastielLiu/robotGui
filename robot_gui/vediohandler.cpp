@@ -4,7 +4,11 @@
 #define CAMERA_FRAME_GRABER 2
 #define CV_IMAGE_GRABER 3
 
-#define WHAT_CAMERE_TOOL CV_IMAGE_GRABER
+#if defined(Q_OS_LINUX)
+    #define WHAT_CAMERE_TOOL QCAMERA_IMAGE_CAPTURE
+#else
+    #define WHAT_CAMERE_TOOL CV_IMAGE_GRABER
+#endif
 
 VedioHandler::VedioHandler():
     m_camera(nullptr),
