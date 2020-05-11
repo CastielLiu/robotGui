@@ -17,7 +17,8 @@ int main(int argc,char**argv)
 		myPort = atoi(argv[1]);
 	
 	RemoteCmdHandler handler;
-	handler.setServerAddr("62.234.114.48",8617);
+	//handler.setServerAddr("62.234.114.48",8617);
+	handler.setServerAddr("192.168.0.194",8617);
 	handler.setRobotId(myPort);
 	handler.bindCallbackFunction(&cmdCallback);
 	

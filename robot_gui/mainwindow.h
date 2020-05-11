@@ -12,6 +12,7 @@
 #include <QSettings>
 #include <QKeyEvent>
 #include <biologicalradar.h>
+#include <utils.h>
 
 
 namespace Ui {
@@ -70,6 +71,10 @@ private slots:
 
     void on_pushButton_bioRadarExit_clicked();
 
+    void on_pushButton_roscore_clicked();
+
+    void on_pushButton_remoteCtrl_clicked();
+
 private:
     void closeEvent(QCloseEvent *event) override;
     void loadPerformance();
@@ -77,6 +82,8 @@ private:
     void timerEvent(QTimerEvent *event) override;
     void displayImage();
     void updateAvailaleSerial();
+    void updateStatusBarPemanentMsg();
+    bool clientModeSelection();
 
 private:
     Ui::MainWindow *ui;
@@ -91,6 +98,7 @@ private:
     MyQLabel *m_imageLabel;
     bool m_myImageBig ;
     int m_imageDisplayTimer =0;
+    QString mWindowTitle;
 
 };
 

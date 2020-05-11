@@ -30,7 +30,7 @@ bool UdpSender::startSend(uint16_t dstId)
     if(g_isOpenVedio)
         m_vedioCaptor->startVedioTransmission();
 
-    if(g_openRemoteControl)
+    if(g_isRemoteTerminal)
     {
         m_remoteControler = new RemoteControl;
         connect(g_ui->widget_control1,SIGNAL(dirKeyPressed(int)),
@@ -81,12 +81,12 @@ void UdpSender::run()
     uint32_t cnt = 0;
     while (!this->isInterruptionRequested())
     {
-       if(cnt%2==0)
+       //if(cnt%2==0)
            m_vedioCaptor->sendImage(m_udpSocket,m_dstId);
 
        m_audioRecorder->sendAudio(m_udpSocket,m_dstId);
 
-       if(g_openRemoteControl)
+       if(g_isRemoteTerminal)
            m_remoteControler->sendControlCmd(m_udpSocket,g_robotControlId);
        QThread::msleep(50);
        ++cnt;

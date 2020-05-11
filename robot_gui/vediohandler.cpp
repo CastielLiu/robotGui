@@ -5,7 +5,7 @@
 #define CV_IMAGE_GRABER 3
 
 #if defined(Q_OS_LINUX)
-    #define WHAT_CAMERE_TOOL QCAMERA_IMAGE_CAPTURE
+    #define WHAT_CAMERE_TOOL CV_IMAGE_GRABER
 #else
     #define WHAT_CAMERE_TOOL CV_IMAGE_GRABER
 #endif
@@ -166,8 +166,8 @@ void VedioHandler::sendImage(QUdpSocket *sockect, uint16_t receiverId)
     *imgPtr = imgPtr->scaled(int(size.width()*m_imgScale),int(size.height()*m_imgScale));
 
     imgPtr->save(&Buffer,"JPG");//将图片保存在QByteArray中
-
 #endif
+
     pkgHeader_t header(PkgType_Video) ;
     header.length = imageByteArray.size();
     header.senderId = g_myId;
@@ -231,8 +231,6 @@ void VedioHandler::onImageGrabed(const QVideoFrame &frame)
 //将接收到的图片赋值给全局图片指针
 void VedioHandler::appendData(char* const buf, int len)
 {
-    static uint32_t imgCnt = 1;
-
     //先将图片字节数据转换为图片QImage，然后添加到缓冲区
     QByteArray imageByteArray = QByteArray::fromRawData(buf,len); //不拷贝
     //QByteArray imageByteArray(buf,len); //拷贝
@@ -248,5 +246,6 @@ void VedioHandler::appendData(char* const buf, int len)
     g_otherImage = imgPtr;
     g_otherImageMutex.unlock();
 
-    g_ui->lineEdit_imgCnt->setText(QString::number(++imgCnt));
+    //static uint32_t imgCnt = 1;
+    //g_ui->lineEdit_imgCnt->setText(QString::number(++imgCnt));
 }

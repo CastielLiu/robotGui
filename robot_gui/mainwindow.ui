@@ -6,15 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1194</width>
-    <height>676</height>
+    <width>979</width>
+    <height>607</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QHBoxLayout" name="horizontalLayout_3">
+   <layout class="QVBoxLayout" name="verticalLayout_11">
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
@@ -23,13 +23,13 @@
       <widget class="QWidget" name="page">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout" stretch="3,10,2">
+         <layout class="QHBoxLayout" name="horizontalLayout" stretch="2,10,3">
           <item>
            <widget class="QWidget" name="widget_left" native="true">
             <property name="styleSheet">
              <string notr="true"/>
             </property>
-            <layout class="QVBoxLayout" name="verticalLayout_4">
+            <layout class="QVBoxLayout" name="verticalLayout_12">
              <item>
               <widget class="MyQLabel" name="label_registerStatus">
                <property name="minimumSize">
@@ -45,8 +45,7 @@
                 </size>
                </property>
                <property name="styleSheet">
-                <string notr="true">background-color: rgb(175, 211, 255);
-</string>
+                <string notr="true">border:2px solid rgb(200, 255, 0);</string>
                </property>
                <property name="text">
                 <string>login</string>
@@ -67,56 +66,36 @@
               </spacer>
              </item>
              <item>
-              <widget class="QWidget" name="widget_img" native="true">
-               <property name="minimumSize">
-                <size>
-                 <width>40</width>
-                 <height>30</height>
-                </size>
-               </property>
-               <property name="sizeIncrement">
-                <size>
-                 <width>4</width>
-                 <height>3</height>
-                </size>
-               </property>
-              </widget>
-             </item>
-             <item>
               <widget class="QWidget" name="widget" native="true">
-               <layout class="QVBoxLayout" name="verticalLayout">
+               <layout class="QVBoxLayout" name="verticalLayout_4">
                 <item>
                  <layout class="QHBoxLayout" name="horizontalLayout_6">
                   <item>
                    <widget class="QLabel" name="label">
                     <property name="text">
-                     <string>视频计数器：</string>
+                     <string>ID : </string>
                     </property>
                    </widget>
                   </item>
                   <item>
-                   <widget class="QLineEdit" name="lineEdit_imgCnt">
-                    <property name="focusPolicy">
-                     <enum>Qt::NoFocus</enum>
-                    </property>
-                   </widget>
+                   <widget class="QLineEdit" name="lineEdit_calledId"/>
                   </item>
                  </layout>
                 </item>
                 <item>
-                 <layout class="QHBoxLayout" name="horizontalLayout_7">
+                 <layout class="QHBoxLayout" name="horizontalLayout_3">
                   <item>
                    <widget class="QPushButton" name="pushButton_call">
                     <property name="minimumSize">
                      <size>
-                      <width>80</width>
-                      <height>40</height>
+                      <width>0</width>
+                      <height>0</height>
                      </size>
                     </property>
                     <property name="maximumSize">
                      <size>
                       <width>80</width>
-                      <height>40</height>
+                      <height>65535</height>
                      </size>
                     </property>
                     <property name="focusPolicy">
@@ -131,37 +110,28 @@
                    </widget>
                   </item>
                   <item>
-                   <spacer name="horizontalSpacer_8">
-                    <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>40</width>
-                      <height>20</height>
-                     </size>
-                    </property>
-                   </spacer>
-                  </item>
-                  <item>
-                   <widget class="QCheckBox" name="checkBox_audio">
-                    <property name="focusPolicy">
-                     <enum>Qt::NoFocus</enum>
-                    </property>
-                    <property name="text">
-                     <string>音频</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QCheckBox" name="checkBox_vedio">
-                    <property name="focusPolicy">
-                     <enum>Qt::NoFocus</enum>
-                    </property>
-                    <property name="text">
-                     <string>视频</string>
-                    </property>
-                   </widget>
+                   <layout class="QVBoxLayout" name="verticalLayout">
+                    <item>
+                     <widget class="QCheckBox" name="checkBox_vedio">
+                      <property name="focusPolicy">
+                       <enum>Qt::NoFocus</enum>
+                      </property>
+                      <property name="text">
+                       <string>视频</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QCheckBox" name="checkBox_audio">
+                      <property name="focusPolicy">
+                       <enum>Qt::NoFocus</enum>
+                      </property>
+                      <property name="text">
+                       <string>音频</string>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
                   </item>
                  </layout>
                 </item>
@@ -179,6 +149,9 @@
               <height>300</height>
              </size>
             </property>
+            <property name="styleSheet">
+             <string notr="true">border:1px solid rgb(200, 200, 200);</string>
+            </property>
             <property name="text">
              <string/>
             </property>
@@ -186,29 +159,69 @@
           </item>
           <item>
            <widget class="QWidget" name="widget_right" native="true">
-            <layout class="QVBoxLayout" name="verticalLayout_3">
+            <property name="styleSheet">
+             <string notr="true"/>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_10">
              <item>
-              <spacer name="verticalSpacer_2">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>20</width>
-                 <height>459</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item>
-              <widget class="QLabel" name="label_robotStatus">
-               <property name="text">
-                <string/>
-               </property>
+              <widget class="QWidget" name="widget_control2" native="true">
+               <layout class="QVBoxLayout" name="verticalLayout_3">
+                <item>
+                 <widget class="QPushButton" name="pushButton_roscore">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>35</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>roscore</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="pushButton_remoteCtrl">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>35</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>remote control</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="verticalSpacer_2">
+                  <property name="orientation">
+                   <enum>Qt::Vertical</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>28</width>
+                    <height>245</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+               </layout>
               </widget>
              </item>
              <item>
               <widget class="MyWidget" name="widget_control1" native="true">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>130</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>130</height>
+                </size>
+               </property>
                <layout class="QVBoxLayout" name="verticalLayout_2">
                 <item>
                  <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -417,23 +430,9 @@
                 </widget>
                </item>
                <item>
-                <widget class="QCheckBox" name="checkBox_remoteControl">
-                 <property name="text">
-                  <string>启动远程控制</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
                 <widget class="QCheckBox" name="checkBox_ignoreCalledOffline">
                  <property name="text">
                   <string>忽略被叫离线</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QCheckBox" name="checkBox_isRemoteTerminal">
-                 <property name="text">
-                  <string>作为远程端</string>
                  </property>
                 </widget>
                </item>
@@ -570,7 +569,11 @@
                     </widget>
                    </item>
                    <item>
-                    <widget class="QLineEdit" name="lineEdit_heartBeatReat"/>
+                    <widget class="QLineEdit" name="lineEdit_heartBeatReat">
+                     <property name="focusPolicy">
+                      <enum>Qt::NoFocus</enum>
+                     </property>
+                    </widget>
                    </item>
                   </layout>
                  </item>
@@ -584,7 +587,11 @@
                     </widget>
                    </item>
                    <item>
-                    <widget class="QLineEdit" name="lineEdit_breathRate"/>
+                    <widget class="QLineEdit" name="lineEdit_breathRate">
+                     <property name="focusPolicy">
+                      <enum>Qt::NoFocus</enum>
+                     </property>
+                    </widget>
                    </item>
                   </layout>
                  </item>
@@ -598,7 +605,11 @@
                     </widget>
                    </item>
                    <item>
-                    <widget class="QLineEdit" name="lineEdit_bloodPressure"/>
+                    <widget class="QLineEdit" name="lineEdit_bloodPressure">
+                     <property name="focusPolicy">
+                      <enum>Qt::NoFocus</enum>
+                     </property>
+                    </widget>
                    </item>
                   </layout>
                  </item>
@@ -612,7 +623,11 @@
                     </widget>
                    </item>
                    <item>
-                    <widget class="QLineEdit" name="lineEdit_temperature"/>
+                    <widget class="QLineEdit" name="lineEdit_temperature">
+                     <property name="focusPolicy">
+                      <enum>Qt::NoFocus</enum>
+                     </property>
+                    </widget>
                    </item>
                   </layout>
                  </item>
@@ -693,8 +708,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1194</width>
-     <height>23</height>
+     <width>979</width>
+     <height>28</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_setting">
@@ -732,11 +747,6 @@
    </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
-  <action name="action_user_id">
-   <property name="text">
-    <string>设备ID</string>
-   </property>
-  </action>
   <action name="action_auto_login">
    <property name="text">
     <string>自动登录</string>
@@ -752,11 +762,6 @@
     <string>机器人控制ID</string>
    </property>
   </action>
-  <action name="actionddd">
-   <property name="text">
-    <string>ddd</string>
-   </property>
-  </action>
   <action name="action_about">
    <property name="text">
     <string>关于</string>
@@ -770,6 +775,11 @@
   <action name="action_biologicalRadar">
    <property name="text">
     <string>生物雷达</string>
+   </property>
+  </action>
+  <action name="action_user_id">
+   <property name="text">
+    <string>设备ID</string>
    </property>
   </action>
  </widget>

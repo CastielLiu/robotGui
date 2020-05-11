@@ -3,7 +3,6 @@
 
 /**********条件变量***********/
 bool g_canCalled = true; //是否启用被叫
-bool g_openRemoteControl = true; //是否启动远程控制
 bool g_ignoreCalledOffline = false; //是否忽略被叫离线
 bool g_isRemoteTerminal = true;  //是否为远程端
 

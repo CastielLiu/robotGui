@@ -15,7 +15,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->setupUi(this);
     g_ui = ui; //初始化全局ui指针便于在外部调用ui
-    this->setWindowTitle("机器人用户界面");
+
+    this->clientModeSelection();//客户端模式选择
+    this->loadPerformance();//载入用户参数
+
+    this->setWindowTitle(mWindowTitle);
     this->setWindowIcon(QIcon(":/images/icon"));
     this->setFixedSize(this->width(),this->height());
 
@@ -23,6 +27,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->label_registerStatus,SIGNAL(clicked()),this,SLOT(onLableRegisterStatusClicked()));
     ui->label_registerStatus->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter); //设置label文字居中
     ui->checkBox_audio->setCheckState(Qt::CheckState::Checked);
+    ui->lineEdit_calledId->setText(QString::number(g_robotCallId));
+    //ui->checkBox_audio->hide();
 
     //连接action信号槽
     connect(ui->action_user_id,SIGNAL(triggered()),this,SLOT(onActionUserId()));
@@ -32,7 +38,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->action_about,SIGNAL(triggered()),this,SLOT(onActionAbout()));
     connect(ui->action_debugConfig,SIGNAL(triggered()),this,SLOT(onActionDebugConfig()));
     connect(ui->action_biologicalRadar,SIGNAL(triggered()),this,SLOT(onActionBiologicalRadar()));
-    this->loadPerformance();//载入用户参数
+
 
     //实例化接收器
     m_udpReceiver = new UdpReceiver;
@@ -60,6 +66,26 @@ MainWindow::~MainWindow()
         delete m_udpSender;
 
     delete ui;
+}
+
+//
+bool MainWindow::clientModeSelection()
+{
+    int button = QMessageBox::question(this, tr("客户端模式选择"),
+                                   QString(tr("启动远程客户端:Yes\n启动本地客户端:No")),
+                                   QMessageBox::Yes | QMessageBox::No);
+    if (button == QMessageBox::Yes)
+    {
+        g_isRemoteTerminal = true;
+        mWindowTitle = tr("用户界面: 远程端");
+        ui->widget_control2->hide();
+    }
+    else if(button == QMessageBox::No)
+    {
+        g_isRemoteTerminal = false;
+
+    }
+    return true;
 }
 
 //开始通话
@@ -121,11 +147,31 @@ void MainWindow::showMsgInStatusBar(const QString& msg,int timeout)
     ui->statusBar->showMessage(msg, timeout);
 }
 
+void MainWindow::updateStatusBarPemanentMsg()
+{
+    static QLabel *permanent=new QLabel(this);
+    //permanent->setFrameStyle(QFrame::Box|QFrame::Sunken);
+
+    QString str = QString("host id:")+QString::number(g_myId);
+    permanent->setText(str);
+
+    ui->statusBar->addPermanentWidget(permanent);//显示永久信息
+}
+
 void MainWindow::on_pushButton_call_clicked()
 {
     if(ui->pushButton_call->isChecked())
     {
-        uint16_t dstId = g_robotCallId;
+
+        bool ok;
+        uint16_t callId = ui->lineEdit_calledId->text().toUShort(&ok);
+        if(!ok)
+        {
+            ui->lineEdit_calledId->setText("error!");
+            ui->pushButton_call->setChecked(false);
+            return;
+        }
+        g_robotCallId = callId;
 
         if(g_registerStatus != RegisterStatus_Ok )
             ui->statusBar->showMessage("Please login firstly!",5000);
@@ -135,17 +181,19 @@ void MainWindow::on_pushButton_call_clicked()
             ui->statusBar->showMessage("Please set robot control id",5000);
         else if(g_systemStatus == SystemOnThePhone)
             ui->statusBar->showMessage("Call in progress!",5000);
-        else if(dstId == g_myId)
+        else if(g_robotCallId == g_myId)
             ui->statusBar->showMessage(QString("Can not call yourself!"),5000);
         else
         {
-            this->startChat(dstId);
+            this->startChat(g_robotCallId);
             return;
         }
         ui->pushButton_call->setChecked(false);
     }
     else
+    {
         this->stopChat();
+    }
 }
 
 //被叫忙
@@ -190,12 +238,16 @@ void MainWindow::savePerformance()
     //创建配置文件操作对象
     QSettings *config = new QSettings(m_configFile, QSettings::IniFormat);
 
-    //config->beginGroup("");
-    config->setValue("userId", g_myId);
     config->setValue("autoLogin", QString::number(m_autoRegister));
+    config->setValue("userId", g_myId);
     config->setValue("robotCallId", g_robotCallId);
     config->setValue("robotCotrolId", g_robotControlId);
-    //config->endGroup();
+
+    config->beginGroup("server");
+    config->setValue("ip", g_serverIp.toString());
+    config->setValue("port",g_registerPort);
+
+    config->endGroup();
     delete config;
 }
 
@@ -214,10 +266,17 @@ void MainWindow::loadPerformance()
 
         QString ip = config->value(QString("server/ip")).toString();
         quint16 port = config->value(QString("server/port")).toUInt();
+
+        if(ip.isEmpty())
+        {
+            ip = QString("62.234.114.48");
+            port = 8617;
+        }
         g_registerPort = port;
         g_serverIp.setAddress(ip);
     }
     delete config;
+    updateStatusBarPemanentMsg();
 }
 
 void MainWindow::onActionUserId()
@@ -237,6 +296,8 @@ void MainWindow::onActionUserId()
        }
        QString msg = QString("Set User Id ") + QString::number(g_myId) + " ok.";
        ui->statusBar->showMessage(msg, 3000);
+
+       this->updateStatusBarPemanentMsg();
     }
 }
 
@@ -264,7 +325,10 @@ void MainWindow::onActionRobotCallId()
         bool ok;
         uint16_t id = dialog.textValue().toUInt(&ok);
         if(ok)
+        {
             g_robotCallId = id;
+            this->updateStatusBarPemanentMsg();
+        }
         else
             onActionRobotCallId();
     }
@@ -283,7 +347,10 @@ void MainWindow::onActionRobotControlId()
         bool ok;
         uint16_t id = dialog.textValue().toUInt(&ok);
         if(ok)
+        {
             g_robotControlId = id;
+            this->updateStatusBarPemanentMsg();
+        }
         else
             onActionRobotControlId();
     }
@@ -326,7 +393,7 @@ void MainWindow::on_checkBox_audio_stateChanged(int arg1)
 
 void MainWindow::updateRobotStatus(const QString& qstr)
 {
-    ui->label_robotStatus->setText(qstr);
+    //ui->label_robotStatus->setText(qstr);
 }
 
 //启动、关闭图片显示小窗口
@@ -391,11 +458,11 @@ void MainWindow::displayImage()
             m_imageLabel->setPixmap(QPixmap::fromImage(g_myImage->scaled(m_imageLabel->size())));
 
     }
-    else if(g_myImage == nullptr) //本地图片指针为空，表明本地摄像头未启动
+   /* else if(g_myImage == nullptr) //本地图片指针为空，表明本地摄像头未启动
     {
         if(m_myImageBig) ui->label_showImageMain->clear();
         else m_imageLabel->clear();
-    }
+    }*/
 
     locker1.unlock();
 
@@ -424,20 +491,15 @@ void MainWindow::timerEvent(QTimerEvent *event)
 void MainWindow::onActionDebugConfig()
 {
     ui->checkBox_canCalled->setCheckState(Qt::CheckState::Checked);
-    ui->checkBox_remoteControl->setCheckState(Qt::CheckState::Checked);
     ui->checkBox_ignoreCalledOffline->setCheckState(Qt::CheckState::Unchecked);
-    ui->checkBox_isRemoteTerminal->setCheckState(Qt::CheckState::Checked);
 
     ui->stackedWidget->setCurrentIndex(stackWidget_DebugPage);
 }
 
-
 void MainWindow::on_pushButton_debugPageOk_clicked()
 {
     g_canCalled = ui->checkBox_canCalled->isChecked();
-    g_openRemoteControl =  ui->checkBox_remoteControl->isChecked();
     g_ignoreCalledOffline = ui->checkBox_ignoreCalledOffline->isChecked();
-    g_isRemoteTerminal = ui->checkBox_isRemoteTerminal->isChecked();
     ui->stackedWidget->setCurrentIndex(stackWidget_MainPage);
 }
 
@@ -517,7 +579,11 @@ void MainWindow::updateAvailaleSerial()
 void MainWindow::on_pushButton_radarOpenSerial_clicked(bool checked)
 {
     QString serialPort = ui->comboBox_availaleSerial->currentText();
-    if(serialPort.isEmpty()) return;
+    if(serialPort.isEmpty())
+    {
+        ui->pushButton_radarOpenSerial->setChecked(false);
+        return;
+    }
 
     if(checked)
     {
@@ -539,10 +605,15 @@ void MainWindow::on_pushButton_radarOpenSerial_clicked(bool checked)
     else
     {
         ui->pushButton_radarOpenSerial->setText(tr("打开串口"));
+        ui->pushButton_radarOpenSerial->setChecked(false);
         ui->comboBox_availaleSerial->setDisabled(false);
-        m_radar->closeSerial();
-        delete m_radar;
-        m_radar = nullptr;
+
+        if(m_radar !=nullptr)
+        {
+            m_radar->closeSerial();
+            delete m_radar;
+            m_radar = nullptr;
+        }
     }
 }
 
@@ -557,5 +628,17 @@ void MainWindow::onBioRadarUpdateData(bioRadarData_t data)
 
 void MainWindow::on_pushButton_bioRadarExit_clicked()
 {
+    emit ui->pushButton_radarOpenSerial->clicked(false);
     ui->stackedWidget->setCurrentIndex(stackWidget_MainPage);
+}
+
+void MainWindow::on_pushButton_roscore_clicked()
+{
+    utils::systemCmd("bash -c roscore");
+}
+
+void MainWindow::on_pushButton_remoteCtrl_clicked()
+{
+
+    utils::systemCmd("./command/remote_control.sh");
 }

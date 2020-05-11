@@ -17,7 +17,6 @@
 #include "structs.h"
 
 extern bool g_canCalled;
-extern bool g_openRemoteControl;
 extern bool g_ignoreCalledOffline;
 extern bool g_isRemoteTerminal;
 

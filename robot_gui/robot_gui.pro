@@ -36,6 +36,7 @@ SOURCES += \
     mainwindow.cpp \
     udpreceiver.cpp \
     audiohandler.cpp \
+    utils.cpp \
     vediohandler.cpp \
     udpsender.cpp \
     myqlabel.cpp \
@@ -51,6 +52,7 @@ HEADERS += \
         mainwindow.h \
     udpreceiver.h \
     audiohandler.h \
+    utils.h \
     vediohandler.h \
     udpsender.h \
     circlebuffer.h \
@@ -81,4 +83,9 @@ win32{
 }
 unix{
     message("current os is unix")
+    INCLUDEPATH += /usr/local/include \
+                   /usr/local/include/opencv
+                   /usr/local/include/opencv2
+    LIBS += /usr/local/lib/libopencv_*
+
 }
