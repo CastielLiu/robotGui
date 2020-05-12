@@ -79,6 +79,8 @@ void UdpReceiver::registerToServerThread()
     }
 }
 
+//在主线程中注册到服务器，但是不能使用循环等待，否则将导致界面假死
+//发送注册指令后，启动定时器，当定时器溢出后检查注册状态
 void UdpReceiver::registerToServerInMainThread()
 {
     emit updateRegisterStatus(RegisterStatus_Ing);
@@ -171,7 +173,6 @@ void UdpReceiver::stopPlayMv()
         delete m_vedioPlayer;
         m_vedioPlayer = nullptr;
     }
-
 }
 
 void UdpReceiver::sendCmd(PkgType cmdType)
@@ -217,6 +218,12 @@ void UdpReceiver::onReadyRead()
         {
             qDebug() << "register failed!" ;
             emit this->updateRegisterStatus(RegisterStatus_None);
+        }
+        else if(PkgType_repeatLogin == package->type)
+        {
+            emit this->updateRegisterStatus(RegisterStatus_None);
+            emit showMsgInStatusBar(QString("repeat login!"),3000);
+            killTimer(m_registerTimerId); //关闭登录计时器
         }
         else if(PkgType_RequestConnect == package->type) //请求连接
         {
@@ -272,15 +279,21 @@ void UdpReceiver::onReadyRead()
         else if(PkgType_Video == package->type)
         {
             if(SystemOnThePhone == g_systemStatus)
+            {
                 handleVedioMsg(m_dataBuf);
+                emit addWorkLog("received video, len: "+QString::number(len));
+            }
         }
         else if(PkgType_Audio == package->type)
         {
             if(SystemOnThePhone == g_systemStatus)
+            {
                 handleAudioMsg(m_dataBuf);
+                emit addWorkLog("received audio, len: "+QString::number(len));
+            }
         }
         else
-            std::cout << "unknown type " << std::endl;
+            emit addWorkLog("received unknown type msg, len: "+QString::number(len));
     }
 }
 
@@ -289,6 +302,7 @@ void UdpReceiver::handleVedioMsg(char* const buf)
     pkgHeader_t* package = (pkgHeader_t*)buf;
     int len = package->length;
     m_vedioPlayer->appendData(buf+sizeof(pkgHeader_t),len);
+
 }
 
 void UdpReceiver::handleAudioMsg(char* const buf)
@@ -302,13 +316,13 @@ void UdpReceiver::handleAudioMsg(char* const buf)
 //音频和视频播放
 void UdpReceiver::run(void)
 {
-    emit enableImageDisplay(true);
+    emit enableImageDisplay(true); //使能mainWindow中的视频播放定时器
     while (!this->isInterruptionRequested())
     {
         m_audioPlayer->playAudio();
         QThread::msleep(30);
     }
-    emit enableImageDisplay(false);
+    emit enableImageDisplay(false);//失能mainWindow视频播放
 }
 
 void UdpReceiver::heartBeatThread()
@@ -326,7 +340,9 @@ void UdpReceiver::heartBeatThread()
         if(disconnect)
         {
             emit logoutSignal();
-            qDebug() << "server is shutdown" ;
+            emit addWorkLog("server is shutdown ! try to relogin...");
+            QThread::msleep(300);
+            registerToServer(); //重新登录
             return;
         }
 

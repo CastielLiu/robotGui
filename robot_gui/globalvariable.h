@@ -1,6 +1,5 @@
 #ifndef GLOBAL_VARIABLE_H
 #define GLOBAL_VARIABLE_H
-#include "ui_mainwindow.h"
 
 #include<iostream>
 #include<sstream>
@@ -32,8 +31,6 @@ extern uint16_t g_robotControlId ;
 
 extern uint16_t g_heartBeatInterval ;
 extern uint16_t g_maxHeartBeatDelay ;
-
-extern Ui::MainWindow *g_ui;
 
 extern std::shared_ptr<QImage> g_myImage;   //我方图像
 extern QMutex g_myImageMutex;

@@ -8,7 +8,7 @@ bool g_isRemoteTerminal = true;  //是否为远程端
 
 uint16_t g_myId = 123;   // 注：分配客户端id时保留0
 uint16_t g_heartBeatInterval = 5; //心跳包发送间隔(s)，需与服务器保持一致
-uint16_t g_maxHeartBeatDelay = 5; //心跳包容许延迟时间(s)
+uint16_t g_maxHeartBeatDelay = 1; //心跳包容许延迟时间(s)
 
 systemStatus g_systemStatus = SystemIdle;
 QHostAddress g_serverIp;
@@ -19,8 +19,6 @@ int g_registerStatus = RegisterStatus_None;
 
 uint16_t g_robotCallId = 0; //机器人视频通话ID
 uint16_t g_robotControlId = 5050;//机器人远程控制ID
-
-Ui::MainWindow *g_ui;
 
 /***** 跨线程传递变量   ****/
 std::shared_ptr<QImage> g_myImage = nullptr;   //我方图像

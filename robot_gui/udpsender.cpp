@@ -33,13 +33,12 @@ bool UdpSender::startSend(uint16_t dstId)
     if(g_isRemoteTerminal)
     {
         m_remoteControler = new RemoteControl;
-        connect(g_ui->widget_control1,SIGNAL(dirKeyPressed(int)),
+  /*      connect(g_ui->widget_control1,SIGNAL(dirKeyPressed(int)),
                 m_remoteControler,SLOT(onDirKeyPressed(int)));
 
         connect(g_ui->widget_control1,SIGNAL(dirKeyReleased(int)),
-                m_remoteControler,SLOT(onDirKeyReleased(int)));
+                m_remoteControler,SLOT(onDirKeyReleased(int)));*/
     }
-
     this->start();
     return true;
 }
@@ -81,15 +80,14 @@ void UdpSender::run()
     uint32_t cnt = 0;
     while (!this->isInterruptionRequested())
     {
-       if(cnt%2==0)
+        QThread::msleep(50);
+        if(g_isRemoteTerminal)
+            m_remoteControler->sendControlCmd(m_udpSocket,g_robotControlId);
+
+       if(++cnt%2==0)
            m_vedioCaptor->sendImage(m_udpSocket,m_dstId);
 
        m_audioRecorder->sendAudio(m_udpSocket,m_dstId);
-
-       if(g_isRemoteTerminal)
-           m_remoteControler->sendControlCmd(m_udpSocket,g_robotControlId);
-       QThread::msleep(50);
-       ++cnt;
     }
     m_udpSocket->close();
     delete m_udpSocket;
@@ -120,4 +118,9 @@ void UdpSender::closeAudio()
 {
     if(m_audioRecorder)
         m_audioRecorder->stopAudioTransmission();
+}
+
+const RemoteControl * UdpSender::getRemoteCtrler()
+{
+    return m_remoteControler;
 }

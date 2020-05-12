@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "ui_mainwindow.h"
 #include <QMainWindow>
 #include "enums.h"
 #include "udpreceiver.h"
@@ -13,7 +14,7 @@
 #include <QKeyEvent>
 #include <biologicalradar.h>
 #include <utils.h>
-
+#include <chrono>
 
 namespace Ui {
 class MainWindow;
@@ -38,6 +39,7 @@ private slots:
     void updateRegisterStatus(int status);
     void showMsgInStatusBar(const QString& msg,int timeout=0);
     void updateRobotStatus(const QString& str);
+    void addWorkLog(const QString& str, bool vip=false);
 
     //action slots
     void onActionUserId();
@@ -47,6 +49,7 @@ private slots:
     void onActionAbout();
     void onActionDebugConfig();
     void onActionBiologicalRadar();
+    void onActionWorkLog();
 
     //checkbox
     void on_checkBox_vedio_stateChanged(int arg1);
@@ -66,14 +69,11 @@ private slots:
     void on_pushButton_Right_pressed();
     void on_pushButton_Right_released();
     void on_pushButton_radarOpenSerial_clicked(bool checked);
-
     void onBioRadarUpdateData(bioRadarData_t data);
-
     void on_pushButton_bioRadarExit_clicked();
-
     void on_pushButton_roscore_clicked();
-
     void on_pushButton_remoteCtrl_clicked();
+    void on_pushButton_logpageReturn_clicked();
 
 private:
     void closeEvent(QCloseEvent *event) override;
@@ -99,7 +99,6 @@ private:
     bool m_myImageBig ;
     int m_imageDisplayTimer =0;
     QString mWindowTitle;
-
 };
 
 #endif // MAINWINDOW_H

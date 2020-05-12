@@ -170,13 +170,14 @@ void AudioHandler::configPlayer(int sampleRate, int channelCount, int sampleSize
 //将收到的语音消息添加进语音缓冲区，等待播放
 void AudioHandler::appendData(char* const buf, int len)
 {
+      QDir::currentPath();
     /*if(!m_file.isOpen())
     {
         QString file_name = QDir::currentPath() +"/audio";
-        g_ui->statusBar->showMessage(file_name);
+        qDebug() << file_name;
         m_file.setFileName(file_name);
         bool ok = m_file.open(QIODevice::WriteOnly);
-        g_ui->statusBar->showMessage(file_name+" " + QString::number(ok));
+        qDebug() << file_name << " "  << QString::number(ok);
     }
     m_file.write(buf,len);*/
 

@@ -21,6 +21,7 @@ public:
 
     void openAudio();
     void closeAudio();
+    const RemoteControl *getRemoteCtrler();
 
 private:
     QUdpSocket *m_udpSocket;

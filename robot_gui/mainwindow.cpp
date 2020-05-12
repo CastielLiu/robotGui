@@ -1,5 +1,4 @@
 #include "mainwindow.h"
-#include "ui_mainwindow.h"
 #include <thread>
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -11,10 +10,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_imageLabel(nullptr),
     m_radar(nullptr)
 {
-    std::cout << "create MainWindow in thread: " << QThread::currentThreadId() << std::endl;
-
     ui->setupUi(this);
-    g_ui = ui; //初始化全局ui指针便于在外部调用ui
 
     this->clientModeSelection();//客户端模式选择
     this->loadPerformance();//载入用户参数
@@ -30,6 +26,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->lineEdit_calledId->setText(QString::number(g_robotCallId));
     //ui->checkBox_audio->hide();
 
+    ui->label_log->setAlignment(Qt::AlignHCenter); //居中对齐
+
+
     //连接action信号槽
     connect(ui->action_user_id,SIGNAL(triggered()),this,SLOT(onActionUserId()));
     connect(ui->action_auto_login,SIGNAL(triggered()),this,SLOT(onActionAutoLogin()));
@@ -38,7 +37,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->action_about,SIGNAL(triggered()),this,SLOT(onActionAbout()));
     connect(ui->action_debugConfig,SIGNAL(triggered()),this,SLOT(onActionDebugConfig()));
     connect(ui->action_biologicalRadar,SIGNAL(triggered()),this,SLOT(onActionBiologicalRadar()));
-
+    connect(ui->action_workLog,SIGNAL(triggered()),this,SLOT(onActionWorkLog()));
 
     //实例化接收器
     m_udpReceiver = new UdpReceiver;
@@ -51,11 +50,15 @@ MainWindow::MainWindow(QWidget *parent) :
             this,SLOT(showMsgInStatusBar(const QString&,int)));
     connect(m_udpReceiver,SIGNAL(enableMyImageLabel(bool)),this,SLOT(enableMyImageLabel(bool)));
     connect(m_udpReceiver,SIGNAL(enableImageDisplay(bool)),this,SLOT(enableImageDisplay(bool)));
+    connect(m_udpReceiver,SIGNAL(addWorkLog(const QString&,bool)),this,SLOT(addWorkLog(const QString&,bool)));
 
-    ui->widget_control1->setFocus(); //设置焦点
+    ui->widget_control1->setFocus(); //设置焦点,方向控制按钮
 
-    if(m_autoRegister)
-        this->login();
+    if(m_autoRegister)  this->login();
+
+    std::stringstream ss;
+    ss << "create MainWindow in thread: " << QThread::currentThreadId() ;
+    addWorkLog(QString("create MainWindow in thread: ") + QString(ss.str().c_str()), true);
 }
 
 MainWindow::~MainWindow()
@@ -68,7 +71,6 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-//
 bool MainWindow::clientModeSelection()
 {
     int button = QMessageBox::question(this, tr("客户端模式选择"),
@@ -83,7 +85,7 @@ bool MainWindow::clientModeSelection()
     else if(button == QMessageBox::No)
     {
         g_isRemoteTerminal = false;
-
+        mWindowTitle = tr("用户界面: 本地端");
     }
     return true;
 }
@@ -96,6 +98,15 @@ void MainWindow::startChat(uint16_t id)
 
     m_udpSender = new UdpSender;
     m_udpSender->startSend(id);
+    if(g_isRemoteTerminal)
+    {
+        connect(ui->widget_control1,SIGNAL(dirKeyPressed(int)),
+                m_udpSender->getRemoteCtrler(),SLOT(onDirKeyPressed(int)));
+
+        connect(ui->widget_control1,SIGNAL(dirKeyReleased(int)),
+                m_udpSender->getRemoteCtrler(),SLOT(onDirKeyReleased(int)));
+    }
+
     m_udpReceiver->startPlayMv();
     ui->lineEdit_calledId->setText(QString::number(id));
 }
@@ -159,44 +170,6 @@ void MainWindow::updateStatusBarPemanentMsg()
     permanent->setText(str);
 
     ui->statusBar->addPermanentWidget(permanent);//显示永久信息
-}
-
-void MainWindow::on_pushButton_call_clicked()
-{
-    if(ui->pushButton_call->isChecked())
-    {
-
-        bool ok;
-        uint16_t callId = ui->lineEdit_calledId->text().toUShort(&ok);
-        if(!ok)
-        {
-            ui->lineEdit_calledId->setText("error!");
-            ui->pushButton_call->setChecked(false);
-            return;
-        }
-        g_robotCallId = callId;
-
-        if(g_registerStatus != RegisterStatus_Ok )
-            ui->statusBar->showMessage("Please login firstly!",5000);
-        else if(g_robotCallId == 0 )
-            ui->statusBar->showMessage("Please set robot communicate id",5000);
-        else if(g_robotControlId == 0 )
-            ui->statusBar->showMessage("Please set robot control id",5000);
-        else if(g_systemStatus == SystemOnThePhone)
-            ui->statusBar->showMessage("Call in progress!",5000);
-        else if(g_robotCallId == g_myId)
-            ui->statusBar->showMessage(QString("Can not call yourself!"),5000);
-        else
-        {
-            this->startChat(g_robotCallId);
-            return;
-        }
-        ui->pushButton_call->setChecked(false);
-    }
-    else
-    {
-        this->stopChat();
-    }
 }
 
 //被叫忙
@@ -281,88 +254,6 @@ void MainWindow::loadPerformance()
     }
     delete config;
     updateStatusBarPemanentMsg();
-}
-
-void MainWindow::onActionUserId()
-{
-    QInputDialog dia(this);
-    dia.setWindowTitle("Set User Id");
-    dia.setLabelText("Please input id: ");
-    dia.setInputMode(QInputDialog::TextInput);//可选参数：DoubleInput  TextInput
-    dia.setTextValue(QString::number(g_myId));
-    if(dia.exec() == QInputDialog::Accepted)
-    {
-       g_myId = dia.textValue().toUInt();
-       if(g_myId == 0)
-       {
-           ui->statusBar->showMessage("error, please input again",1000);
-           onActionUserId(); //输入错误后再次调用本函数
-       }
-       QString msg = QString("Set User Id ") + QString::number(g_myId) + " ok.";
-       ui->statusBar->showMessage(msg, 3000);
-
-       this->updateStatusBarPemanentMsg();
-    }
-}
-
-void MainWindow::onActionAutoLogin()
-{
-    int button = QMessageBox::question(this, tr("自动登录设置"),
-                                   QString(tr("下次自动登录？")),
-                                   QMessageBox::Yes | QMessageBox::No);
-    if (button == QMessageBox::Yes)
-        m_autoRegister = true;
-    else
-        m_autoRegister = false;
-}
-
-void MainWindow::onActionRobotCallId()
-{
-    QInputDialog dialog(this);
-    dialog.setWindowTitle(tr("设置机器人通话ID")); //窗口名称
-    dialog.setLabelText("请输入: "); //输入提示
-    dialog.setInputMode(QInputDialog::TextInput);//可选参数：DoubleInput  TextInput IntInput
-    dialog.setTextValue(QString::number(g_robotCallId));
-
-    if(dialog.exec() == QInputDialog::Accepted)
-    {
-        bool ok;
-        uint16_t id = dialog.textValue().toUInt(&ok);
-        if(ok)
-        {
-            g_robotCallId = id;
-            this->updateStatusBarPemanentMsg();
-        }
-        else
-            onActionRobotCallId();
-    }
-}
-
-void MainWindow::onActionRobotControlId()
-{
-    QInputDialog dialog(this);
-    dialog.setWindowTitle(tr("设置机器人控制ID")); //窗口名称
-    dialog.setLabelText("请输入: "); //输入提示
-    dialog.setInputMode(QInputDialog::TextInput);//可选参数：DoubleInput  TextInput IntInput
-    dialog.setTextValue(QString::number(g_robotControlId));
-
-    if(dialog.exec() == QInputDialog::Accepted)
-    {
-        bool ok;
-        uint16_t id = dialog.textValue().toUInt(&ok);
-        if(ok)
-        {
-            g_robotControlId = id;
-            this->updateStatusBarPemanentMsg();
-        }
-        else
-            onActionRobotControlId();
-    }
-}
-
-void MainWindow::onActionAbout()
-{
-    QMessageBox::about(this,tr("关于"),tr("castiel_liu@outlook.com"));
 }
 
 void MainWindow::on_checkBox_vedio_stateChanged(int arg1)
@@ -460,7 +351,6 @@ void MainWindow::displayImage()
                     QPixmap::fromImage(g_myImage->scaled(ui->label_showImageMain->size())));
         else
             m_imageLabel->setPixmap(QPixmap::fromImage(g_myImage->scaled(m_imageLabel->size())));
-
     }
    /* else if(g_myImage == nullptr) //本地图片指针为空，表明本地摄像头未启动
     {
@@ -473,16 +363,16 @@ void MainWindow::displayImage()
     QMutexLocker locker2(&g_otherImageMutex);
     if(g_otherImage!= nullptr && !g_otherImage->isNull())
     {
-
         if(!m_myImageBig)
             ui->label_showImageMain->setPixmap(
                     QPixmap::fromImage(g_otherImage->scaled(ui->label_showImageMain->size())));
         else
             m_imageLabel->setPixmap(QPixmap::fromImage(g_otherImage->scaled(m_imageLabel->size())));
 
+       //static int testCnt = 0;
+       //ui->statusBar->showMessage(QString::number(testCnt++));
     }
     locker2.unlock();
-
 }
 
 //定时器溢出事件函数
@@ -492,83 +382,6 @@ void MainWindow::timerEvent(QTimerEvent *event)
        displayImage();
 }
 
-void MainWindow::onActionDebugConfig()
-{
-    ui->checkBox_canCalled->setCheckState(Qt::CheckState::Checked);
-    ui->checkBox_ignoreCalledOffline->setCheckState(Qt::CheckState::Unchecked);
-
-    ui->stackedWidget->setCurrentIndex(stackWidget_DebugPage);
-}
-
-void MainWindow::on_pushButton_debugPageOk_clicked()
-{
-    g_canCalled = ui->checkBox_canCalled->isChecked();
-    g_ignoreCalledOffline = ui->checkBox_ignoreCalledOffline->isChecked();
-    ui->stackedWidget->setCurrentIndex(stackWidget_MainPage);
-}
-
-//按键事件
-void MainWindow::on_pushButton_Up_pressed()
-{
-    //qDebug() << "on_pushButton_Up_pressed";
-    static QKeyEvent event( QEvent::KeyPress,Qt::Key_Up, Qt::NoModifier);
-    emit ui->widget_control1->keyPressEvent(&event);
-}
-void MainWindow::on_pushButton_Up_released()
-{
-    static QKeyEvent event( QEvent::KeyRelease,Qt::Key_Up, Qt::NoModifier);
-    emit ui->widget_control1->keyReleaseEvent(&event);
-}
-
-void MainWindow::on_pushButton_Down_pressed()
-{
-    static QKeyEvent event( QEvent::KeyPress,Qt::Key_Down, Qt::NoModifier);
-    emit ui->widget_control1->keyPressEvent(&event);
-}
-void MainWindow::on_pushButton_Down_released()
-{
-    static QKeyEvent event( QEvent::KeyRelease,Qt::Key_Down, Qt::NoModifier);
-    emit ui->widget_control1->keyReleaseEvent(&event);
-}
-
-void MainWindow::on_pushButton_Left_pressed()
-{
-    static QKeyEvent event( QEvent::KeyPress,Qt::Key_Left, Qt::NoModifier);
-    emit ui->widget_control1->keyPressEvent(&event);
-}
-void MainWindow::on_pushButton_Left_released()
-{
-    static QKeyEvent event( QEvent::KeyRelease,Qt::Key_Left, Qt::NoModifier);
-    emit ui->widget_control1->keyReleaseEvent(&event);
-}
-
-void MainWindow::on_pushButton_Right_pressed()
-{
-    static QKeyEvent event( QEvent::KeyPress,Qt::Key_Right, Qt::NoModifier);
-    emit ui->widget_control1->keyPressEvent(&event);
-}
-void MainWindow::on_pushButton_Right_released()
-{
-    static QKeyEvent event( QEvent::KeyRelease,Qt::Key_Right, Qt::NoModifier);
-    emit ui->widget_control1->keyReleaseEvent(&event);
-}
-
-//工具：生物雷达
-void MainWindow::onActionBiologicalRadar()
-{
-    ui->stackedWidget->setCurrentIndex(stackWidget_BioRadarPage);
-    ui->label_bioRadarTitle->setAlignment(Qt::AlignCenter);
-
-    if(g_isRemoteTerminal) //作为远程端
-    {
-        ui->widget_bioRadarSerial->hide(); //隐藏串口widget
-    }
-    else //本地端
-    {
-        ui->widget_bioRadarSerial->show(); //显示串口widget
-        updateAvailaleSerial(); //刷新可用串口
-    }
-}
 
 void MainWindow::updateAvailaleSerial()
 {
@@ -580,47 +393,6 @@ void MainWindow::updateAvailaleSerial()
     ui->comboBox_availaleSerial->addItems(list);
 }
 
-void MainWindow::on_pushButton_radarOpenSerial_clicked(bool checked)
-{
-    QString serialPort = ui->comboBox_availaleSerial->currentText();
-    if(serialPort.isEmpty())
-    {
-        ui->pushButton_radarOpenSerial->setChecked(false);
-        return;
-    }
-
-    if(checked)
-    {
-        m_radar = new BiologicalRadar();
-        connect(m_radar,SIGNAL(updateData(bioRadarData_t)),this,SLOT(onBioRadarUpdateData(bioRadarData_t)));
-
-        bool ok = m_radar->openSerial(serialPort);
-        if(!ok)
-        {
-            delete m_radar;
-            m_radar = nullptr;
-            ui->pushButton_radarOpenSerial->setChecked(false);
-            QMessageBox::warning(this,"WARNING",tr("打开串口失败！\n串口可能被占用！"),QMessageBox::Ok);
-            return;
-        }
-        ui->pushButton_radarOpenSerial->setText(tr("关闭串口"));
-        ui->comboBox_availaleSerial->setDisabled(true);
-    }
-    else
-    {
-        ui->pushButton_radarOpenSerial->setText(tr("打开串口"));
-        ui->pushButton_radarOpenSerial->setChecked(false);
-        ui->comboBox_availaleSerial->setDisabled(false);
-
-        if(m_radar !=nullptr)
-        {
-            m_radar->closeSerial();
-            delete m_radar;
-            m_radar = nullptr;
-        }
-    }
-}
-
 void MainWindow::onBioRadarUpdateData(bioRadarData_t data)
 {
     ui->lineEdit_breathRate->setText(QString::number(data.breathRate));
@@ -630,19 +402,20 @@ void MainWindow::onBioRadarUpdateData(bioRadarData_t data)
     ui->lineEdit_heartBeatReat->setText(QString::number(data.heartBeatRate));
 }
 
-void MainWindow::on_pushButton_bioRadarExit_clicked()
+void MainWindow::addWorkLog(const QString& str, bool vip)
 {
-    emit ui->pushButton_radarOpenSerial->clicked(false);
-    ui->stackedWidget->setCurrentIndex(stackWidget_MainPage);
-}
+    if((!ui->checkBox_showLog->isChecked()) && (!vip))
+        return;
+    std::chrono::milliseconds timeNow=
+            std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
 
-void MainWindow::on_pushButton_roscore_clicked()
-{
-    utils::systemCmd("bash -c roscore");
-}
+    uint64_t time = timeNow.count(); //时间戳
+    time_t sec = time/1000;
+    int msec = time%1000;
 
-void MainWindow::on_pushButton_remoteCtrl_clicked()
-{
-
-    utils::systemCmd("./command/remote_control.sh");
+    struct tm *ttime = localtime(&sec);
+    char time_buf[26] = "[";
+    strftime(time_buf+1,21,"%Y-%m-%d %H:%M:%S.",ttime);
+    sprintf(time_buf+21,"%03d] ",msec);
+    ui->textBrowser_log->append(QString(time_buf) + str);
 }

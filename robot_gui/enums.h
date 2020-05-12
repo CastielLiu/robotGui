@@ -30,6 +30,7 @@ enum PkgType
     PkgType_LogOut = 12,    //退出登陆
     PkgType_CalledOffline=13,// 被叫不在线
     PkgType_CalledBusy = 14,//被叫忙
+    PkgType_repeatLogin=15, //重复登录
 
     //remote control
     PkgType_ControlCmd = 20, //控制指令
@@ -54,6 +55,7 @@ enum stackWidgetIndex
     stackWidget_MainPage = 0, //主页面
     stackWidget_DebugPage =1, //调试页面
     stackWidget_BioRadarPage = 2, //生物雷达界面
+    stackWidget_WorkLogPage = 3, //工作日志
 };
 
 #endif // ENUMS_H_

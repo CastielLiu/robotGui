@@ -45,7 +45,9 @@ SOURCES += \
     remotecontrol.cpp \
     mywidget.cpp \
     globalvariable.cpp \
-    biologicalradar.cpp
+    biologicalradar.cpp \
+    uiaction.cpp \
+    uipushbutton.cpp
 
 
 HEADERS += \

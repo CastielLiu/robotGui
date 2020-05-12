@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>979</width>
-    <height>607</height>
+    <width>1012</width>
+    <height>568</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -699,6 +699,104 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="page_log">
+       <layout class="QHBoxLayout" name="horizontalLayout_18">
+        <item>
+         <spacer name="horizontalSpacer_12">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>168</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_13">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="1,1,10,1,1">
+            <item>
+             <widget class="QPushButton" name="pushButton_logpageReturn">
+              <property name="text">
+               <string>返回</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_11">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_log">
+              <property name="styleSheet">
+               <string notr="true">font: 25 14pt &quot;Adobe 宋体 Std L&quot;;</string>
+              </property>
+              <property name="text">
+               <string>工作日志</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_8">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_showLog">
+              <property name="text">
+               <string>显示</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QTextBrowser" name="textBrowser_log">
+            <property name="minimumSize">
+             <size>
+              <width>620</width>
+              <height>0</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_13">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>168</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -708,8 +806,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>979</width>
-     <height>28</height>
+     <width>1012</width>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_setting">
@@ -727,6 +825,7 @@
      <string>调试</string>
     </property>
     <addaction name="action_debugConfig"/>
+    <addaction name="action_workLog"/>
    </widget>
    <widget class="QMenu" name="menu_tools">
     <property name="title">
@@ -754,12 +853,12 @@
   </action>
   <action name="action_robotCall_id">
    <property name="text">
-    <string>机器人通话ID</string>
+    <string>通话ID</string>
    </property>
   </action>
   <action name="action_robotControl_id">
    <property name="text">
-    <string>机器人控制ID</string>
+    <string>控制ID</string>
    </property>
   </action>
   <action name="action_about">
@@ -780,6 +879,11 @@
   <action name="action_user_id">
    <property name="text">
     <string>设备ID</string>
+   </property>
+  </action>
+  <action name="action_workLog">
+   <property name="text">
+    <string>工作日志</string>
    </property>
   </action>
  </widget>

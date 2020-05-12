@@ -133,6 +133,9 @@ void Server::receiveRegisterThread()
 		if (it != clients_.end()) //查找到目标客户端 ,表明已经注册
 		{
 			//cout << "client id: " << clientId << "has in map\n";
+			transPack_t pkg(PkgType_repeatLogin);
+			sendto(register_fd,(char*)&pkg, sizeof(pkg), 0, 
+				  (struct sockaddr*)&client_addr, sizeof(sockaddr_in));
 			continue; 
 		}
 			
@@ -154,10 +157,9 @@ void Server::receiveRegisterThread()
 		t.detach();
 		
 		//向客户端回应为其分配的新端口号信息 
-		transPack_t pkg;
+		transPack_t pkg(PkgType_ResponseRegister);
 		int headerLen = sizeof(transPack_t); 
 		pkg.length = 2;
-		pkg.type = PkgType_ResponseRegister;
 		char *buf = new char[headerLen+pkg.length];
 		memcpy(buf, &pkg, headerLen);
 

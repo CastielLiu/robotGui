@@ -33,6 +33,8 @@ signals:
     void showMsgInStatusBar(const QString& msg,int timeout=0);
     void enableMyImageLabel(bool );
     void enableImageDisplay(bool );
+    void addWorkLog(const QString& log, bool vip=false);
+
 private:
     void handleVedioMsg(char * const buf);
     void handleAudioMsg(char * const buf);

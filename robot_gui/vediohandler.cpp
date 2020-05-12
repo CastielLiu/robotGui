@@ -94,7 +94,7 @@ bool VedioHandler::init(const std::string& mode)
     }
     else if(mode == "play")
     {
-
+        //不需要其他初始化工作，直接返回
         return true;
     }
     else
@@ -246,6 +246,4 @@ void VedioHandler::appendData(char* const buf, int len)
     g_otherImage = imgPtr;
     g_otherImageMutex.unlock();
 
-    //static uint32_t imgCnt = 1;
-    //g_ui->lineEdit_imgCnt->setText(QString::number(++imgCnt));
 }

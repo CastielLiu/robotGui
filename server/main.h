@@ -37,6 +37,7 @@ enum dataType
     PkgType_LogOut = 12,    //退出登陆
     PkgType_CalledOffline=13,// 被叫不在线
 	PkgType_CalledBusy = 14,//被叫忙 
+	PkgType_repeatLogin=15, //重复登录
 	
 	//remote control
 	PkgType_ControlCmd = 20,
