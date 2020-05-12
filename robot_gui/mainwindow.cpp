@@ -153,6 +153,8 @@ void MainWindow::updateStatusBarPemanentMsg()
     //permanent->setFrameStyle(QFrame::Box|QFrame::Sunken);
 
     QString str = QString("host id:")+QString::number(g_myId);
+    if(g_isRemoteTerminal)
+        str = QString("user id:")+QString::number(g_myId);
     permanent->setText(str);
 
     ui->statusBar->addPermanentWidget(permanent);//显示永久信息

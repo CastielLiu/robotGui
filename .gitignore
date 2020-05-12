@@ -1,4 +1,5 @@
+robot_gui/robot_gui.pro.user
 build-*
 test/
 debug*
-robot_gui/robot_gui.pro.use*
+
