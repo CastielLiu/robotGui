@@ -18,7 +18,7 @@ quint16 g_msgPort;                   //服务器接收数据的端口号
 int g_registerStatus = RegisterStatus_None;
 
 uint16_t g_robotCallId = 0; //机器人视频通话ID
-uint16_t g_robotControlId = 0;//机器人远程控制ID
+uint16_t g_robotControlId = 5050;//机器人远程控制ID
 
 Ui::MainWindow *g_ui;
 

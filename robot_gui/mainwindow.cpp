@@ -72,7 +72,7 @@ MainWindow::~MainWindow()
 bool MainWindow::clientModeSelection()
 {
     int button = QMessageBox::question(this, tr("客户端模式选择"),
-                                   QString(tr("启动远程客户端:Yes\n启动本地客户端:No")),
+                                   QString(tr("远程端 : Yes\n本地端 : No")),
                                    QMessageBox::Yes | QMessageBox::No);
     if (button == QMessageBox::Yes)
     {
@@ -97,6 +97,7 @@ void MainWindow::startChat(uint16_t id)
     m_udpSender = new UdpSender;
     m_udpSender->startSend(id);
     m_udpReceiver->startPlayMv();
+    ui->lineEdit_calledId->setText(QString::number(id));
 }
 
 void MainWindow::stopChat()
@@ -265,6 +266,7 @@ void MainWindow::loadPerformance()
         m_autoRegister = config->value("autoLogin").toBool();
         g_robotCallId = config->value("robotCallId").toInt();
         g_robotControlId = config->value("robotCotrolId").toInt();
+        if(g_robotControlId == 0) g_robotControlId = 5050;
 
         QString ip = config->value(QString("server/ip")).toString();
         quint16 port = config->value(QString("server/port")).toUInt();

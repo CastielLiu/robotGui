@@ -1,7 +1,7 @@
 [Desktop Entry]
 Encoding=UTF-8
 Type=Application
-Exec=bash -i -c /home/wuconglei/wendao/robotGui/app/robotGui
+Exec=bash -i -c /home/wuconglei/wendao/robotGui/app/linux/robotGui
 Name=robot
 Icon=/home/wuconglei/wendao/robotGui/app/icon.jpg
 Terminal=false 

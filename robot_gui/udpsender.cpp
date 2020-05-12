@@ -81,7 +81,7 @@ void UdpSender::run()
     uint32_t cnt = 0;
     while (!this->isInterruptionRequested())
     {
-       //if(cnt%2==0)
+       if(cnt%2==0)
            m_vedioCaptor->sendImage(m_udpSocket,m_dstId);
 
        m_audioRecorder->sendAudio(m_udpSocket,m_dstId);
