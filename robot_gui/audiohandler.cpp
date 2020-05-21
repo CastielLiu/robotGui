@@ -10,7 +10,7 @@ AudioHandler::AudioHandler():
     m_isAudioOpen(false),
     m_input(nullptr)
 {
-     std::cout << "create AudioHandler in thread: " << QThread::currentThreadId() << std::endl;
+     //std::cout << "create AudioHandler in thread: " << QThread::currentThreadId() << std::endl;
      m_audioBuffer = new char[m_maxAudioBufLen];
 }
 
@@ -42,8 +42,8 @@ bool AudioHandler::init(AudioMode mode)
 
 bool AudioHandler::stop(AudioMode mode)
 {
-    if(!m_isAudioOpen)
-        return false;
+    if(!m_isAudioOpen) return false;
+    m_isAudioOpen = false;
     if(AudioMode_Record == mode)
     {
         if(m_input != nullptr)
@@ -69,8 +69,9 @@ bool AudioHandler::stop(AudioMode mode)
 bool AudioHandler::configReader(int samplerate, int channelcount, int samplesize)
 {
     //std::cout << "start reading audio..." << std::endl;
-    QList<QAudioDeviceInfo> deviceInfo = QAudioDeviceInfo::availableDevices(QAudio::AudioInput);
 
+    QList<QAudioDeviceInfo> deviceInfo = QAudioDeviceInfo::availableDevices(QAudio::AudioInput);
+    //qDebug() << "default" <<  QAudioDeviceInfo::defaultInputDevice().deviceName();
     foreach(const QAudioDeviceInfo&audio, deviceInfo)
     {
         qDebug() << audio.deviceName();

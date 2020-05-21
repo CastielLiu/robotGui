@@ -26,12 +26,12 @@ VedioHandler::VedioHandler():
 
 VedioHandler::~VedioHandler()
 {
-    this->stopCapture();
+    this->stop(VedioMode_Capture);
+    this->stop(VedioMode_Play);
 }
 
 void VedioHandler::stopCapture()
 {
-    m_isVedioOpen = false;
     QThread::msleep(50);
 
     if(m_camera != nullptr)
@@ -64,6 +64,8 @@ void VedioHandler::stopCapture()
 
 bool VedioHandler::init(VedioMode mode)
 {
+    if(m_isVedioOpen) return false;
+
     if(mode == VedioMode_Capture)
     {
     #if(WHAT_CAMERE_TOOL == QCAMERA_IMAGE_CAPTURE)
@@ -92,41 +94,34 @@ bool VedioHandler::init(VedioMode mode)
             return false;
         }
 #endif
-        return true;
     }
     else if(mode == VedioMode_Play)
     {
         //不需要其他初始化工作，直接返回
-        return true;
     }
     else
     {
         qDebug() << "VedioHandler init mode: play or capture!";
         return false;
     }
+    m_isVedioOpen =true;
+    return true;
 }
 
-//启动视频传输
-bool VedioHandler::startVedioTransmission()
+bool VedioHandler::stop(VedioMode mode)
 {
-    if(m_isVedioOpen) return false;
-    if(this->init(VedioHandler::VedioMode_Capture))
-    {
-        m_isVedioOpen = true;
-        return true;
-    }
-    return false;
-}
+    if(!m_isVedioOpen) return false;
 
-bool VedioHandler::stopVedioTransmission()
-{
-    if(m_isVedioOpen)
+    if(mode == VedioMode_Capture)
     {
-        m_isVedioOpen = false;
         this->stopCapture();
-        return true;
+        m_isVedioOpen = false;
     }
-    return false;
+    else if(mode == VedioMode_Play)
+    {
+
+    }
+    return true;
 }
 
 /***************** 视频获取和发送相关代码 *********************/
@@ -135,8 +130,7 @@ bool VedioHandler::stopVedioTransmission()
 //或者直接从摄像头读取图片然后发送       CvImageGraber
 void VedioHandler::sendImage(QUdpSocket *sockect, uint16_t receiverId)
 {
-    if(!m_isVedioOpen)
-        return;
+    if(!m_isVedioOpen) return;
     QByteArray imageByteArray;// QByteArray类提供了一个字节数组（字节流）。对使用自定义数据来操作内存区域是很有用的
     QBuffer Buffer(&imageByteArray);// QBuffer(QByteArray * byteArray, QObject * parent = 0)
     Buffer.open(QIODevice::ReadWrite);
@@ -165,7 +159,7 @@ void VedioHandler::sendImage(QUdpSocket *sockect, uint16_t receiverId)
     g_myImageMutex.unlock();
 
     QSize size = imgPtr->size();
-    std::cout << "rawImage Size: " << size.width() << "x" << size.height() << std::endl;
+    //std::cout << "rawImage Size: " << size.width() << "x" << size.height() << std::endl;
     //*imgPtr = imgPtr->scaled(int(size.width()*m_imgScale),int(size.height()*m_imgScale));
     static size_t  cut_x = m_imgCutK*size.width()/2,
                    cut_y = m_imgCutK*size.height(),

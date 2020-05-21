@@ -6,7 +6,7 @@ UdpSender::UdpSender():
     m_vedioCaptor(nullptr),
     m_remoteControler(nullptr)
 {
-    std::cout << "create UdpSender in thread: " << QThread::currentThreadId() << std::endl;
+    //std::cout << "create UdpSender in thread: " << QThread::currentThreadId() << std::endl;
 }
 
 UdpSender::~UdpSender()
@@ -27,7 +27,7 @@ bool UdpSender::startSend(uint16_t dstId)
 
     m_vedioCaptor = new VedioHandler;
     if(g_isOpenVedio)
-        m_vedioCaptor->startVedioTransmission();
+        m_vedioCaptor->init(VedioHandler::VedioMode_Capture);
 
     if(g_isRemoteTerminal)
     {
@@ -75,7 +75,7 @@ void UdpSender::run()
     //此处分配内存不传递this指针，否则由于this所在线程与当前线程不匹配而报错
     //在run函数内部分配内存以保证socket使用线程与socket所在线程一致
     m_udpSocket = new QUdpSocket();
-    std::cout << "UdpSender: create QUdpSocket in thread: " << QThread::currentThreadId() << std::endl;
+    //std::cout << "UdpSender: create QUdpSocket in thread: " << QThread::currentThreadId() << std::endl;
     uint32_t cnt = 0;
     while (!this->isInterruptionRequested())
     {
@@ -97,14 +97,14 @@ void UdpSender::run()
 void UdpSender::openVedio()
 {
     if(m_vedioCaptor)
-        m_vedioCaptor->startVedioTransmission();
+        m_vedioCaptor->init(VedioHandler::VedioMode_Capture);
 }
 
 //动态关闭视频
 void UdpSender::closeVedio()
 {
     if(m_vedioCaptor)
-        m_vedioCaptor->stopVedioTransmission();
+        m_vedioCaptor->stop(VedioHandler::VedioMode_Capture);
 }
 
 void UdpSender::openAudio()

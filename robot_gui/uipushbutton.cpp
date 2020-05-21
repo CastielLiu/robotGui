@@ -8,7 +8,7 @@ void MainWindow::on_pushButton_bioRadarExit_clicked()
 
 void MainWindow::on_pushButton_roscore_clicked()
 {
-    utils::systemCmd("gnome-terminal -- 'bash -c roscore'");
+    utils::systemCmd("bash -c roscore");
 }
 
 void MainWindow::on_pushButton_remoteCtrl_clicked()

@@ -106,6 +106,7 @@ private:
 	void heartBeatThread();
 	void printThread(int interval); 
 	void msgTransmit(const uint8_t* buf, int len);
+	void cmdAndStatusTransmit(const uint8_t* buf, int len);
 	void removeClient(uint16_t id); 
 	
 private:

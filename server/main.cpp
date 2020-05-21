@@ -232,12 +232,12 @@ void Server::receiveAndTransThread(int server_fd, uint16_t clientId)
 		//此处接收应为非阻塞，超时后检查 run_flag 以及用户的连接状态
 		//否则1.程序无法正常退出，2.用户退出后还在等待接收数据 
 		int len = recvfrom(server_fd, recvbuf, BufLen2,0,(struct sockaddr*)&client_addr, &clientLen);
-		//cout << "received msgs len:" << len  << "  type: " << int(_pkg->type) << endl;
+		
 		if(len <= 0) continue;
 		if(_pkg->head[0] != 0x66 || _pkg->head[1] != 0xcc)
 			continue;
 		
-		//std::cout << "received msg, sender id: " << _pkg->senderId << "\t type: " << int(_pkg->type) << std::endl;
+		//std::cout << "received msg, sender id:" << _pkg->senderId << " type: " << int(_pkg->type) << " len:" << len<< std::endl;
 		
 		if(_pkg->type == PkgType_HeartBeat) //心跳包 
 		{
@@ -274,10 +274,14 @@ void Server::receiveAndTransThread(int server_fd, uint16_t clientId)
 			transPack_t pkg(PkgType_DisConnect);
     		sendto(clients_[clientB].fd, (char*)&pkg, sizeof(transPack_t), 0, (struct sockaddr*)&clients_[clientB].addr, sizeof(sockaddr_in));
 		}
-		else if(pkg->type == PkgType_RequestRegister) 
-			continue ;
+		else if((pkg->type == PkgType_Video) || (pkg->type == PkgType_Audio))
+			msgTransmit(recvbuf, len);
+		else if(pkg->type == PkgType_ControlCmd || pkg->type == PkgType_RobotState)
+			cmdAndStatusTransmit(recvbuf, len);
 		else
-			msgTransmit(recvbuf, len);	
+		{
+			
+		}
 	}
 	cout << "delete client : " << clientId;
 	removeClient(clientId);
@@ -306,14 +310,36 @@ void Server::run()
 	t.join();
 }
 
+void Server::cmdAndStatusTransmit(const uint8_t* buf, int len)
+{
+	uint16_t srcClientId = ((const transPack_t *)buf)->senderId;
+	uint16_t dstClientId = ((const transPack_t *)buf)->receiverId;
+	
+	if(dstClientId == ROBOT_TEST_ID) //机器人端测试ID
+		return; 
+	auto it = clients_.find(dstClientId);
+	if (it == clients_.end()) //未查找到目标客户端 
+	{
+		//向主叫用户回复 ,回复时按原包头修改指令类型后返回
+		transPack_t pkg = *(transPack_t*)buf;
+		pkg.type =  PkgType_CalledOffline;
+		pkg.length = 0;
+		
+		sendto(clients_[srcClientId].fd, (char*)&pkg, sizeof(transPack_t), 0, (struct sockaddr*)&clients_[srcClientId].addr, sizeof(sockaddr_in));
+		//cout << "No client : " << dstClientId << endl;
+		return;
+	}
+	sendto(clients_[dstClientId].fd, buf, len, 0, (struct sockaddr*)&clients_[dstClientId].addr, sizeof(sockaddr_in));
+}
+
+
 void Server::msgTransmit(const uint8_t* buf, int len)
 {
 	uint16_t srcClientId = ((const transPack_t *)buf)->senderId;
 	uint16_t dstClientId = ((const transPack_t *)buf)->receiverId;
 	int type = ((const transPack_t *)buf)->type;
 	
-	if(dstClientId == ROBOT_TEST_ID || //机器人端测试ID
-	   dstClientId == 0) //保留ID 
+	if(dstClientId == 0) //保留ID 
 		return; 
 	
 	auto it = clients_.find(dstClientId);
@@ -326,7 +352,7 @@ void Server::msgTransmit(const uint8_t* buf, int len)
 		pkg.length = 0;
 		
 		sendto(clients_[srcClientId].fd, (char*)&pkg, sizeof(transPack_t), 0, (struct sockaddr*)&clients_[srcClientId].addr, sizeof(sockaddr_in));
-		cout << "No client : " << dstClientId << endl;
+		//cout << "No client : " << dstClientId << endl;
 		return;
 	}
 	
@@ -334,7 +360,7 @@ void Server::msgTransmit(const uint8_t* buf, int len)
 	if(clients_[srcClientId].callingID == dstClientId) 
 	{
 		int send_len = sendto(clients_[dstClientId].fd, buf, len, 0, (struct sockaddr*)&clients_[dstClientId].addr, sizeof(sockaddr_in));
-		cout << "transmitting " << send_len << " bytes\t from:" <<srcClientId <<" to:" <<  dstClientId << " type: " << type <<  endl;
+		//cout << "transmitting " << send_len << " bytes\t from:" <<srcClientId <<" to:" <<  dstClientId << " type: " << type <<  endl;
 	}
 	//callingID 为空，发起呼叫请求 
 	else if(clients_[srcClientId].callingID == 0) 

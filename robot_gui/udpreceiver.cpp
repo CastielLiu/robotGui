@@ -5,7 +5,7 @@ UdpReceiver::UdpReceiver():
     m_audioPlayer(nullptr),
     m_vedioPlayer(nullptr)
 {
-    std::cout << "create UdpReceiver in thread: " << QThread::currentThreadId() << std::endl;
+    //std::cout << "create UdpReceiver in thread: " << QThread::currentThreadId() << std::endl;
 
     //利用每帧图片的数据量确定缓冲区的大小
     m_maxBufLength = 640*480*3+sizeof(pkgHeader_t);
@@ -256,9 +256,9 @@ void UdpReceiver::onReadyRead()
                 emit showMsgInStatusBar(QString("Robot control receiver offline!"),3000);
             else if(g_ignoreCalledOffline) //视频语音被叫端不在线
                 emit showMsgInStatusBar(QString("Called offline, but you ignore it"),3000);
-            else
-                emit calledBusy();
         }
+        else if(PkgType_CalledBusy == package->type)
+            emit calledBusy();
         else if(PkgType_DisConnect == package->type)
         {
             emit showMsgInStatusBar(QString("Call disconnected"), 3000);
@@ -344,7 +344,7 @@ void UdpReceiver::heartBeatThread()
             //emit addWorkLog("server is shutdown ! try to relogin...");
             //QThread::msleep(300);
             //registerToServer(); //重新登录
-            return;
+            break;
         }
 
         m_udpSocket->writeDatagram((char *)&heartBeatPkg,

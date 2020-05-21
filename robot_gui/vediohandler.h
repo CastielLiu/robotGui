@@ -32,11 +32,9 @@ public:
     VedioHandler();
     ~VedioHandler();
     bool init(VedioMode mode);
+    bool stop(VedioMode mode);
 
     void sendImage(QUdpSocket *sockect, uint16_t receiverId);
-    bool startVedioTransmission();
-    bool stopVedioTransmission();
-
     void appendData(char* const buf, int len);
 
 private:
