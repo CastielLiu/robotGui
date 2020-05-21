@@ -138,10 +138,10 @@ void UdpReceiver::logout()
 void UdpReceiver::startPlayMv()
 {
     m_audioPlayer = new AudioHandler;
-    m_audioPlayer->init("play");
+    m_audioPlayer->init(AudioHandler::AudioMode_Play);
 
     m_vedioPlayer = new VedioHandler;
-    m_vedioPlayer->init("play");
+    m_vedioPlayer->init(VedioHandler::VedioMode_Play);
 
     this->start(); //启动音频视频播放Qthread
 }

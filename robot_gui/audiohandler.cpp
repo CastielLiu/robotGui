@@ -16,62 +16,75 @@ AudioHandler::AudioHandler():
 
 AudioHandler::~AudioHandler()
 {
-    this->stopAudioTransmission();
+    stop(AudioMode_Play);
+    stop(AudioMode_Record);
+
+    if(m_file.isOpen())
+        m_file.close();
+
     delete [] m_audioBuffer;
 }
 
-bool AudioHandler::init(const std::string& mode)
+bool AudioHandler::init(AudioMode mode)
 {
-    if(mode == "record")//录制
-    {
-        startRead(m_sampleRate,m_channelCount,m_sampleSize);
-    }
-    else if(mode == "play")//播放
-        configPlayer(m_sampleRate,m_channelCount,m_sampleSize,1.0);
+    if (m_isAudioOpen) return false;
+
+    if(mode == AudioMode_Record)//录制
+        return (m_isAudioOpen = configReader(m_sampleRate,m_channelCount,m_sampleSize));
+    else if(mode == AudioMode_Play)//播放
+        return (m_isAudioOpen = configPlayer(m_sampleRate,m_channelCount,m_sampleSize,1.0));
     else
     {
         qDebug() << "AudioHandler init mode: play or record!";
         return false;
     }
+}
+
+bool AudioHandler::stop(AudioMode mode)
+{
+    if(!m_isAudioOpen)
+        return false;
+    if(AudioMode_Record == mode)
+    {
+        if(m_input != nullptr)
+        {
+            m_input->stop();
+            delete m_input;
+            m_input = nullptr;
+        }
+    }
+    else if(AudioMode_Play == mode)
+    {
+        if(m_OutPut != nullptr)
+        {
+            m_OutPut->stop();
+            delete m_OutPut;
+            m_OutPut = nullptr;
+        }
+    }
     return true;
 }
 
 /* 以下为捕获声音相关函数 */
-bool AudioHandler::startAudioTransmission()
-{
-    if(m_isAudioOpen) return false;
-
-    if(this->init("record"))
-    {
-        m_isAudioOpen = true;
-        return true;
-    }
-    return false;
-}
-
-bool AudioHandler::stopAudioTransmission()
-{
-    if(!m_isAudioOpen) return false;
-
-    m_isAudioOpen = false;
-
-    if(m_input != nullptr)
-    {
-        m_input->stop();
-        delete m_input;
-    }
-
-    if(m_file.isOpen())
-        m_file.close();
-    return true;
-}
-
-void AudioHandler::startRead(int samplerate, int channelcount, int samplesize)
+bool AudioHandler::configReader(int samplerate, int channelcount, int samplesize)
 {
     //std::cout << "start reading audio..." << std::endl;
+    QList<QAudioDeviceInfo> deviceInfo = QAudioDeviceInfo::availableDevices(QAudio::AudioInput);
+
+    foreach(const QAudioDeviceInfo&audio, deviceInfo)
+    {
+        qDebug() << audio.deviceName();
+    }
+
+    if(deviceInfo.size()<=0)
+    {
+        qDebug() << "AudioHandler: no input device!";
+        return false;
+    }
 
     QAudioFormat format = setAudioFormat(samplerate,channelcount,samplesize);
-    m_input = new QAudioInput(format,this);
+    m_input = new QAudioInput(format,this); //default device
+    //m_input = new QAudioInput(deviceInfo[0],format,this);
     m_inputDevice = m_input->start();
     connect(m_inputDevice,SIGNAL(readyRead()),this,SLOT(onReadyRead()));
 }
@@ -146,8 +159,7 @@ void AudioHandler::sendAudio(QUdpSocket* sockect, uint16_t receiverId)
 
 
 /* 以下为播放声音相关函数 */
-
-void AudioHandler::configPlayer(int sampleRate, int channelCount, int sampleSize,qreal volumn)
+bool AudioHandler::configPlayer(int sampleRate, int channelCount, int sampleSize,qreal volumn)
 {
     QMutexLocker locker(&m_audioPlayMutex);
 
@@ -162,9 +174,22 @@ void AudioHandler::configPlayer(int sampleRate, int channelCount, int sampleSize
 
     if (m_OutPut != nullptr) delete m_OutPut;
 
-    m_OutPut = new QAudioOutput(nFormat);
+    QList<QAudioDeviceInfo> deviceInfo = QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
+    foreach(const QAudioDeviceInfo&audio, deviceInfo)
+    {
+        qDebug() << audio.deviceName();
+    }
+    if(deviceInfo.isEmpty())
+    {
+        qDebug() << "AudioHandler: no output device!";
+        return false;
+    }
+
+    m_OutPut = new QAudioOutput(nFormat);//default device
+    //m_OutPut = new QAudioOutput(deviceInfo[0], nFormat);
     m_OutPut->setVolume(volumn);
     m_AudioIo = m_OutPut->start();
+    return true;
 }
 
 //将收到的语音消息添加进语音缓冲区，等待播放
@@ -198,6 +223,8 @@ void AudioHandler::appendData(char* const buf, int len)
 
 void AudioHandler::playAudio()
 {
+    if(!m_isAudioOpen) return;
+
     QMutexLocker locker(&m_audioPlayMutex);
     int canPlayLen = (m_writeIndex-m_readIndex+m_maxAudioBufLen)%m_maxAudioBufLen;
     if(canPlayLen < 3*m_audioSizePerFrame) //可播放长度小于一帧音频长度的3倍

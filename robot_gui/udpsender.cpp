@@ -23,10 +23,9 @@ bool UdpSender::startSend(uint16_t dstId)
 
     m_audioRecorder = new AudioHandler;
     if(g_isOpenAudio)
-        m_audioRecorder->startAudioTransmission();
+        m_audioRecorder->init(AudioHandler::AudioMode_Record);
 
     m_vedioCaptor = new VedioHandler;
-
     if(g_isOpenVedio)
         m_vedioCaptor->startVedioTransmission();
 
@@ -111,13 +110,13 @@ void UdpSender::closeVedio()
 void UdpSender::openAudio()
 {
     if(m_audioRecorder)
-        m_audioRecorder->startAudioTransmission();
+        m_audioRecorder->init(AudioHandler::AudioMode_Record);
 }
 
 void UdpSender::closeAudio()
 {
     if(m_audioRecorder)
-        m_audioRecorder->stopAudioTransmission();
+        m_audioRecorder->stop(AudioHandler::AudioMode_Record);
 }
 
 const RemoteControl * UdpSender::getRemoteCtrler()

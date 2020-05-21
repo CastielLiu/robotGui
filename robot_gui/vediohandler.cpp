@@ -62,9 +62,9 @@ void VedioHandler::stopCapture()
     }
 }
 
-bool VedioHandler::init(const std::string& mode)
+bool VedioHandler::init(VedioMode mode)
 {
-    if(mode == "record")
+    if(mode == VedioMode_Capture)
     {
     #if(WHAT_CAMERE_TOOL == QCAMERA_IMAGE_CAPTURE)
         m_camera = new QCamera;//摄像头
@@ -94,14 +94,14 @@ bool VedioHandler::init(const std::string& mode)
 #endif
         return true;
     }
-    else if(mode == "play")
+    else if(mode == VedioMode_Play)
     {
         //不需要其他初始化工作，直接返回
         return true;
     }
     else
     {
-        qDebug() << "VedioHandler init mode: play or record!";
+        qDebug() << "VedioHandler init mode: play or capture!";
         return false;
     }
 }
@@ -110,7 +110,7 @@ bool VedioHandler::init(const std::string& mode)
 bool VedioHandler::startVedioTransmission()
 {
     if(m_isVedioOpen) return false;
-    if(this->init("record"))
+    if(this->init(VedioHandler::VedioMode_Capture))
     {
         m_isVedioOpen = true;
         return true;
@@ -177,7 +177,7 @@ void VedioHandler::sendImage(QUdpSocket *sockect, uint16_t receiverId)
 
     //size = imgPtr->size();
     //std::cout << "rawImage Size: " << size.width() << "x" << size.height() << std::endl;
-    if(imgPtr->save(&Buffer,"JPG"))//将图片保存在QByteArray中
+    if(!imgPtr->save(&Buffer,"JPG"))//将图片保存在QByteArray中
         return;
 
 #endif

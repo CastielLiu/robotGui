@@ -24,19 +24,24 @@ public:
     ~AudioHandler();
 
 public:
-    bool init(const std::string& mode );
-    void configPlayer(int sampleRate, int channelCount, int sampleSize, qreal volumn);
-    void playAudio();
+    enum AudioMode
+    {
+        AudioMode_Play,
+        AudioMode_Record,
+    };
+
+    bool init(AudioMode mode );
+    bool stop(AudioMode mode);
+
     void appendData(char* const buf, int len);
-
-    QAudioFormat setAudioFormat(int samplerate, int channelcount, int samplesize);
+    void playAudio();
     void sendAudio(QUdpSocket *sockect, uint16_t receiverId);
-    bool startAudioTransmission();
-    bool stopAudioTransmission();
-
 
 private:
-    void startRead(int samplerate, int channelcount, int samplesize);
+    QAudioFormat setAudioFormat(int samplerate, int channelcount, int samplesize);
+    bool configReader(int samplerate, int channelcount, int samplesize);
+    bool configPlayer(int sampleRate, int channelCount, int sampleSize, qreal volumn);
+
 private slots:
     void onReadyRead();
 

@@ -24,9 +24,14 @@ class VedioHandler : public QObject
 {
     Q_OBJECT
 public:
+    enum VedioMode
+    {
+        VedioMode_Capture,
+        VedioMode_Play,
+    };
     VedioHandler();
     ~VedioHandler();
-    bool init(const std::string &mode);
+    bool init(VedioMode mode);
 
     void sendImage(QUdpSocket *sockect, uint16_t receiverId);
     bool startVedioTransmission();
