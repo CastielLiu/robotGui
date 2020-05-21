@@ -54,6 +54,7 @@ private:
     QMutex m_heartBeatMutex;
     std::time_t m_serverLastHeartBeatTime = 0;
     int m_registerTimerId;
+    bool m_heartBeatThreadRunning = false;
 };
 
 #endif // UDPRECEIVER_H

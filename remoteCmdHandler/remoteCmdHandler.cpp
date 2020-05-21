@@ -102,10 +102,6 @@ void RemoteCmdHandler::receiveThread(const int fd)
 	    else if(PkgType_RegisterOK == header->type) //服务器回应注册成功
 	    {
 	    	m_isRegisterOk = true; 
-	    	
-	        //启动心跳线程
-	        std::thread t(&RemoteCmdHandler::heartBeatThread,this, fd, m_msgAddr); 
-	        t.detach();
 	    }
 	    else if(PkgType_RegisterFail == header->type) //服务器回应注册失败
 	    {
@@ -230,10 +226,12 @@ bool RemoteCmdHandler::registerToServer(const int fd, struct sockaddr_in addr)
 			return false;
 		}
     }
-    std::cout << "Successfully registered to server." << std::endl;
+	std::cout << "Successfully registered to server." << std::endl;
+	std::thread t(&RemoteCmdHandler::heartBeatThread,this, fd, m_msgAddr); 
+	t.detach();
     return true;
 }
-
+#include<unistd.h>
 //向服务器定时发送心跳包，并判断上次接收到服务器心跳包是否超时 
 void RemoteCmdHandler::heartBeatThread(const int fd, struct sockaddr_in addr)
 {
@@ -255,8 +253,9 @@ void RemoteCmdHandler::heartBeatThread(const int fd, struct sockaddr_in addr)
 
         sendto(fd, (char *)&heartBeatPkg, sizeof(heartBeatPkg),0,
 				(struct sockaddr*)&addr, sizeof(addr));
-				
-        std::this_thread::sleep_for(std::chrono::seconds(m_heartBeatInterval)); 
+		std::cout << "send heart beat ..." << std::endl << std::flush;
+        //std::this_thread::sleep_for(std::chrono::seconds(m_heartBeatInterval)); 
+        usleep(m_heartBeatInterval*1000000);
     }
 }
 

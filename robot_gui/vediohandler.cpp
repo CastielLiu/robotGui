@@ -86,7 +86,7 @@ bool VedioHandler::init(const std::string& mode)
         m_camera->start(); //启动摄像头
     #elif(WHAT_CAMERE_TOOL == CV_IMAGE_GRABER)
         m_cvImageGrabber = new CvImageGraber();
-        if(!m_cvImageGrabber->openCamera(0))
+        if(!m_cvImageGrabber->openCamera(g_cameraId))
         {
             qDebug() << "open camera failed!" ;
             return false;
@@ -167,17 +167,19 @@ void VedioHandler::sendImage(QUdpSocket *sockect, uint16_t receiverId)
     QSize size = imgPtr->size();
     std::cout << "rawImage Size: " << size.width() << "x" << size.height() << std::endl;
     //*imgPtr = imgPtr->scaled(int(size.width()*m_imgScale),int(size.height()*m_imgScale));
-    size_t cut_x = m_imgCutK*size.width()/2,
-           cut_y = m_imgCutK*size.height(),
-           w = size.width()-2*cut_x,
-           h = size.height()-cut_y;
+    static size_t  cut_x = m_imgCutK*size.width()/2,
+                   cut_y = m_imgCutK*size.height(),
+                   w = size.width()-2*cut_x,
+                   h = size.height()-cut_y;
 
     *imgPtr = imgPtr->copy(cut_x,cut_y,w,h);
     *imgPtr = imgPtr->scaled(m_imgSize);
 
-    size = imgPtr->size();
-    std::cout << "rawImage Size: " << size.width() << "x" << size.height() << std::endl;
-    imgPtr->save(&Buffer,"JPG");//将图片保存在QByteArray中
+    //size = imgPtr->size();
+    //std::cout << "rawImage Size: " << size.width() << "x" << size.height() << std::endl;
+    if(imgPtr->save(&Buffer,"JPG"))//将图片保存在QByteArray中
+        return;
+
 #endif
 
     pkgHeader_t header(PkgType_Video) ;

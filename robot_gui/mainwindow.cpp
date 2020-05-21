@@ -23,7 +23,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->label_registerStatus,SIGNAL(clicked()),this,SLOT(onLableRegisterStatusClicked()));
     ui->label_registerStatus->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter); //设置label文字居中
     ui->checkBox_audio->setCheckState(Qt::CheckState::Checked);
-    ui->lineEdit_calledId->setText(QString::number(g_robotCallId));
+    ui->lineEdit_calledId->setText(QString::number(g_calledId));
     //ui->checkBox_audio->hide();
 
     ui->label_log->setAlignment(Qt::AlignHCenter); //居中对齐
@@ -219,8 +219,9 @@ void MainWindow::savePerformance()
 
     config->setValue("autoLogin", QString::number(m_autoRegister));
     config->setValue("userId", g_myId);
-    config->setValue("robotCallId", g_robotCallId);
+    config->setValue("robotCallId", g_calledId);
     config->setValue("robotCotrolId", g_robotControlId);
+    config->setValue("cameraId", g_cameraId);
 
     config->beginGroup("server");
     config->setValue("ip", g_serverIp.toString());
@@ -240,9 +241,11 @@ void MainWindow::loadPerformance()
         if(id != 0 )  g_myId = id; //?参数文件中没有参数怎么办？
 
         m_autoRegister = config->value("autoLogin").toBool();
-        g_robotCallId = config->value("robotCallId").toInt();
+        g_calledId = config->value("robotCallId").toInt();
         g_robotControlId = config->value("robotCotrolId").toInt();
         if(g_robotControlId == 0) g_robotControlId = 5050;
+
+        g_cameraId = config->value("cameraId").toInt();
 
         QString ip = config->value(QString("server/ip")).toString();
         quint16 port = config->value(QString("server/port")).toUInt();

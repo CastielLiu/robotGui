@@ -310,6 +310,7 @@ void Server::msgTransmit(const uint8_t* buf, int len)
 {
 	uint16_t srcClientId = ((const transPack_t *)buf)->senderId;
 	uint16_t dstClientId = ((const transPack_t *)buf)->receiverId;
+	int type = ((const transPack_t *)buf)->type;
 	
 	if(dstClientId == ROBOT_TEST_ID || //机器人端测试ID
 	   dstClientId == 0) //保留ID 
@@ -333,7 +334,7 @@ void Server::msgTransmit(const uint8_t* buf, int len)
 	if(clients_[srcClientId].callingID == dstClientId) 
 	{
 		int send_len = sendto(clients_[dstClientId].fd, buf, len, 0, (struct sockaddr*)&clients_[dstClientId].addr, sizeof(sockaddr_in));
-		//cout << "transmitting : " << send_len << " bytes to id: " << dstClientId << "\tport：" << clients_[dstClientId].addr.sin_port << endl;
+		cout << "transmitting " << send_len << " bytes\t from:" <<srcClientId <<" to:" <<  dstClientId << " type: " << type <<  endl;
 	}
 	//callingID 为空，发起呼叫请求 
 	else if(clients_[srcClientId].callingID == 0) 

@@ -382,101 +382,85 @@
        </layout>
       </widget>
       <widget class="QWidget" name="page_2">
-       <layout class="QHBoxLayout" name="horizontalLayout_9">
-        <item>
-         <layout class="QVBoxLayout" name="verticalLayout_5">
-          <item>
-           <spacer name="verticalSpacer_3">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_8">
-            <item>
-             <spacer name="horizontalSpacer_2">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item>
-             <widget class="QWidget" name="widget_2" native="true">
-              <property name="minimumSize">
-               <size>
-                <width>200</width>
-                <height>200</height>
-               </size>
-              </property>
-              <layout class="QVBoxLayout" name="verticalLayout_6">
-               <item>
-                <widget class="QCheckBox" name="checkBox_canCalled">
-                 <property name="text">
-                  <string>允许被叫</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QCheckBox" name="checkBox_ignoreCalledOffline">
-                 <property name="text">
-                  <string>忽略被叫离线</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QPushButton" name="pushButton_debugPageOk">
-                 <property name="text">
-                  <string>确定</string>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </widget>
-            </item>
-            <item>
-             <spacer name="horizontalSpacer">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <spacer name="verticalSpacer_4">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-         </layout>
-        </item>
-       </layout>
+       <widget class="QWidget" name="widget_2" native="true">
+        <property name="geometry">
+         <rect>
+          <x>330</x>
+          <y>100</y>
+          <width>204</width>
+          <height>202</height>
+         </rect>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>200</width>
+          <height>200</height>
+         </size>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_5">
+         <item>
+          <widget class="QCheckBox" name="checkBox_canCalled">
+           <property name="text">
+            <string>允许被叫</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="checkBox_ignoreCalledOffline">
+           <property name="text">
+            <string>忽略被叫离线</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_8">
+           <item>
+            <widget class="QLabel" name="label_2">
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Camera ID: </string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="lineEdit_cameraId">
+             <property name="maximumSize">
+              <size>
+               <width>100</width>
+               <height>16777215</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_7">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>41</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButton_debugPageOk">
+           <property name="text">
+            <string>确定</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
       </widget>
       <widget class="QWidget" name="page_3">
        <layout class="QHBoxLayout" name="horizontalLayout_11">

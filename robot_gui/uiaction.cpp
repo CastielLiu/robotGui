@@ -39,7 +39,7 @@ void MainWindow::onActionRobotCallId()
     dialog.setWindowTitle(tr("设置机器人通话ID")); //窗口名称
     dialog.setLabelText("请输入: "); //输入提示
     dialog.setInputMode(QInputDialog::TextInput);//可选参数：DoubleInput  TextInput IntInput
-    dialog.setTextValue(QString::number(g_robotCallId));
+    dialog.setTextValue(QString::number(g_calledId));
 
     if(dialog.exec() == QInputDialog::Accepted)
     {
@@ -47,7 +47,7 @@ void MainWindow::onActionRobotCallId()
         uint16_t id = dialog.textValue().toUInt(&ok);
         if(ok)
         {
-            g_robotCallId = id;
+            g_calledId = id;
             this->updateStatusBarPemanentMsg();
         }
         else

@@ -15,6 +15,8 @@
 #include "enums.h"
 #include "structs.h"
 
+#define HIGH_LINUX_VERSION 1
+
 extern bool g_canCalled;
 extern bool g_ignoreCalledOffline;
 extern bool g_isRemoteTerminal;
@@ -26,8 +28,9 @@ extern quint16 g_msgPort;
 extern systemStatus g_systemStatus;
 
 extern uint16_t g_myId;
-extern uint16_t g_robotCallId;
+extern uint16_t g_calledId;
 extern uint16_t g_robotControlId ;
+extern int g_cameraId;
 
 extern uint16_t g_heartBeatInterval ;
 extern uint16_t g_maxHeartBeatDelay ;

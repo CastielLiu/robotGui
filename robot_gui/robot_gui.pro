@@ -78,6 +78,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 RESOURCES += \
     res.qrc
+
 win32{
     message("current os is win32")
     INCLUDEPATH += C:\opencv\build\include
@@ -85,9 +86,10 @@ win32{
 }
 unix{
     message("current os is unix")
-    INCLUDEPATH += /usr/local/include \
-                   /usr/local/include/opencv
-                   /usr/local/include/opencv2
-    LIBS += /usr/local/lib/libopencv_*
+    QMAKE_CFLAGS_ISYSTEM = -I
+    INCLUDEPATH += /usr/include /usr/include/opencv /usr/include/opencv2
+    LIBS += /usr/lib/libopencv_*
 
+    #INCLUDEPATH += /usr/local/include  /usr/local/include/opencv /usr/local/include/opencv2
+    #LIBS += /usr/local/lib/libopencv_*
 }

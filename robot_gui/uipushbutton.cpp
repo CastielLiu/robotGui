@@ -8,12 +8,11 @@ void MainWindow::on_pushButton_bioRadarExit_clicked()
 
 void MainWindow::on_pushButton_roscore_clicked()
 {
-    utils::systemCmd("bash -c roscore");
+    utils::systemCmd("gnome-terminal -- 'bash -c roscore'");
 }
 
 void MainWindow::on_pushButton_remoteCtrl_clicked()
 {
-
     utils::systemCmd("./../command/remote_control.sh");
 }
 
@@ -23,27 +22,27 @@ void MainWindow::on_pushButton_call_clicked()
     {
         bool ok;
         uint16_t callId = ui->lineEdit_calledId->text().toUShort(&ok);
-        if(!ok)
+        if(!ok || callId ==0)
         {
             ui->lineEdit_calledId->setText("error!");
             ui->pushButton_call->setChecked(false);
             return;
         }
-        g_robotCallId = callId;
+        g_calledId = callId;
 
         if(g_registerStatus != RegisterStatus_Ok )
             ui->statusBar->showMessage("Please login firstly!",5000);
-        else if(g_robotCallId == 0 )
-            ui->statusBar->showMessage("Please set robot communicate id",5000);
-        else if(g_robotControlId == 0 )
+        else if(g_calledId == 0 )
+            ui->statusBar->showMessage("Please set communicate id",5000);
+        else if(g_robotControlId == 0 && g_isRemoteTerminal)
             ui->statusBar->showMessage("Please set robot control id",5000);
         else if(g_systemStatus == SystemOnThePhone)
             ui->statusBar->showMessage("Call in progress!",5000);
-        else if(g_robotCallId == g_myId)
+        else if(g_calledId == g_myId)
             ui->statusBar->showMessage(QString("Can not call yourself!"),5000);
         else
         {
-            this->startChat(g_robotCallId);
+            this->startChat(g_calledId);
             return;
         }
         ui->pushButton_call->setChecked(false);

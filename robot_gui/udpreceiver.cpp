@@ -198,7 +198,7 @@ void UdpReceiver::onReadyRead()
 
         if(PkgType_ResponseRegister == package->type) //服务器回应注册,包含新端口号
         {
-            quint16 serverPort =
+            quint16 serverPort = //新端口号
                 m_dataBuf[sizeof(pkgHeader_t)]+m_dataBuf[sizeof(pkgHeader_t)+1]*256;
 
             confirmRegister(serverPort);
@@ -324,6 +324,10 @@ void UdpReceiver::run(void)
 
 void UdpReceiver::heartBeatThread()
 {
+    //防止线程多开
+    if(m_heartBeatThreadRunning) return;
+    m_heartBeatThreadRunning = true;
+
     m_serverLastHeartBeatTime = time(nullptr); //此处必须初始化
     pkgHeader_t heartBeatPkg(PkgType_HeartBeat);
     heartBeatPkg.senderId = g_myId;
@@ -337,14 +341,15 @@ void UdpReceiver::heartBeatThread()
         if(disconnect)
         {
             emit logoutSignal();
-            emit addWorkLog("server is shutdown ! try to relogin...");
-            QThread::msleep(300);
-            registerToServer(); //重新登录
+            //emit addWorkLog("server is shutdown ! try to relogin...");
+            //QThread::msleep(300);
+            //registerToServer(); //重新登录
             return;
         }
 
         m_udpSocket->writeDatagram((char *)&heartBeatPkg,
-                   sizeof(heartBeatPkg), g_serverIp,g_msgPort);
+                  sizeof(heartBeatPkg), g_serverIp,g_msgPort);
         QThread::sleep(g_heartBeatInterval);
     }
+    m_heartBeatThreadRunning = false;
 }

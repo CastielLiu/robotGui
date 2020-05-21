@@ -17,8 +17,9 @@ quint16 g_registerPort; //服务器接收注册信息的端口号
 quint16 g_msgPort;                   //服务器接收数据的端口号
 int g_registerStatus = RegisterStatus_None;
 
-uint16_t g_robotCallId = 0; //机器人视频通话ID
+uint16_t g_calledId = 0; //视频通话被叫方ID
 uint16_t g_robotControlId = 5050;//机器人远程控制ID
+int g_cameraId = 0; //摄像头ID
 
 /***** 跨线程传递变量   ****/
 std::shared_ptr<QImage> g_myImage = nullptr;   //我方图像
