@@ -89,6 +89,10 @@ bool MainWindow::clientModeSelection()
 //开始通话
 void MainWindow::startChat(uint16_t id)
 {
+    if(g_systemStatus == SystemOnThePhone)
+        return;
+    g_systemStatus = SystemOnThePhone;
+
     ui->pushButton_call->setChecked(true);
     ui->pushButton_call->setText("disconnect");
 
@@ -109,6 +113,10 @@ void MainWindow::startChat(uint16_t id)
 
 void MainWindow::stopChat()
 {
+    if(g_systemStatus != SystemOnThePhone)
+         return;
+    g_systemStatus = SystemIdle;
+
     ui->pushButton_call->setChecked(false);
     ui->pushButton_call->setText("connect");
     m_udpReceiver->stopPlayMv();
@@ -127,9 +135,9 @@ void MainWindow::stopChat()
 //与服务器失去连接被动退出
 void MainWindow::logout()
 {
-    this->updateRegisterStatus(RegisterStatus_None);
-    this->stopChat();
-    m_udpReceiver->logout();
+    this->updateRegisterStatus(RegisterStatus_None); //状态更新
+    this->stopChat();         // 中断通话
+    m_udpReceiver->logout();  //退出登录
 }
 
 void MainWindow::login()
@@ -410,7 +418,7 @@ void MainWindow::addWorkLog(const QString& str, bool vip)
     int msec = time%1000;
 
     struct tm *ttime = localtime(&sec);
-    char time_buf[26] = "[";
+    char time_buf[30] = "[";
     strftime(time_buf+1,21,"%Y-%m-%d %H:%M:%S.",ttime);
     sprintf(time_buf+21,"%03d] ",msec);
     ui->textBrowser_log->append(QString(time_buf) + str);

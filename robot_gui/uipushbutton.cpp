@@ -14,7 +14,7 @@ void MainWindow::on_pushButton_roscore_clicked()
 void MainWindow::on_pushButton_remoteCtrl_clicked()
 {
 
-    utils::systemCmd("./command/remote_control.sh");
+    utils::systemCmd("./../command/remote_control.sh");
 }
 
 void MainWindow::on_pushButton_call_clicked()

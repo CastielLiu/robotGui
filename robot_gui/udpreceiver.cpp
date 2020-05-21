@@ -20,6 +20,7 @@ UdpReceiver::UdpReceiver():
 
 UdpReceiver::~UdpReceiver()
 {
+    this->logout();
     if(m_udpSocket != nullptr)
     {
         //对象析构后与之绑定的所有信号自动断开，无需手动断开
@@ -28,8 +29,6 @@ UdpReceiver::~UdpReceiver()
         delete m_udpSocket;
         m_udpSocket = nullptr;
     }
-
-    stopPlayMv();
     delete [] m_dataBuf;
 }
 
@@ -138,7 +137,6 @@ void UdpReceiver::logout()
 //  开始播放视频和声音
 void UdpReceiver::startPlayMv()
 {
-    g_systemStatus = SystemOnThePhone;
     m_audioPlayer = new AudioHandler;
     m_audioPlayer->init("play");
 
@@ -150,7 +148,6 @@ void UdpReceiver::startPlayMv()
 
 void UdpReceiver::stopPlayMv()
 {
-    g_systemStatus = SystemIdle;
     g_otherImageMutex.lock();
     g_otherImage = nullptr;
     g_otherImageMutex.unlock();

@@ -48,7 +48,8 @@ private:
     CvImageGraber *m_cvImageGrabber;
 
     bool m_isVedioOpen;
-    float m_imgScale;
+    float m_imgScale; //图像缩放比例
+    float m_imgCutK;  //图像裁剪比例
     QSize m_imgSize;
 
     //m_imageBuffer
