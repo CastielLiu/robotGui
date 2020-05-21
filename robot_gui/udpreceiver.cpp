@@ -256,6 +256,8 @@ void UdpReceiver::onReadyRead()
                 emit showMsgInStatusBar(QString("Robot control receiver offline!"),3000);
             else if(g_ignoreCalledOffline) //视频语音被叫端不在线
                 emit showMsgInStatusBar(QString("Called offline, but you ignore it"),3000);
+            else
+                emit calledOffline();
         }
         else if(PkgType_CalledBusy == package->type)
             emit calledBusy();
@@ -290,7 +292,12 @@ void UdpReceiver::onReadyRead()
             }
         }
         else
-            emit addWorkLog("received unknown type msg, len: "+QString::number(len));
+        {
+            QString msg = "received unknown type msg! type:"+ QString::number(package->type)
+                    + " from: " + QString::number(package->senderId)
+                    + " len: " + QString::number(len)  ;
+                    emit addWorkLog(msg);
+        }
     }
 }
 

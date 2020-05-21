@@ -274,9 +274,9 @@ void Server::receiveAndTransThread(int server_fd, uint16_t clientId)
 			transPack_t pkg(PkgType_DisConnect);
     		sendto(clients_[clientB].fd, (char*)&pkg, sizeof(transPack_t), 0, (struct sockaddr*)&clients_[clientB].addr, sizeof(sockaddr_in));
 		}
-		else if((pkg->type == PkgType_Video) || (pkg->type == PkgType_Audio))
+		else if((_pkg->type == PkgType_Video) || (_pkg->type == PkgType_Audio))
 			msgTransmit(recvbuf, len);
-		else if(pkg->type == PkgType_ControlCmd || pkg->type == PkgType_RobotState)
+		else if((_pkg->type == PkgType_ControlCmd) || (_pkg->type == PkgType_RobotState))
 			cmdAndStatusTransmit(recvbuf, len);
 		else
 		{
@@ -352,7 +352,7 @@ void Server::msgTransmit(const uint8_t* buf, int len)
 		pkg.length = 0;
 		
 		sendto(clients_[srcClientId].fd, (char*)&pkg, sizeof(transPack_t), 0, (struct sockaddr*)&clients_[srcClientId].addr, sizeof(sockaddr_in));
-		//cout << "No client : " << dstClientId << endl;
+		cout << "No client : " << dstClientId << endl;
 		return;
 	}
 	
@@ -370,8 +370,8 @@ void Server::msgTransmit(const uint8_t* buf, int len)
 		memcpy(&pkg, buf, sizeof(transPack_t));
 		pkg.type =  PkgType_RequestConnect;
 		pkg.length = 0;
-		
 		sendto(clients_[dstClientId].fd, (char*)&pkg, sizeof(transPack_t), 0, (struct sockaddr*)&clients_[dstClientId].addr, sizeof(sockaddr_in));
+		std::cout << srcClientId << " request connect to " <<  dstClientId << std::endl;
 	}
 	else //被叫正在与其他用户通话
 	{

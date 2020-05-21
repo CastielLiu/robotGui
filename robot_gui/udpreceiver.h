@@ -29,6 +29,7 @@ signals:
     void stopChatSignal();
     void logoutSignal();
     void calledBusy();
+    void calledOffline();
     void updateRegisterStatus(int status);
     void showMsgInStatusBar(const QString& msg,int timeout=0);
     void enableMyImageLabel(bool );

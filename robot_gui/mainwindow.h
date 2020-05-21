@@ -34,6 +34,7 @@ private slots:
     void startChat(uint16_t id);
     void stopChat();
     void onCalledBusy();
+    void onCalledOffline();
     void logout();
     void login();
     void updateRegisterStatus(int status);

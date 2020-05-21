@@ -44,6 +44,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_udpReceiver,SIGNAL(stopChatSignal()),this,SLOT(stopChat()));
     connect(m_udpReceiver,SIGNAL(logoutSignal()),this,SLOT(logout()));
     connect(m_udpReceiver,SIGNAL(calledBusy()),this,SLOT(onCalledBusy()));
+    connect(m_udpReceiver,SIGNAL(calledOffline()),this,SLOT(onCalledOffline()));
     connect(m_udpReceiver,SIGNAL(updateRegisterStatus(int)),this,SLOT(updateRegisterStatus(int)));
     connect(m_udpReceiver,SIGNAL(showMsgInStatusBar(const QString&,int)),
             this,SLOT(showMsgInStatusBar(const QString&,int)));
@@ -177,6 +178,13 @@ void MainWindow::updateStatusBarPemanentMsg()
 
 //被叫忙
 void MainWindow::onCalledBusy()
+{
+    showMsgInStatusBar("The subscriber you dialed is busy now!",3000);
+    this->stopChat();
+}
+
+//被叫不在线
+void MainWindow::onCalledOffline()
 {
     showMsgInStatusBar("The subscriber you dialed is offline!",3000);
     this->stopChat();
