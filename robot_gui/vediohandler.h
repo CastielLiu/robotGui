@@ -49,6 +49,7 @@ private:
 
     bool m_isVedioOpen;
     float m_imgScale;
+    QSize m_imgSize;
 
     //m_imageBuffer
     //作为发送器存放要发送的图片

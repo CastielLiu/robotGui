@@ -90,12 +90,13 @@ private:
     QUdpSocket *m_udpSocket;
     UdpReceiver *m_udpReceiver;
     UdpSender *m_udpSender;
-    BiologicalRadar *m_radar;
 
     bool m_autoRegister;
     QString m_configFile;
 
     MyQLabel *m_imageLabel;
+    BiologicalRadar *m_radar;
+
     bool m_myImageBig ;
     int m_imageDisplayTimer =0;
     QString mWindowTitle;

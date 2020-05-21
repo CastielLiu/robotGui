@@ -58,6 +58,7 @@ public:
         m_array.resize(m_size);
         m_datasStatus = std::vector<bool>(m_size,false);
         m_readIndex = m_writeIndex = 0; //读写指针复位
+        return true;
     }
 
     size_t getSize(){return m_size;}

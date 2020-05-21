@@ -1,9 +1,0 @@
-[General]
-autoLogin=0
-robotCallId=0
-robotCotrolId=0
-userId=123
-
-[server]
-ip=62.234.114.48
-port=8617

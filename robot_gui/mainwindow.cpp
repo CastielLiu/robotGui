@@ -28,7 +28,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->label_log->setAlignment(Qt::AlignHCenter); //居中对齐
 
-
     //连接action信号槽
     connect(ui->action_user_id,SIGNAL(triggered()),this,SLOT(onActionUserId()));
     connect(ui->action_auto_login,SIGNAL(triggered()),this,SLOT(onActionAutoLogin()));
@@ -56,9 +55,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     if(m_autoRegister)  this->login();
 
-    std::stringstream ss;
-    ss << "create MainWindow in thread: " << QThread::currentThreadId() ;
-    addWorkLog(QString("create MainWindow in thread: ") + QString(ss.str().c_str()), true);
 }
 
 MainWindow::~MainWindow()
@@ -134,7 +130,6 @@ void MainWindow::logout()
     this->updateRegisterStatus(RegisterStatus_None);
     this->stopChat();
     m_udpReceiver->logout();
-
 }
 
 void MainWindow::login()
@@ -288,6 +283,7 @@ void MainWindow::on_checkBox_audio_stateChanged(int arg1)
 
 void MainWindow::updateRobotStatus(const QString& qstr)
 {
+
     //ui->label_robotStatus->setText(qstr);
 }
 

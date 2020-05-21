@@ -20,6 +20,7 @@ VedioHandler::VedioHandler():
 {
     m_imageBuffer.setSize(10);
     m_imgScale = 0.5;
+    m_imgSize = QSize(320,240);
 }
 
 VedioHandler::~VedioHandler()
@@ -162,8 +163,9 @@ void VedioHandler::sendImage(QUdpSocket *sockect, uint16_t receiverId)
     g_myImage = imgPtr;
     g_myImageMutex.unlock();
 
-    QSize size = imgPtr->size();
-    *imgPtr = imgPtr->scaled(int(size.width()*m_imgScale),int(size.height()*m_imgScale));
+    //QSize size = imgPtr->size();
+    //*imgPtr = imgPtr->scaled(int(size.width()*m_imgScale),int(size.height()*m_imgScale));
+    *imgPtr = imgPtr->scaled(m_imgSize);
 
     imgPtr->save(&Buffer,"JPG");//将图片保存在QByteArray中
 #endif
