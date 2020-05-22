@@ -69,7 +69,7 @@ bool AudioHandler::stop(AudioMode mode)
 bool AudioHandler::configReader(int samplerate, int channelcount, int samplesize)
 {
     //std::cout << "start reading audio..." << std::endl;
-
+/*
     QList<QAudioDeviceInfo> deviceInfo = QAudioDeviceInfo::availableDevices(QAudio::AudioInput);
     //qDebug() << "default" <<  QAudioDeviceInfo::defaultInputDevice().deviceName();
     foreach(const QAudioDeviceInfo&audio, deviceInfo)
@@ -82,7 +82,7 @@ bool AudioHandler::configReader(int samplerate, int channelcount, int samplesize
         qDebug() << "AudioHandler: no input device!";
         return false;
     }
-
+*/
     QAudioFormat format = setAudioFormat(samplerate,channelcount,samplesize);
     m_input = new QAudioInput(format,this); //default device
     //m_input = new QAudioInput(deviceInfo[0],format,this);
@@ -174,7 +174,7 @@ bool AudioHandler::configPlayer(int sampleRate, int channelCount, int sampleSize
     nFormat.setByteOrder(QAudioFormat::LittleEndian);
 
     if (m_OutPut != nullptr) delete m_OutPut;
-
+/*
     QList<QAudioDeviceInfo> deviceInfo = QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
     foreach(const QAudioDeviceInfo&audio, deviceInfo)
     {
@@ -185,7 +185,7 @@ bool AudioHandler::configPlayer(int sampleRate, int channelCount, int sampleSize
         qDebug() << "AudioHandler: no output device!";
         return false;
     }
-
+*/
     m_OutPut = new QAudioOutput(nFormat);//default device
     //m_OutPut = new QAudioOutput(deviceInfo[0], nFormat);
     m_OutPut->setVolume(volumn);
