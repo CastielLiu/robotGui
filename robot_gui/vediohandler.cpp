@@ -26,8 +26,7 @@ VedioHandler::VedioHandler():
 
 VedioHandler::~VedioHandler()
 {
-    this->stop(VedioMode_Capture);
-    this->stop(VedioMode_Play);
+    this->stop(m_vedioMode);
 }
 
 void VedioHandler::stopCapture()
@@ -65,7 +64,7 @@ void VedioHandler::stopCapture()
 bool VedioHandler::init(VedioMode mode)
 {
     if(m_isVedioOpen) return false;
-
+    m_vedioMode = mode;
     if(mode == VedioMode_Capture)
     {
     #if(WHAT_CAMERE_TOOL == QCAMERA_IMAGE_CAPTURE)

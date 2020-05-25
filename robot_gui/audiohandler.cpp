@@ -72,23 +72,35 @@ bool AudioHandler::stop(AudioMode mode)
 bool AudioHandler::configReader(int samplerate, int channelcount, int samplesize)
 {
     //std::cout << "start reading audio..." << std::endl;
-/*
-    QList<QAudioDeviceInfo> deviceInfo = QAudioDeviceInfo::availableDevices(QAudio::AudioInput);
-    qDebug() << "default" <<  QAudioDeviceInfo::defaultInputDevice().deviceName();
-    foreach(const QAudioDeviceInfo&audio, deviceInfo)
-    {
-        qDebug() << audio.deviceName();
-    }
 
+    QList<QAudioDeviceInfo> deviceInfo = QAudioDeviceInfo::availableDevices(QAudio::AudioInput);
     if(deviceInfo.size()<=0)
     {
         qDebug() << "AudioHandler: no input device!";
         return false;
     }
-*/
+
+    qDebug() << "default" <<  QAudioDeviceInfo::defaultInputDevice().deviceName();
+    QAudioDeviceInfo device = QAudioDeviceInfo::defaultInputDevice();
+    foreach(const QAudioDeviceInfo&audio, deviceInfo)
+    {
+        qDebug() << audio.deviceName();
+        if(-1 != audio.deviceName().indexOf(QString("USB_Microphone")))
+            device = audio;
+    }
+
     QAudioFormat format = setAudioFormat(samplerate,channelcount,samplesize);
-    m_input = new QAudioInput(format,this); //default device
-    //m_input = new QAudioInput(deviceInfo[0],format,this);
+    //m_input = new QAudioInput(format,this); //default device
+
+    if(device == QAudioDeviceInfo::defaultInputDevice())
+    {
+        qDebug() << "use default input audio device: " << device.deviceName() ;
+    }
+    else
+    {
+        qDebug() << "use customize input audio device: " << device.deviceName();
+    }
+    m_input = new QAudioInput(device,format,this);
     m_inputDevice = m_input->start();
     connect(m_inputDevice,SIGNAL(readyRead()),this,SLOT(onReadyRead()));
     return true;
