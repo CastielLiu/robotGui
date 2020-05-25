@@ -16,8 +16,7 @@ AudioHandler::AudioHandler():
 
 AudioHandler::~AudioHandler()
 {
-    stop(AudioMode_Play);
-    stop(AudioMode_Record);
+    stop(m_audioMode);
 
     if(m_file.isOpen())
         m_file.close();
@@ -28,6 +27,7 @@ AudioHandler::~AudioHandler()
 bool AudioHandler::init(AudioMode mode)
 {
     if (m_isAudioOpen) return false;
+    m_audioMode = mode;
 
     if(mode == AudioMode_Record)//录制
         return (m_isAudioOpen = configReader(m_sampleRate,m_channelCount,m_sampleSize));
@@ -42,10 +42,12 @@ bool AudioHandler::init(AudioMode mode)
 
 bool AudioHandler::stop(AudioMode mode)
 {
+    qDebug() <<  "here " << mode;
     if(!m_isAudioOpen) return false;
     m_isAudioOpen = false;
     if(AudioMode_Record == mode)
     {
+        qDebug() << "stop audio record..." ;
         if(m_input != nullptr)
         {
             m_input->stop();
@@ -55,6 +57,7 @@ bool AudioHandler::stop(AudioMode mode)
     }
     else if(AudioMode_Play == mode)
     {
+        qDebug() << "stop audio play..." ;
         if(m_OutPut != nullptr)
         {
             m_OutPut->stop();
@@ -71,7 +74,7 @@ bool AudioHandler::configReader(int samplerate, int channelcount, int samplesize
     //std::cout << "start reading audio..." << std::endl;
 /*
     QList<QAudioDeviceInfo> deviceInfo = QAudioDeviceInfo::availableDevices(QAudio::AudioInput);
-    //qDebug() << "default" <<  QAudioDeviceInfo::defaultInputDevice().deviceName();
+    qDebug() << "default" <<  QAudioDeviceInfo::defaultInputDevice().deviceName();
     foreach(const QAudioDeviceInfo&audio, deviceInfo)
     {
         qDebug() << audio.deviceName();
@@ -88,6 +91,7 @@ bool AudioHandler::configReader(int samplerate, int channelcount, int samplesize
     //m_input = new QAudioInput(deviceInfo[0],format,this);
     m_inputDevice = m_input->start();
     connect(m_inputDevice,SIGNAL(readyRead()),this,SLOT(onReadyRead()));
+    return true;
 }
 
 QAudioFormat AudioHandler::setAudioFormat(int samplerate, int channelcount, int samplesize)

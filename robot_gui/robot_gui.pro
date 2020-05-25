@@ -87,9 +87,9 @@ win32{
 unix{
     message("current os is unix")
     QMAKE_CFLAGS_ISYSTEM = -I
-    INCLUDEPATH += /usr/include /usr/include/opencv /usr/include/opencv2
-    LIBS += /usr/lib/libopencv_*
+    #INCLUDEPATH += /usr/include /usr/include/opencv /usr/include/opencv2
+    #LIBS += /usr/lib/libopencv_*
 
-    #INCLUDEPATH += /usr/local/include  /usr/local/include/opencv /usr/local/include/opencv2
-    #LIBS += /usr/local/lib/libopencv_*
+    INCLUDEPATH += /usr/local/include  /usr/local/include/opencv /usr/local/include/opencv2
+    LIBS += /usr/local/lib/libopencv_*
 }

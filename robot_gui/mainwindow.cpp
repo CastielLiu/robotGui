@@ -116,7 +116,6 @@ void MainWindow::stopChat()
 {
     if(g_systemStatus != SystemOnThePhone)
          return;
-    g_systemStatus = SystemIdle;
 
     ui->pushButton_call->setChecked(false);
     ui->pushButton_call->setText("connect");
@@ -130,6 +129,7 @@ void MainWindow::stopChat()
     }
     m_udpReceiver->sendCmd(PkgType_DisConnect);
     ui->label_showImageMain->clear();
+    g_systemStatus = SystemIdle;
 }
 
 //用户退出登陆，主动退出，
