@@ -80,7 +80,8 @@ bool AudioHandler::configReader(int samplerate, int channelcount, int samplesize
         return false;
     }
 
-    qDebug() << "default" <<  QAudioDeviceInfo::defaultInputDevice().deviceName();
+    //qDebug() << "default" <<  QAudioDeviceInfo::defaultInputDevice().deviceName();
+    qDebug() << "=================video input device ====================";
     QAudioDeviceInfo device = QAudioDeviceInfo::defaultInputDevice();
     foreach(const QAudioDeviceInfo&audio, deviceInfo)
     {
@@ -100,6 +101,7 @@ bool AudioHandler::configReader(int samplerate, int channelcount, int samplesize
     {
         qDebug() << "use customize input audio device: " << device.deviceName();
     }
+    qDebug() << "=========================================================";
     m_input = new QAudioInput(device,format,this);
     m_inputDevice = m_input->start();
     connect(m_inputDevice,SIGNAL(readyRead()),this,SLOT(onReadyRead()));
@@ -190,20 +192,33 @@ bool AudioHandler::configPlayer(int sampleRate, int channelCount, int sampleSize
     nFormat.setByteOrder(QAudioFormat::LittleEndian);
 
     if (m_OutPut != nullptr) delete m_OutPut;
-/*
+
     QList<QAudioDeviceInfo> deviceInfo = QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
-    foreach(const QAudioDeviceInfo&audio, deviceInfo)
-    {
-        qDebug() << audio.deviceName();
-    }
     if(deviceInfo.isEmpty())
     {
         qDebug() << "AudioHandler: no output device!";
         return false;
     }
-*/
-    m_OutPut = new QAudioOutput(nFormat);//default device
-    //m_OutPut = new QAudioOutput(deviceInfo[0], nFormat);
+
+    QAudioDeviceInfo device = QAudioDeviceInfo::defaultOutputDevice();
+    qDebug() << "=================video output device ====================";
+    foreach(const QAudioDeviceInfo&audio, deviceInfo)
+    {
+        qDebug() << audio.deviceName();
+        if(-1 != audio.deviceName().indexOf(QString("USB_Microphone")))
+           device = audio;
+    }
+    if(device == QAudioDeviceInfo::defaultInputDevice())
+    {
+        qDebug() << "use default output audio device: " << device.deviceName() ;
+    }
+    else
+    {
+        qDebug() << "use customize output audio device: " << device.deviceName();
+    }
+    qDebug() << "=========================================================";
+    //m_OutPut = new QAudioOutput(nFormat);//default device
+    m_OutPut = new QAudioOutput(device, nFormat);
     m_OutPut->setVolume(volumn);
     m_AudioIo = m_OutPut->start();
     return true;

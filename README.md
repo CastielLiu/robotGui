@@ -1,12 +1,3 @@
-# vedioTransmission
-vedio and audio transmission based on socket in qt
+双方通话过程中一方挂断电话，但对方消息仍然在发送，服务器再次请求连接而无法挂断，因此，在点击挂断后，应设置一时间间隔禁止被叫，可在服务器端进行设置
 
-server/ 远程转发服务器程序
-
-videoTransmission/ qt客户端
-
-release.bat 生成qt可执行程序依赖文件（可在其他windows上运行）
-将可执行文件和此批处理文件复制到新建文件夹中，然后双击运行批处理文件即可  
-
-scp.bat 将server文件夹中的代码上传到服务器
-(原来将scp.bat文件放在了server文件夹下，但总是循环执行且不成功，移到外部可用)
+控制指令数据较小传输较快，语音数据相对较大，语音从捕获，发送，转发，接收，播放，必然 存在很大的迟滞
