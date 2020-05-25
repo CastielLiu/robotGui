@@ -14,6 +14,7 @@
 #include <QUdpSocket>
 #include <globalvariable.h>
 #include <QDir>
+#include <QDateTime>
 
 
 class AudioHandler : public QObject
@@ -57,12 +58,12 @@ private:
     AudioMode m_audioMode;
 
     char *m_audioBuffer; //存放语音(本地获取的语音/接收到的语音)
-    uint16_t m_writeIndex=0;  //写索引位置
-    uint16_t m_readIndex=0;   //读索引位置
+    uint32_t m_writeIndex=0;  //写索引位置
+    uint32_t m_readIndex=0;   //读索引位置
 
     //output  播放
     QAudioOutput *m_OutPut = nullptr;
-    QIODevice *m_AudioIo = nullptr;
+    QIODevice *m_outputDevice = nullptr;
     QMutex m_audioPlayMutex;
 
     //input  录制

@@ -79,7 +79,7 @@ void UdpSender::run()
     uint32_t cnt = 0;
     while (!this->isInterruptionRequested())
     {
-        QThread::msleep(50);
+        QThread::msleep(5);
         if(g_isRemoteTerminal)
             m_remoteControler->sendControlCmd(m_udpSocket,g_robotControlId);
 

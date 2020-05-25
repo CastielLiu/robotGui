@@ -4,9 +4,9 @@ AudioHandler::AudioHandler():
     m_sampleRate(8000),
     m_channelCount(1),
     m_sampleSize(16),
-    m_audioTimePerFrame(60),
+    m_audioTimePerFrame(40),
     m_audioSizePerFrame(m_sampleRate*m_channelCount*m_sampleSize/8*m_audioTimePerFrame/1000),
-    m_maxAudioBufLen(m_audioSizePerFrame*500),
+    m_maxAudioBufLen(m_audioSizePerFrame*200),
     m_isAudioOpen(false),
     m_input(nullptr)
 {
@@ -103,7 +103,14 @@ bool AudioHandler::configReader(int samplerate, int channelcount, int samplesize
     }
     qDebug() << "=========================================================";
     m_input = new QAudioInput(device,format,this);
+
     m_inputDevice = m_input->start();
+    if(!m_inputDevice->isOpen())
+    {
+        qDebug() << "open input audio device failed!";
+        m_input->stop();
+        return false;
+    }
     connect(m_inputDevice,SIGNAL(readyRead()),this,SLOT(onReadyRead()));
     return true;
 }
@@ -120,11 +127,14 @@ QAudioFormat AudioHandler::setAudioFormat(int samplerate, int channelcount, int 
     return format;
 }
 
+// read audio from input device
 void AudioHandler::onReadyRead()
 {
+    //qDebug() << "m_inputDevice->bytesAvailable : " << m_inputDevice->bytesAvailable(); //无效
+    //qDebug() << QDateTime::currentMSecsSinceEpoch();
+
     QMutexLocker locker(&m_audioSendMutex);
 
-    // read audio from input device
     int remained = m_maxAudioBufLen - m_writeIndex; //buf末尾空闲位置个数
 
     qint64 len;
@@ -133,6 +143,7 @@ void AudioHandler::onReadyRead()
     else
         len =m_inputDevice->read(m_audioBuffer+m_writeIndex,m_audioSizePerFrame);
 
+    //qDebug() << "read audio len :" << len ;
     m_writeIndex += len; //更新写指针位置
     m_writeIndex%=m_maxAudioBufLen;
 }
@@ -219,16 +230,26 @@ bool AudioHandler::configPlayer(int sampleRate, int channelCount, int sampleSize
     qDebug() << "=========================================================";
     //m_OutPut = new QAudioOutput(nFormat);//default device
     m_OutPut = new QAudioOutput(device, nFormat);
+
     m_OutPut->setVolume(volumn);
-    m_AudioIo = m_OutPut->start();
+    m_outputDevice = m_OutPut->start();
+
+    if(!m_outputDevice->isOpen())
+    {
+        qDebug() << "open output audio device failed!";
+        m_OutPut->stop();
+        return false;
+    }
+
     return true;
 }
 
 //将收到的语音消息添加进语音缓冲区，等待播放
 void AudioHandler::appendData(char* const buf, int len)
 {
-      QDir::currentPath();
-    /*if(!m_file.isOpen())
+/*
+    QDir::currentPath();
+    if(!m_file.isOpen())
     {
         QString file_name = QDir::currentPath() +"/audio";
         qDebug() << file_name;
@@ -236,7 +257,8 @@ void AudioHandler::appendData(char* const buf, int len)
         bool ok = m_file.open(QIODevice::WriteOnly);
         qDebug() << file_name << " "  << QString::number(ok);
     }
-    m_file.write(buf,len);*/
+    m_file.write(buf,len);
+*/
 
     QMutexLocker locker(&m_audioPlayMutex);
 
@@ -245,12 +267,13 @@ void AudioHandler::appendData(char* const buf, int len)
     {
         memcpy(m_audioBuffer+m_writeIndex,buf,remained); //先拷贝一部分到buf尾部
         memcpy(m_audioBuffer,buf+remained,len-remained); //再拷贝剩下的到buf头部
-
     }
     else //空间足够，直接拷贝
         memcpy(m_audioBuffer+m_writeIndex,buf,len);
     m_writeIndex += len; //更新写指针位置
     m_writeIndex = m_writeIndex%m_maxAudioBufLen;
+    //qDebug() << "appendData len: " <<len << "\t"
+    //         << "m_writeIndex: " << m_writeIndex;
 }
 
 void AudioHandler::playAudio()
@@ -259,10 +282,19 @@ void AudioHandler::playAudio()
 
     QMutexLocker locker(&m_audioPlayMutex);
     int canPlayLen = (m_writeIndex-m_readIndex+m_maxAudioBufLen)%m_maxAudioBufLen;
-    if(canPlayLen < 3*m_audioSizePerFrame) //可播放长度小于一帧音频长度的3倍
+    if(canPlayLen < 1*m_audioSizePerFrame) //可播放长度小于一帧音频长度的n倍时，暂不播放
         return;
 
-    qint64 len = m_AudioIo->write(m_audioBuffer+m_readIndex , canPlayLen);
+    qint64 len = m_outputDevice->write(m_audioBuffer+m_readIndex , canPlayLen);
+/*
+    qDebug() << "play audio :" << QDateTime::currentMSecsSinceEpoch() << "\t"
+             << "can play len: " << canPlayLen << "\t"
+             << "play len:" << len <<"\t"
+             << "writeIndex: " << m_writeIndex << "\t"
+             << "readIndex:" << m_readIndex << "\t"
+             << "m_maxAudioBufLen:" << m_maxAudioBufLen;
+
+*/
     m_readIndex += len;
     m_readIndex = m_readIndex%m_maxAudioBufLen;
 }

@@ -324,7 +324,8 @@ void UdpReceiver::run(void)
     while (!this->isInterruptionRequested())
     {
         m_audioPlayer->playAudio();
-        QThread::msleep(30);
+        QThread::msleep(10);
+        //QThread::sleep(10);
     }
     emit enableImageDisplay(false);//失能mainWindow视频播放
 }
