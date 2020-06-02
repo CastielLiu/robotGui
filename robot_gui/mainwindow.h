@@ -76,6 +76,8 @@ private slots:
     void on_pushButton_remoteCtrl_clicked();
     void on_pushButton_logpageReturn_clicked();
 
+    void on_pushButton_clearWorkLog_clicked();
+
 private:
     void closeEvent(QCloseEvent *event) override;
     void loadPerformance();

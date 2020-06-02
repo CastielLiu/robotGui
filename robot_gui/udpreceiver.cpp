@@ -344,12 +344,14 @@ void UdpReceiver::heartBeatThread()
     {
         m_heartBeatMutex.lock();
         //qDebug() << m_serverLastHeartBeatTime << "\t" << m_serverLastHeartBeatTime-time(0) ;
-        bool disconnect = time(0) - m_serverLastHeartBeatTime >g_heartBeatInterval + g_maxHeartBeatDelay;
+        std::time_t duration = time(nullptr) - m_serverLastHeartBeatTime;
+        bool disconnect = duration > g_heartBeatInterval + g_maxHeartBeatDelay;
         m_heartBeatMutex.unlock();
         if(disconnect)
         {
-            emit logoutSignal();
-            //emit addWorkLog("server is shutdown ! try to relogin...");
+            emit logoutSignal(); // logout
+            emit addWorkLog("server is shutdown! auto logout!",true);
+
             //QThread::msleep(300);
             //registerToServer(); //重新登录
             break;

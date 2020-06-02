@@ -151,3 +151,8 @@ void MainWindow::on_pushButton_logpageReturn_clicked()
 {
     ui->stackedWidget->setCurrentIndex(stackWidget_MainPage);
 }
+
+void MainWindow::on_pushButton_clearWorkLog_clicked()
+{
+    ui->textBrowser_log->clear();
+}

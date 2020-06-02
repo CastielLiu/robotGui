@@ -79,6 +79,9 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 RESOURCES += \
     res.qrc
 
+#如果使用TX2,需添加此宏，否则注释!
+DEFINES += TX2
+
 win32{
     message("current os is win32")
     INCLUDEPATH += C:\opencv\build\include
@@ -87,9 +90,11 @@ win32{
 unix{
     message("current os is unix")
     QMAKE_CFLAGS_ISYSTEM = -I
-    #INCLUDEPATH += /usr/include /usr/include/opencv /usr/include/opencv2
-    #LIBS += /usr/lib/libopencv_*
-
-    INCLUDEPATH += /usr/local/include  /usr/local/include/opencv /usr/local/include/opencv2
-    LIBS += /usr/local/lib/libopencv_*
+    if(contains(DEFINES,TX2)){
+        INCLUDEPATH += /usr/include /usr/include/opencv /usr/include/opencv2
+        LIBS += /usr/lib/libopencv_*
+    }else{
+        INCLUDEPATH += /usr/local/include  /usr/local/include/opencv /usr/local/include/opencv2
+        LIBS += /usr/local/lib/libopencv_*
+    }
 }

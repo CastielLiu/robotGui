@@ -241,7 +241,7 @@ void Server::receiveAndTransThread(int server_fd, uint16_t clientId)
 		
 		if(_pkg->type == PkgType_HeartBeat) //心跳包 
 		{
-			cout << "received client heartbeat :" << clientId << endl;
+			//cout << "received client heartbeat :" << clientId << endl;
 			sendto(server_fd,recvbuf, len, 0, (struct sockaddr*)&client_addr, clientLen); //回发给客户端 
 			clients_[clientId].lastHeartBeatTime = time(0); //记录客户心跳时间 
 		}
@@ -424,7 +424,7 @@ void Server::heartBeatThread()
 			{
 				//连接置false，等待线程退出后自动删除用户 
 				client->second.connect = false;
-				cout << "client " << client->first  << "  disconnect." << endl;
+				cout << "client " << client->first  << " overtime!  auto-disconnect." << endl;
 			}
 			 
 		}

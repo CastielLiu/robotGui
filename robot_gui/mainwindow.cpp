@@ -434,3 +434,4 @@ void MainWindow::addWorkLog(const QString& str, bool vip)
     sprintf(time_buf+21,"%03d] ",msec);
     ui->textBrowser_log->append(QString(time_buf) + str);
 }
+

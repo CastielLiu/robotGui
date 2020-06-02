@@ -116,7 +116,7 @@ private:
 	const int register_port_; 
 	
 	uint16_t heartBeatInterval_ = 5; //心跳包发送间隔(s)
-	uint16_t maxHeartBeatDelay_ = 2; //心跳包容许延迟时间(s)
+	uint16_t maxHeartBeatDelay_ = 3; //心跳包容许延迟时间(s)
 	
 };
 

@@ -8,7 +8,7 @@ bool g_isRemoteTerminal = true;  //是否为远程端
 
 uint16_t g_myId = 123;   // 注：分配客户端id时保留0
 uint16_t g_heartBeatInterval = 5; //心跳包发送间隔(s)，需与服务器保持一致
-uint16_t g_maxHeartBeatDelay = 1; //心跳包容许延迟时间(s)
+uint16_t g_maxHeartBeatDelay = 3; //心跳包容许延迟时间(s)
 
 systemStatus g_systemStatus = SystemIdle;
 QHostAddress g_serverIp;
