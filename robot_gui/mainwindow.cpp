@@ -415,6 +415,7 @@ void MainWindow::onBioRadarUpdateData(bioRadarData_t data)
     QString bloodPressure = QString::number(data.bloodPressureH)+" / "+QString::number(data.bloodPressureL);
     ui->lineEdit_bloodPressure->setText(bloodPressure);
     ui->lineEdit_heartBeatReat->setText(QString::number(data.heartBeatRate));
+    ui->lineEdit_bloodO2->setText(QString::number(data.bloodOxygen));
 }
 
 void MainWindow::addWorkLog(const QString& str, bool vip)

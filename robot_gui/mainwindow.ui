@@ -511,7 +511,7 @@
               <property name="styleSheet">
                <string notr="true">border-color: rgb(0, 0, 255);</string>
               </property>
-              <layout class="QVBoxLayout" name="verticalLayout_9">
+              <layout class="QVBoxLayout" name="verticalLayout_6">
                <item>
                 <widget class="QLabel" name="label_bioRadarTitle">
                  <property name="styleSheet">
@@ -523,128 +523,142 @@
                 </widget>
                </item>
                <item>
-                <layout class="QVBoxLayout" name="verticalLayout_7">
+                <widget class="QWidget" name="widget_bioRadarSerial" native="true">
+                 <layout class="QHBoxLayout" name="horizontalLayout_12">
+                  <item>
+                   <widget class="QComboBox" name="comboBox_availaleSerial"/>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="pushButton_radarOpenSerial">
+                    <property name="text">
+                     <string>打开串口</string>
+                    </property>
+                    <property name="checkable">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_14">
                  <item>
-                  <widget class="QWidget" name="widget_bioRadarSerial" native="true">
-                   <layout class="QHBoxLayout" name="horizontalLayout_12">
-                    <item>
-                     <widget class="QComboBox" name="comboBox_availaleSerial"/>
-                    </item>
-                    <item>
-                     <widget class="QPushButton" name="pushButton_radarOpenSerial">
-                      <property name="text">
-                       <string>打开串口</string>
-                      </property>
-                      <property name="checkable">
-                       <bool>true</bool>
-                      </property>
-                     </widget>
-                    </item>
-                   </layout>
+                  <widget class="QLabel" name="label_5">
+                   <property name="text">
+                    <string>呼吸  </string>
+                   </property>
                   </widget>
                  </item>
                  <item>
-                  <layout class="QHBoxLayout" name="horizontalLayout_13">
-                   <item>
-                    <widget class="QLabel" name="label_4">
-                     <property name="text">
-                      <string>心跳  </string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QLineEdit" name="lineEdit_heartBeatReat">
-                     <property name="focusPolicy">
-                      <enum>Qt::NoFocus</enum>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
+                  <widget class="QLineEdit" name="lineEdit_breathRate">
+                   <property name="focusPolicy">
+                    <enum>Qt::NoFocus</enum>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_13">
+                 <item>
+                  <widget class="QLabel" name="label_4">
+                   <property name="text">
+                    <string>心跳  </string>
+                   </property>
+                  </widget>
                  </item>
                  <item>
-                  <layout class="QHBoxLayout" name="horizontalLayout_14">
-                   <item>
-                    <widget class="QLabel" name="label_5">
-                     <property name="text">
-                      <string>呼吸  </string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QLineEdit" name="lineEdit_breathRate">
-                     <property name="focusPolicy">
-                      <enum>Qt::NoFocus</enum>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
+                  <widget class="QLineEdit" name="lineEdit_heartBeatReat">
+                   <property name="focusPolicy">
+                    <enum>Qt::NoFocus</enum>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_16">
+                 <item>
+                  <widget class="QLabel" name="label_7">
+                   <property name="text">
+                    <string>体温  </string>
+                   </property>
+                  </widget>
                  </item>
                  <item>
-                  <layout class="QHBoxLayout" name="horizontalLayout_15">
-                   <item>
-                    <widget class="QLabel" name="label_6">
-                     <property name="text">
-                      <string>血压  </string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QLineEdit" name="lineEdit_bloodPressure">
-                     <property name="focusPolicy">
-                      <enum>Qt::NoFocus</enum>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
+                  <widget class="QLineEdit" name="lineEdit_temperature">
+                   <property name="focusPolicy">
+                    <enum>Qt::NoFocus</enum>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_19">
+                 <item>
+                  <widget class="QLabel" name="label_8">
+                   <property name="text">
+                    <string>血氧  </string>
+                   </property>
+                  </widget>
                  </item>
                  <item>
-                  <layout class="QHBoxLayout" name="horizontalLayout_16">
-                   <item>
-                    <widget class="QLabel" name="label_7">
-                     <property name="text">
-                      <string>体温  </string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QLineEdit" name="lineEdit_temperature">
-                     <property name="focusPolicy">
-                      <enum>Qt::NoFocus</enum>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
+                  <widget class="QLineEdit" name="lineEdit_bloodO2">
+                   <property name="focusPolicy">
+                    <enum>Qt::NoFocus</enum>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_15">
+                 <item>
+                  <widget class="QLabel" name="label_6">
+                   <property name="text">
+                    <string>血压  </string>
+                   </property>
+                  </widget>
                  </item>
                  <item>
-                  <layout class="QHBoxLayout" name="horizontalLayout_17">
-                   <item>
-                    <widget class="QPushButton" name="pushButton_bioRadarExit">
-                     <property name="text">
-                      <string>退出</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <spacer name="horizontalSpacer_9">
-                     <property name="orientation">
-                      <enum>Qt::Horizontal</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>40</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
-                   <item>
-                    <widget class="QPushButton" name="pushButton_radarFlushData">
-                     <property name="text">
-                      <string>刷新数据</string>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
+                  <widget class="QLineEdit" name="lineEdit_bloodPressure">
+                   <property name="focusPolicy">
+                    <enum>Qt::NoFocus</enum>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_17">
+                 <item>
+                  <widget class="QPushButton" name="pushButton_bioRadarExit">
+                   <property name="text">
+                    <string>退出</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer name="horizontalSpacer_9">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="pushButton_radarFlushData">
+                   <property name="text">
+                    <string>刷新数据</string>
+                   </property>
+                  </widget>
                  </item>
                 </layout>
                </item>
