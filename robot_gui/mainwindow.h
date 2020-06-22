@@ -51,6 +51,7 @@ private slots:
     void onActionDebugConfig();
     void onActionBiologicalRadar();
     void onActionWorkLog();
+    void onActionServerConfig();
 
     //checkbox
     void on_checkBox_vedio_stateChanged(int arg1);
@@ -75,7 +76,6 @@ private slots:
     void on_pushButton_roscore_clicked();
     void on_pushButton_remoteCtrl_clicked();
     void on_pushButton_logpageReturn_clicked();
-
     void on_pushButton_clearWorkLog_clicked();
 
 private:

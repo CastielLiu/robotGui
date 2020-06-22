@@ -838,9 +838,16 @@
     </property>
     <addaction name="action_biologicalRadar"/>
    </widget>
+   <widget class="QMenu" name="menu_2">
+    <property name="title">
+     <string>高级</string>
+    </property>
+    <addaction name="action_serverConfig"/>
+   </widget>
    <addaction name="menu_setting"/>
    <addaction name="menu"/>
    <addaction name="menu_tools"/>
+   <addaction name="menu_2"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -889,6 +896,11 @@
   <action name="action_workLog">
    <property name="text">
     <string>工作日志</string>
+   </property>
+  </action>
+  <action name="action_serverConfig">
+   <property name="text">
+    <string>服务器配置</string>
    </property>
   </action>
  </widget>

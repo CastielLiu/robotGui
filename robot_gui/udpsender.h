@@ -4,6 +4,7 @@
 #include "audiohandler.h"
 #include "vediohandler.h"
 #include "remotecontrol.h"
+#include "biologicalradar.h"
 #include <QObject>
 
 class UdpSender: public QThread
@@ -28,6 +29,7 @@ private:
     AudioHandler *m_audioRecorder;
     VedioHandler *m_vedioCaptor;
     RemoteControl *m_remoteControler;
+    BiologicalRadar m_bioRadar;
 
     //通话目标id
     uint16_t m_dstId;

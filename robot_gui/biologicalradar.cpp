@@ -1,5 +1,10 @@
 #include "biologicalradar.h"
 
+//静态变量定义
+bool BiologicalRadar::mHasNewData = false;
+QMutex BiologicalRadar::mDataMutex;
+bioRadarData_t BiologicalRadar::mRadarData;
+
 BiologicalRadar::BiologicalRadar():
     mSerial(nullptr)
 {
@@ -81,13 +86,34 @@ void BiologicalRadar::onSerialReadyRead()
     int pkgID = buf[3];
     if(pkgID == 0x01)
     {
+        mDataMutex.lock();
         mRadarData.heartBeatRate = buf[4];
         mRadarData.breathRate = buf[5];
         mRadarData.temperature = (buf[6]*256 + buf[7])*0.1;
         mRadarData.bloodPressureH = buf[8];
         mRadarData.bloodPressureL = buf[9];
         mRadarData.bloodOxygen = buf[10];
+        mHasNewData = true;
+        mDataMutex.unlock();
 
         emit updateData(mRadarData);
     }
+}
+
+/*
+ * sockect   @sockect指针
+ * receiverId @消息接受者id
+ */
+void BiologicalRadar::sendData(QUdpSocket* sockect, uint16_t receiverId)
+{
+    if(!mHasNewData)
+        return;
+    mHasNewData = false;
+
+    bioRadarDataPkg_t pkg;
+    pkg.header.senderId = g_myId;
+    pkg.header.receiverId = receiverId;
+    pkg.data = mRadarData;
+
+    sockect->writeDatagram((char *)&pkg,sizeof(bioRadarDataPkg_t),g_serverIp,g_msgPort);
 }

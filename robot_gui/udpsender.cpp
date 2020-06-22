@@ -79,14 +79,21 @@ void UdpSender::run()
     uint32_t cnt = 0;
     while (!this->isInterruptionRequested())
     {
-        QThread::msleep(5);
+        QThread::msleep(50);
         if(g_isRemoteTerminal)
+        {
             m_remoteControler->sendControlCmd(m_udpSocket,g_robotControlId);
+        }
+        else
+        {
+            //发送生物雷达数据
+            m_bioRadar.sendData(m_udpSocket,g_calledId);
+        }
 
-       if(++cnt%2==0)
+        if(++cnt%2==0)
            m_vedioCaptor->sendImage(m_udpSocket,m_dstId);
 
-       m_audioRecorder->sendAudio(m_udpSocket,m_dstId);
+        m_audioRecorder->sendAudio(m_udpSocket,m_dstId);
     }
     m_udpSocket->close();
     delete m_udpSocket;

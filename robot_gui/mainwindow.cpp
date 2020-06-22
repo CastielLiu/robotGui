@@ -12,7 +12,9 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    this->clientModeSelection();//客户端模式选择
+    //客户端模式选择
+    if(!this->clientModeSelection())
+        exit(0);
     this->loadPerformance();//载入用户参数
 
     this->setWindowTitle(mWindowTitle);
@@ -37,6 +39,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->action_debugConfig,SIGNAL(triggered()),this,SLOT(onActionDebugConfig()));
     connect(ui->action_biologicalRadar,SIGNAL(triggered()),this,SLOT(onActionBiologicalRadar()));
     connect(ui->action_workLog,SIGNAL(triggered()),this,SLOT(onActionWorkLog()));
+    connect(ui->action_serverConfig,SIGNAL(triggered()),this,SLOT(onActionServerConfig()));
 
     //实例化接收器
     m_udpReceiver = new UdpReceiver;
@@ -55,7 +58,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->widget_control1->setFocus(); //设置焦点,方向控制按钮
 
     if(m_autoRegister)  this->login();
-
 }
 
 MainWindow::~MainWindow()
@@ -70,16 +72,25 @@ MainWindow::~MainWindow()
 
 bool MainWindow::clientModeSelection()
 {
-    int button = QMessageBox::question(this, tr("客户端模式选择"),
-                                   QString(tr("远程端 : Yes\n本地端 : No")),
-                                   QMessageBox::Yes | QMessageBox::No);
-    if (button == QMessageBox::Yes)
+    QMessageBox msgBox(QMessageBox::Question, tr("机器人操作界面"), tr("客户端模式选择"),
+                       QMessageBox::YesAll|QMessageBox::Yes|QMessageBox::Cancel);
+    msgBox.button(QMessageBox::YesAll)->setText(tr("远程端"));
+    msgBox.button(QMessageBox::Yes)->setText(tr("本地端"));
+    msgBox.button(QMessageBox::Cancel)->setText(tr("退出"));
+
+    msgBox.setDefaultButton(QMessageBox::Yes);
+
+    int button = msgBox.exec();
+
+    if(button == QMessageBox::Cancel)
+        return false;
+    else if(button == QMessageBox::YesAll)
     {
         g_isRemoteTerminal = true;
         mWindowTitle = tr("用户界面: 远程端");
         ui->widget_control2->hide();
     }
-    else if(button == QMessageBox::No)
+    else if(button == QMessageBox::Yes)
     {
         g_isRemoteTerminal = false;
         mWindowTitle = tr("用户界面: 本地端");

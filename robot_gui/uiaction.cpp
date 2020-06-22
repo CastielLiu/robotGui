@@ -111,3 +111,56 @@ void MainWindow::onActionBiologicalRadar()
         updateAvailaleSerial(); //刷新可用串口
     }
 }
+
+//高级
+void MainWindow::onActionServerConfig()
+{
+    bool ok = false;
+
+    while(true)
+    {
+        QString text = QInputDialog::getText(this, "身份验证","请输入密码",
+                                             QLineEdit::PasswordEchoOnEdit,
+                                             "",&ok);
+        if(!ok) break;
+        if(text.isEmpty() || text!="huaman")
+        {
+            QMessageBox::warning(this, tr("警告"),tr("密码错误"),
+                                 QMessageBox::Ok,QMessageBox::Ok);
+            continue;
+        }
+
+        QString tip = g_serverIp.toString() + ":" + QString::number(g_registerPort);
+        while(true)
+        {
+            QString ipPort =
+            QInputDialog::getText(this, tr("服务器配置"),
+                                  tr("请输入服务器地址和端口号\n例如192.168.0.100:8080"),
+                                  QLineEdit::Normal,
+                                  tip,&ok);
+            if(!ok) break;
+            QStringList qlist = ipPort.split(":");
+            if(qlist.size()==2)
+            {
+                QHostAddress tempAdress;
+                bool converOk = tempAdress.setAddress(qlist[0]);
+                if(converOk)
+                {
+                    quint16 port = qlist[1].toShort(&converOk);
+                    if(converOk)
+                    {
+                        g_serverIp = tempAdress;
+                        g_registerPort = port;
+                        QMessageBox::information(this, tr("设置成功"),tr("设置成功"),
+                                                 QMessageBox::Ok,QMessageBox::Ok);
+                        break;
+                    }
+                }
+            }
+            QMessageBox::warning(this, tr("警告"),tr("输入格式错误！"),
+                                 QMessageBox::Ok,QMessageBox::Ok);
+        }
+        break;
+    }
+}
+

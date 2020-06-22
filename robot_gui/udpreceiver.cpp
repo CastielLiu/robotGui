@@ -193,17 +193,21 @@ void UdpReceiver::onReadyRead()
             continue;
         if(len <=0 ) continue;
 
-        pkgHeader_t* package = (pkgHeader_t*)m_dataBuf;
-        //std::cout << "package->type:" << int(package->type) << std::endl;
+        pkgHeader_t* header = (pkgHeader_t*)m_dataBuf;
 
-        if(PkgType_ResponseRegister == package->type) //服务器回应注册,包含新端口号
+        if(header->length+sizeof(pkgHeader_t)!= len)
+            continue;  //接收长度与发送长度不符
+
+        //std::cout << "header->type:" << int(header->type) << std::endl;
+
+        if(PkgType_ResponseRegister == header->type) //服务器回应注册,包含新端口号
         {
             quint16 serverPort = //新端口号
                 m_dataBuf[sizeof(pkgHeader_t)]+m_dataBuf[sizeof(pkgHeader_t)+1]*256;
 
             confirmRegister(serverPort);
         }
-        else if(PkgType_RegisterOK == package->type) //服务器回应注册成功
+        else if(PkgType_RegisterOK == header->type) //服务器回应注册成功
         {
             g_msgPort = senderport; //记录服务器数据端口号
             emit this->updateRegisterStatus(RegisterStatus_Ok);
@@ -211,23 +215,23 @@ void UdpReceiver::onReadyRead()
             std::thread t(&UdpReceiver::heartBeatThread,this);
             t.detach();
         }
-        else if(PkgType_RegisterFail == package->type) //服务器回应注册失败
+        else if(PkgType_RegisterFail == header->type) //服务器回应注册失败
         {
             qDebug() << "register failed!" ;
             emit this->updateRegisterStatus(RegisterStatus_None);
         }
-        else if(PkgType_repeatLogin == package->type)
+        else if(PkgType_repeatLogin == header->type)
         {
             emit this->updateRegisterStatus(RegisterStatus_None);
             emit showMsgInStatusBar(QString("repeat login!"),3000);
             killTimer(m_registerTimerId); //关闭登录计时器
         }
-        else if(PkgType_RequestConnect == package->type) //请求连接
+        else if(PkgType_RequestConnect == header->type) //请求连接
         {
             //请求连接一般有很多条，确保只接受处理一次
             if(SystemOnThePhone == g_systemStatus)
                 continue;
-            uint16_t callerId = package->senderId;
+            uint16_t callerId = header->senderId;
             QString qstr = QString("you have a new call. ID: ") + QString::number(callerId);
             emit showMsgInStatusBar(qstr,5000);
             //可以考虑设置一个弹窗线程，用户选择是否接听
@@ -246,28 +250,28 @@ void UdpReceiver::onReadyRead()
                 pkg.type =  PkgType_RefuseConnect;
             m_udpSocket->writeDatagram((char*)&pkg,sizeof(pkgHeader_t),senderip,senderport);
         }
-        else if(PkgType_RefuseConnect == package->type) // 拒绝连接，请求被拒
+        else if(PkgType_RefuseConnect == header->type) // 拒绝连接，请求被拒
         {
             emit calledBusy();
         }
-        else if(PkgType_CalledOffline == package->type)
+        else if(PkgType_CalledOffline == header->type)
         {
-            if(package->receiverId == g_robotControlId) //机器人受控端不在线
+            if(header->receiverId == g_robotControlId) //机器人受控端不在线
                 emit showMsgInStatusBar(QString("Robot control receiver offline!"),3000);
             else if(g_ignoreCalledOffline) //视频语音被叫端不在线
                 emit showMsgInStatusBar(QString("Called offline, but you ignore it"),3000);
             else
                 emit calledOffline();
         }
-        else if(PkgType_CalledBusy == package->type)
+        else if(PkgType_CalledBusy == header->type)
             emit calledBusy();
-        else if(PkgType_DisConnect == package->type)
+        else if(PkgType_DisConnect == header->type)
         {
             emit showMsgInStatusBar(QString("Call disconnected"), 3000);
             emit stopChatSignal();
             //std::cout <<  "PkgType_DisConnect" << std::endl;
         }
-        else if(PkgType_HeartBeat == package->type)
+        else if(PkgType_HeartBeat == header->type)
         {
             m_heartBeatMutex.lock();
             m_serverLastHeartBeatTime = time(nullptr);
@@ -275,7 +279,7 @@ void UdpReceiver::onReadyRead()
         }
         //以上消息类型为指令消息
         //以下消息类型为通话消息
-        else if(PkgType_Video == package->type)
+        else if(PkgType_Video == header->type)
         {
             if(SystemOnThePhone == g_systemStatus)
             {
@@ -283,7 +287,7 @@ void UdpReceiver::onReadyRead()
                 emit addWorkLog("received video, len: "+QString::number(len));
             }
         }
-        else if(PkgType_Audio == package->type)
+        else if(PkgType_Audio == header->type)
         {
             if(SystemOnThePhone == g_systemStatus)
             {
@@ -291,14 +295,26 @@ void UdpReceiver::onReadyRead()
                 emit addWorkLog("received audio, len: "+QString::number(len));
             }
         }
+        else if(PkgType_BoilogicalRadar == header->type)
+        {
+            if(!g_isRemoteTerminal) //非远程端，不予处理
+                return;
+            handleBioRadarMsg(m_dataBuf);
+        }
         else
         {
-            QString msg = "received unknown type msg! type:"+ QString::number(package->type)
-                    + " from: " + QString::number(package->senderId)
+            QString msg = "received unknown type msg! type:"+ QString::number(header->type)
+                    + " from: " + QString::number(header->senderId)
                     + " len: " + QString::number(len)  ;
                     emit addWorkLog(msg);
         }
     }
+}
+
+void UdpReceiver::handleBioRadarMsg(char* const buf)
+{
+    bioRadarDataPkg_t *pkgPtr = (bioRadarDataPkg_t *)buf;
+    emit m_bioRadar.updateData(pkgPtr->data);
 }
 
 void UdpReceiver::handleVedioMsg(char* const buf)

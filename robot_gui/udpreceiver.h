@@ -4,6 +4,7 @@
 #include <enums.h>
 #include "audiohandler.h"
 #include "vediohandler.h"
+#include "biologicalradar.h"
 #include <ctime>
 #include <QTimer>
 
@@ -39,6 +40,7 @@ signals:
 private:
     void handleVedioMsg(char * const buf);
     void handleAudioMsg(char * const buf);
+    void handleBioRadarMsg(char* const buf);
     void registerToServerThread();
     void registerToServerInMainThread();
     void heartBeatThread();
@@ -51,6 +53,7 @@ private:
 
     AudioHandler *m_audioPlayer;
     VedioHandler *m_vedioPlayer;
+    BiologicalRadar m_bioRadar;
 
     QMutex m_heartBeatMutex;
     std::time_t m_serverLastHeartBeatTime = 0;
