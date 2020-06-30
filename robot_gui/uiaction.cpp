@@ -120,7 +120,7 @@ void MainWindow::onActionServerConfig()
     while(true)
     {
         QString text = QInputDialog::getText(this, "身份验证","请输入密码",
-                                             QLineEdit::PasswordEchoOnEdit,
+                                             QLineEdit::Password,
                                              "",&ok);
         if(!ok) break;
         if(text.isEmpty() || text!="huaman")
