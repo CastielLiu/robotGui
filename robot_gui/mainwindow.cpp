@@ -43,10 +43,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
     //实例化接收器
     m_udpReceiver = new UdpReceiver;
-    connect(m_udpReceiver,SIGNAL(startChatSignal(uint16_t)),this,SLOT(startChat(uint16_t)));
-    connect(m_udpReceiver,SIGNAL(stopChatSignal()),this,SLOT(stopChat()));
+    connect(m_udpReceiver,SIGNAL(startChatSignal(uint16_t,bool)),this,SLOT(startChat(uint16_t,bool)));
+    connect(m_udpReceiver,SIGNAL(stopChatSignal(bool)),this,SLOT(stopChat(bool)));
     connect(m_udpReceiver,SIGNAL(logoutSignal()),this,SLOT(logout()));
     connect(m_udpReceiver,SIGNAL(calledBusy()),this,SLOT(onCalledBusy()));
+    connect(m_udpReceiver,SIGNAL(connectAcceptted()),this,SLOT(onConnectAcceptted()));
+
     connect(m_udpReceiver,SIGNAL(calledOffline()),this,SLOT(onCalledOffline()));
     connect(m_udpReceiver,SIGNAL(updateRegisterStatus(int)),this,SLOT(updateRegisterStatus(int)));
     connect(m_udpReceiver,SIGNAL(showMsgInStatusBar(const QString&,int)),
@@ -98,39 +100,67 @@ bool MainWindow::clientModeSelection()
     return true;
 }
 
-//开始通话
-void MainWindow::startChat(uint16_t id)
+/* @brief    开始信息交互
+ * @param id 对方ID
+ * @param is_called 是否为被叫
+ */
+void MainWindow::startChat(uint16_t id, bool is_called)
 {
-    if(g_systemStatus == SystemOnThePhone)
+    if(g_transferStatus != transferStatus_Idle)
         return;
-    g_systemStatus = SystemOnThePhone;
 
-    ui->pushButton_call->setChecked(true);
-    ui->pushButton_call->setText("disconnect");
+    if(!is_called) //主叫
+    {
+        //此处将状态置为启动中，待连接成功后置为正在传输
+        g_transferStatus = transferStatus_Starting;
+        ui->pushButton_call->setChecked(true);
+        ui->pushButton_call->setText("connecting");
+    }
+    else
+    {
+        g_transferStatus = transferStatus_Ing;
+        ui->pushButton_call->setChecked(true);
+        ui->pushButton_call->setText("disconnect");
+    }
 
+    //实例化udp发送器
     m_udpSender = new UdpSender;
     m_udpSender->startSend(id);
-    if(g_isRemoteTerminal)
+    if(g_isRemoteTerminal) //远程端
     {
+        //绑定控制面板键盘捕获事件
         connect(ui->widget_control1,SIGNAL(dirKeyPressed(int)),
                 m_udpSender->getRemoteCtrler(),SLOT(onDirKeyPressed(int)));
 
         connect(ui->widget_control1,SIGNAL(dirKeyReleased(int)),
                 m_udpSender->getRemoteCtrler(),SLOT(onDirKeyReleased(int)));
     }
+    //启动所有消息处理器
+    m_udpReceiver->startAllmsgHandler();
+    if(g_isRemoteTerminal) //作为远程端时,连接生物雷达数据接收与数据更新信号槽
+        connect(m_udpReceiver->bioRadar(),SIGNAL(updateData(bioRadarData_t)),
+                this,SLOT(onBioRadarUpdateData(bioRadarData_t)));
 
-    m_udpReceiver->startPlayMv();
     ui->lineEdit_calledId->setText(QString::number(id));
 }
 
-void MainWindow::stopChat()
+/* @brief 停止消息传输
+ * @param is_auto 是否为自动断开
+ *        自动断开:对方请求断开，我方自动断开
+ *        手动断开:我方手动请求断开
+ */
+void MainWindow::stopChat(bool is_auto)
 {
-    if(g_systemStatus != SystemOnThePhone)
+    if(g_transferStatus == transferStatus_Idle)
          return;
+    g_transferStatus = transferStatus_Stoping;
 
-    ui->pushButton_call->setChecked(false);
-    ui->pushButton_call->setText("connect");
-    m_udpReceiver->stopPlayMv();
+    if(!is_auto) //手动结束会话，发送中断指令通知对方
+    {
+        m_udpReceiver->sendInstructions(PkgType_DisConnect,g_calledId);
+    }
+
+    m_udpReceiver->stopAllmsgHandler();
     //务必首先判断m_udpSender是否已经被实例化
     if(m_udpSender != nullptr)
     {
@@ -138,9 +168,12 @@ void MainWindow::stopChat()
         delete m_udpSender;
         m_udpSender = nullptr;
     }
-    m_udpReceiver->sendCmd(PkgType_DisConnect);
+
     ui->label_showImageMain->clear();
-    g_systemStatus = SystemIdle;
+
+    ui->pushButton_call->setChecked(false);
+    ui->pushButton_call->setText("connect");
+    g_transferStatus = transferStatus_Idle;
 }
 
 //用户退出登陆，主动退出，
@@ -192,6 +225,14 @@ void MainWindow::onCalledBusy()
 {
     showMsgInStatusBar("The subscriber you dialed is busy now!",3000);
     this->stopChat();
+}
+
+//被叫接受连接请求
+void MainWindow::onConnectAcceptted()
+{
+    g_transferStatus = transferStatus_Ing;
+    ui->pushButton_call->setChecked(true);
+    ui->pushButton_call->setText("disconnect");
 }
 
 //被叫不在线
@@ -407,7 +448,6 @@ void MainWindow::timerEvent(QTimerEvent *event)
     if(event->timerId() == m_imageDisplayTimer)
        displayImage();
 }
-
 
 void MainWindow::updateAvailaleSerial()
 {

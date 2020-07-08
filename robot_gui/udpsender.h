@@ -22,14 +22,14 @@ public:
 
     void openAudio();
     void closeAudio();
-    const RemoteControl *getRemoteCtrler();
+    RemoteControl *const getRemoteCtrler() {return m_remoteControler;}
 
 private:
     QUdpSocket *m_udpSocket;
     AudioHandler *m_audioRecorder;
     VedioHandler *m_vedioCaptor;
     RemoteControl *m_remoteControler;
-    BiologicalRadar m_bioRadar;
+    BiologicalRadar *m_bioRadar;
 
     //通话目标id
     uint16_t m_dstId;

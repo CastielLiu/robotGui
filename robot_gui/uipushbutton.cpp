@@ -33,11 +33,11 @@ void MainWindow::on_pushButton_call_clicked()
         if(g_registerStatus != RegisterStatus_Ok )
             ui->statusBar->showMessage("Please login firstly!",5000);
         else if(g_calledId == 0 )
-            ui->statusBar->showMessage("Please set communicate id",5000);
+            ui->statusBar->showMessage("Please set communicate id!",5000);
         else if(g_robotControlId == 0 && g_isRemoteTerminal)
-            ui->statusBar->showMessage("Please set robot control id",5000);
-        else if(g_systemStatus == SystemOnThePhone)
-            ui->statusBar->showMessage("Call in progress!",5000);
+            ui->statusBar->showMessage("Please set robot control id!",5000);
+        else if(g_transferStatus != transferStatus_Idle)
+            ui->statusBar->showMessage("Transfer is not idle, please try again later!",5000);
         else if(g_calledId == g_myId)
             ui->statusBar->showMessage(QString("Can not call yourself!"),5000);
         else

@@ -16,20 +16,23 @@ public:
     ~UdpReceiver() override;
 
     virtual void run(void) override;
-    void startPlayMv();
-    void stopPlayMv();
+    void startAllmsgHandler();
+    void stopAllmsgHandler();
     void registerToServer();
     void confirmRegister(quint16 port);
     void logout();
-    void sendCmd(PkgType );
+    void sendInstructions(PkgType type, uint16_t receiverId=0);
+    void requestConnect(uint16_t dst_id);
+
 private slots:
     void onReadyRead();
 
 signals:
-    void startChatSignal(uint16_t id);
-    void stopChatSignal();
+    void startChatSignal(uint16_t id, bool is_called = true);
+    void stopChatSignal(bool is_auto = true);//对方请求断开连接,我方自动断开
     void logoutSignal();
     void calledBusy();
+    void connectAcceptted();
     void calledOffline();
     void updateRegisterStatus(int status);
     void showMsgInStatusBar(const QString& msg,int timeout=0);
@@ -45,7 +48,8 @@ private:
     void registerToServerInMainThread();
     void heartBeatThread();
     void timerEvent(QTimerEvent *event) override;
-
+public:
+    BiologicalRadar *const bioRadar(){return m_bioRadar;}
 private:
     QUdpSocket *m_udpSocket;
     int m_maxBufLength;
@@ -53,7 +57,7 @@ private:
 
     AudioHandler *m_audioPlayer;
     VedioHandler *m_vedioPlayer;
-    BiologicalRadar m_bioRadar;
+    BiologicalRadar *m_bioRadar;
 
     QMutex m_heartBeatMutex;
     std::time_t m_serverLastHeartBeatTime = 0;

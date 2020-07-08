@@ -4,7 +4,8 @@ UdpSender::UdpSender():
     m_udpSocket(nullptr),
     m_audioRecorder(nullptr),
     m_vedioCaptor(nullptr),
-    m_remoteControler(nullptr)
+    m_remoteControler(nullptr),
+    m_bioRadar(nullptr)
 {
     //std::cout << "create UdpSender in thread: " << QThread::currentThreadId() << std::endl;
 }
@@ -21,29 +22,36 @@ bool UdpSender::startSend(uint16_t dstId)
 {
     m_dstId = dstId;
 
+    //语音
     m_audioRecorder = new AudioHandler;
-    if(g_isOpenAudio)
+    if(g_isOpenAudio) //受语音复选框控制
         m_audioRecorder->init(AudioHandler::AudioMode_Record);
 
+    //视频
     m_vedioCaptor = new VedioHandler;
-    if(g_isOpenVedio)
+    if(g_isOpenVedio)//受视频复选框控制
         m_vedioCaptor->init(VedioHandler::VedioMode_Capture);
 
+    //远程端
     if(g_isRemoteTerminal)
     {
+        //远程控制
         m_remoteControler = new RemoteControl;
-  /*      connect(g_ui->widget_control1,SIGNAL(dirKeyPressed(int)),
-                m_remoteControler,SLOT(onDirKeyPressed(int)));
-
-        connect(g_ui->widget_control1,SIGNAL(dirKeyReleased(int)),
-                m_remoteControler,SLOT(onDirKeyReleased(int)));*/
     }
+    //本地端
+    else
+    {
+        //生物雷达
+        m_bioRadar = new BiologicalRadar;
+    }
+
     this->start();
     return true;
 }
 
 void UdpSender::stopSend()
 {
+    //停止发送
     if(this->isRunning())
     {
         this->requestInterruption();
@@ -51,22 +59,32 @@ void UdpSender::stopSend()
         this->wait();
     }
 
+    //语音
     if(m_audioRecorder!= nullptr )
     {
         delete m_audioRecorder;
         m_audioRecorder = nullptr;
     }
 
+    //视频
     if(m_vedioCaptor != nullptr)
     {
         delete m_vedioCaptor;
         m_vedioCaptor = nullptr;
     }
 
+    //远程控制
     if(m_remoteControler != nullptr)
     {
         delete m_remoteControler;
         m_remoteControler = nullptr;
+    }
+
+    //生物雷达
+    if(m_bioRadar != nullptr)
+    {
+        delete m_bioRadar;
+        m_bioRadar = nullptr;
     }
 }
 
@@ -79,7 +97,25 @@ void UdpSender::run()
     uint32_t cnt = 0;
     while (!this->isInterruptionRequested())
     {
-        QThread::msleep(50);
+        //正在连接，发送请求连接指令
+        if(g_transferStatus == transferStatus_Starting)
+        {
+            pkgHeader_t requestConnectPkg(PkgType_RequestConnect);
+            requestConnectPkg.senderId = g_myId;
+            requestConnectPkg.receiverId = g_calledId;
+
+            m_udpSocket->writeDatagram((char *)&requestConnectPkg,
+                      sizeof(requestConnectPkg), g_serverIp,g_msgPort);
+            QThread::msleep(300);
+            continue;
+        }
+        //未连接
+        else if(g_transferStatus != transferStatus_Ing)
+        {
+            QThread::msleep(50);
+            continue;
+        }
+
         if(g_isRemoteTerminal)
         {
             m_remoteControler->sendControlCmd(m_udpSocket,g_robotControlId);
@@ -87,13 +123,14 @@ void UdpSender::run()
         else
         {
             //发送生物雷达数据
-            m_bioRadar.sendData(m_udpSocket,g_calledId);
+            m_bioRadar->sendData(m_udpSocket,g_calledId);
         }
 
         if(++cnt%2==0)
            m_vedioCaptor->sendImage(m_udpSocket,m_dstId);
 
         m_audioRecorder->sendAudio(m_udpSocket,m_dstId);
+        QThread::msleep(50);
     }
     m_udpSocket->close();
     delete m_udpSocket;
@@ -124,9 +161,4 @@ void UdpSender::closeAudio()
 {
     if(m_audioRecorder)
         m_audioRecorder->stop(AudioHandler::AudioMode_Record);
-}
-
-const RemoteControl * UdpSender::getRemoteCtrler()
-{
-    return m_remoteControler;
 }

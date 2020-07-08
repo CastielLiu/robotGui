@@ -21,6 +21,7 @@ typedef struct PkgHeader
         head[0] = 0x66;
         head[1] = 0xcc;
         type = t;
+        receiverId = 0; //默认receiver_id为0, 即接受者为服务器,无需转发
         length = checkNum = 0;
     }
 } pkgHeader_t;

@@ -20,12 +20,13 @@
 extern bool g_canCalled;
 extern bool g_ignoreCalledOffline;
 extern bool g_isRemoteTerminal;
+extern bool g_autoConnect;
 
 extern QHostAddress g_serverIp;
 extern quint16 g_registerPort;
 extern int g_registerStatus;
 extern quint16 g_msgPort;
-extern systemStatus g_systemStatus;
+extern transferStatus g_transferStatus;
 
 extern uint16_t g_myId;
 extern uint16_t g_calledId;

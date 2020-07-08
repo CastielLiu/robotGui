@@ -3,7 +3,8 @@
 UdpReceiver::UdpReceiver():
     m_udpSocket(nullptr),
     m_audioPlayer(nullptr),
-    m_vedioPlayer(nullptr)
+    m_vedioPlayer(nullptr),
+    m_bioRadar(nullptr)
 {
     //std::cout << "create UdpReceiver in thread: " << QThread::currentThreadId() << std::endl;
 
@@ -131,33 +132,43 @@ void UdpReceiver::logout()
     pkgHeader_t LogOutPkg(PkgType_LogOut);
     m_udpSocket->writeDatagram((char *)&LogOutPkg,
                sizeof(LogOutPkg), g_serverIp,g_msgPort);
-    stopPlayMv();
+    stopAllmsgHandler();
 }
 
-//  开始播放视频和声音
-void UdpReceiver::startPlayMv()
+void UdpReceiver::requestConnect(uint16_t dst_id)
 {
+
+}
+
+// 启动所有消息处理器
+void UdpReceiver::startAllmsgHandler()
+{
+    //初始化音频播放
     m_audioPlayer = new AudioHandler;
     m_audioPlayer->init(AudioHandler::AudioMode_Play);
 
+    //初始化视频播放
     m_vedioPlayer = new VedioHandler;
     m_vedioPlayer->init(VedioHandler::VedioMode_Play);
+
+    //生物雷达
+    m_bioRadar = new BiologicalRadar;
 
     this->start(); //启动音频视频播放Qthread
 }
 
-void UdpReceiver::stopPlayMv()
+void UdpReceiver::stopAllmsgHandler()
 {
-    g_otherImageMutex.lock();
-    g_otherImage = nullptr;
-    g_otherImageMutex.unlock();
-
     if(this->isRunning())
     {
         this->requestInterruption();
         this->quit();
         this->wait();
     }
+
+    g_otherImageMutex.lock();
+    g_otherImage = nullptr;
+    g_otherImageMutex.unlock();
 
     if(m_audioPlayer != nullptr)
     {
@@ -170,15 +181,23 @@ void UdpReceiver::stopPlayMv()
         delete m_vedioPlayer;
         m_vedioPlayer = nullptr;
     }
+
+    if(m_bioRadar != nullptr)
+    {
+        delete m_bioRadar;
+        m_bioRadar = nullptr;
+    }
 }
 
-void UdpReceiver::sendCmd(PkgType cmdType)
+void UdpReceiver::sendInstructions(PkgType cmdType, uint16_t receiverId)
 {
     pkgHeader_t pkg(cmdType);
+    pkg.senderId = g_myId;
+    pkg.receiverId = receiverId;
     m_udpSocket->writeDatagram((char*)&pkg,sizeof(pkgHeader_t),g_serverIp,g_msgPort);
 }
 
-//udp 数据读取函数
+//udp 接收服务器消息
 void UdpReceiver::onReadyRead()
 {
     //std::cout << "UdpReceiver::onReadyRead in thread: " << QThread::currentThreadId() << std::endl;
@@ -200,6 +219,7 @@ void UdpReceiver::onReadyRead()
 
         //std::cout << "header->type:" << int(header->type) << std::endl;
 
+        /****  以下为登录服务器相关数据 ****/
         if(PkgType_ResponseRegister == header->type) //服务器回应注册,包含新端口号
         {
             quint16 serverPort = //新端口号
@@ -226,11 +246,22 @@ void UdpReceiver::onReadyRead()
             emit showMsgInStatusBar(QString("repeat login!"),3000);
             killTimer(m_registerTimerId); //关闭登录计时器
         }
+        //服务器心跳消息
+        else if(PkgType_HeartBeat == header->type)
+        {
+            m_heartBeatMutex.lock();
+            m_serverLastHeartBeatTime = time(nullptr);
+            m_heartBeatMutex.unlock();
+        }
+        /****  以上为登录服务器相关数据 ****/
+
+        /****  以下为用户连接相关消息 ****/
         else if(PkgType_RequestConnect == header->type) //请求连接
         {
-            //请求连接一般有很多条，确保只接受处理一次
-            if(SystemOnThePhone == g_systemStatus)
+            //为确保对方能接收到请求连接指令，一般发送多次请求，但只应处理一次
+            if(transferStatus_Idle != g_transferStatus)
                 continue;
+
             uint16_t callerId = header->senderId;
             QString qstr = QString("you have a new call. ID: ") + QString::number(callerId);
             emit showMsgInStatusBar(qstr,5000);
@@ -240,15 +271,19 @@ void UdpReceiver::onReadyRead()
             pkg.senderId = g_myId;
             pkg.receiverId = callerId;
             pkg.length = 0;
-            if(g_canCalled)
+            if(g_canCalled && g_autoConnect) //允许被叫且自动接听
             {
-                pkg.type =  PkgType_AcceptConnect;
-                //启动发送数据
-                emit startChatSignal(callerId);
+                pkg.type = PkgType_AcceptConnect;
+                emit startChatSignal(callerId); //开始通话
             }
             else
-                pkg.type =  PkgType_RefuseConnect;
+                pkg.type = PkgType_RefuseConnect;
+
             m_udpSocket->writeDatagram((char*)&pkg,sizeof(pkgHeader_t),senderip,senderport);
+        }
+        else if(PkgType_AcceptConnect == header->type) //被叫接受连接请求
+        {
+            emit connectAcceptted();
         }
         else if(PkgType_RefuseConnect == header->type) // 拒绝连接，请求被拒
         {
@@ -271,36 +306,29 @@ void UdpReceiver::onReadyRead()
             emit stopChatSignal();
             //std::cout <<  "PkgType_DisConnect" << std::endl;
         }
-        else if(PkgType_HeartBeat == header->type)
-        {
-            m_heartBeatMutex.lock();
-            m_serverLastHeartBeatTime = time(nullptr);
-            m_heartBeatMutex.unlock();
-        }
-        //以上消息类型为指令消息
-        //以下消息类型为通话消息
+        /**** 以上为用户连接相关消息 ****/
+
+        //若当前未处于传输状态，不接受任何非指令消息,
+        if(transferStatus_Ing != g_transferStatus)
+            continue;
+
+        /****  以下为与其他用户交互消息 ****/
         else if(PkgType_Video == header->type)
         {
-            if(SystemOnThePhone == g_systemStatus)
-            {
-                handleVedioMsg(m_dataBuf);
-                emit addWorkLog("received video, len: "+QString::number(len));
-            }
+           handleVedioMsg(m_dataBuf);
+           emit addWorkLog("received video, len: "+QString::number(len));
         }
         else if(PkgType_Audio == header->type)
         {
-            if(SystemOnThePhone == g_systemStatus)
-            {
-                handleAudioMsg(m_dataBuf);
-                emit addWorkLog("received audio, len: "+QString::number(len));
-            }
+            handleAudioMsg(m_dataBuf);
+            emit addWorkLog("received audio, len: "+QString::number(len));
         }
         else if(PkgType_BoilogicalRadar == header->type)
         {
-            if(!g_isRemoteTerminal) //非远程端，不予处理
-                return;
+            if(!g_isRemoteTerminal) return; //非远程端，不予处理
             handleBioRadarMsg(m_dataBuf);
         }
+        /****  以上为与其他用户交互消息 ****/
         else
         {
             QString msg = "received unknown type msg! type:"+ QString::number(header->type)
@@ -314,7 +342,7 @@ void UdpReceiver::onReadyRead()
 void UdpReceiver::handleBioRadarMsg(char* const buf)
 {
     bioRadarDataPkg_t *pkgPtr = (bioRadarDataPkg_t *)buf;
-    emit m_bioRadar.updateData(pkgPtr->data);
+    emit m_bioRadar->updateData(pkgPtr->data);
 }
 
 void UdpReceiver::handleVedioMsg(char* const buf)

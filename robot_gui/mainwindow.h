@@ -31,10 +31,11 @@ private slots:
     void on_pushButton_call_clicked();
     void onLableRegisterStatusClicked();
 
-    void startChat(uint16_t id);
-    void stopChat();
+    void startChat(uint16_t id, bool is_called = false);
+    void stopChat(bool is_auto=false);
     void onCalledBusy();
     void onCalledOffline();
+    void onConnectAcceptted();
     void logout();
     void login();
     void updateRegisterStatus(int status);

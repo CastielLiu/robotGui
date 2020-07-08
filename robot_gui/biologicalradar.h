@@ -49,7 +49,6 @@ Q_OBJECT
 
   private:
 
-
   signals:
     void updateData(bioRadarData_t data);
 

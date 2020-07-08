@@ -15,36 +15,45 @@ enum RegisterStatus
 // 传输消息类型
 enum PkgType
 {
-    PkgType_Video=0,          //视频消息
-    PkgType_Audio=1,          //语音
-    PkgType_RequestConnect=2, //请求连接
-    PkgType_AcceptConnect=3,  //接收连接
-    PkgType_RefuseConnect=4,  //拒绝连接
-    PkgType_DisConnect=5,     //挂断
-    PkgType_NoneType =6,
-    PkgType_RegisterOK=7,     //注册成功(服务器发往客户端)
-    PkgType_RegisterFail=8,   //注册失败(服务器发往客户端)
-    PkgType_RequestRegister=9,//请求注册到服务器
-    PkgType_ResponseRegister=10,//回应客户端请求(包含服务端服务端口号)
-    PkgType_HeartBeat = 11, //心跳包
-    PkgType_LogOut = 12,    //退出登陆
-    PkgType_CalledOffline=13,// 被叫不在线
-    PkgType_CalledBusy = 14,//被叫忙
-    PkgType_repeatLogin=15, //重复登录
+    PkgType_NoneType        = 0,
 
-    //remote control
-    PkgType_ControlCmd = 20, //控制指令
-    PkgType_RobotState = 21, //机器人状态数据
+    //客户端注册相关消息类型
+    PkgType_RegisterOK      = 1, //注册成功(服务器发往客户端)
+    PkgType_RegisterFail    = 2, //注册失败(服务器发往客户端)
+    PkgType_RequestRegister = 3, //请求注册到服务器
+    PkgType_ResponseRegister= 4, //回应客户端请求(包含服务端服务端口号)
+    PkgType_repeatLogin     = 5, //重复登录
+    PkgType_LogOut          = 6, //退出登陆
 
-    PkgType_BoilogicalRadar = 22, //生物雷达
+    //客户端连接请求相关消息类型
+    PkgType_RequestConnect  = 20, //请求连接
+    PkgType_AcceptConnect   = 21, //接收连接
+    PkgType_RefuseConnect   = 22, //拒绝连接
+    PkgType_DisConnect      = 23, //挂断连接
+    PkgType_CalledOffline   = 24, // 被叫不在线
+    PkgType_CalledBusy      = 25, //被叫忙
+
+    //心跳包消息类型
+    PkgType_HeartBeat       = 50, //心跳包
+
+    //实时传输相关消息类型
+    PkgType_Video           = 81, //视频消息
+    PkgType_Audio           = 82, //语音
+    PkgType_BoilogicalRadar = 83, //生物雷达
+
+    //远程控制相关消息类型
+    PkgType_ControlCmd      = 101,
+    PkgType_RobotState      = 102,
 
 };
 
-//系统状态
-enum systemStatus
+//远程传输状态
+enum transferStatus
 {
-    SystemIdle,       //空闲
-    SystemOnThePhone, //正在通话
+    transferStatus_Ing,     //正在传输
+    transferStatus_Idle,    //传输空闲
+    transferStatus_Stoping, //正在停止传输
+    transferStatus_Starting,//正确启动传输
 };
 
 //stackWidget index

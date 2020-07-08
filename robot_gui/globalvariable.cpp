@@ -2,15 +2,16 @@
 
 
 /**********条件变量***********/
-bool g_canCalled = true; //是否启用被叫
+bool g_canCalled = true;            //是否启用被叫
 bool g_ignoreCalledOffline = false; //是否忽略被叫离线
-bool g_isRemoteTerminal = true;  //是否为远程端
+bool g_isRemoteTerminal = true;     //是否为远程端
+bool g_autoConnect = true;          //是否自动接听
 
 uint16_t g_myId = 123;   // 注：分配客户端id时保留0
 uint16_t g_heartBeatInterval = 5; //心跳包发送间隔(s)，需与服务器保持一致
 uint16_t g_maxHeartBeatDelay = 3; //心跳包容许延迟时间(s)
 
-systemStatus g_systemStatus = SystemIdle;
+transferStatus g_transferStatus = transferStatus_Idle;
 QHostAddress g_serverIp;
 quint16 g_registerPort; //服务器接收注册信息的端口号
 
