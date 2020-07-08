@@ -42,7 +42,6 @@ bool AudioHandler::init(AudioMode mode)
 
 bool AudioHandler::stop(AudioMode mode)
 {
-    qDebug() <<  "here " << mode;
     if(!m_isAudioOpen) return false;
     m_isAudioOpen = false;
     if(AudioMode_Record == mode)

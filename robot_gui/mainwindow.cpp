@@ -113,7 +113,7 @@ void MainWindow::startChat(uint16_t id, bool is_called)
     {
         //此处将状态置为启动中，待连接成功后置为正在传输
         g_transferStatus = transferStatus_Starting;
-        ui->pushButton_call->setChecked(true);
+        //ui->pushButton_call->setChecked(true);
         ui->pushButton_call->setText("connecting");
     }
     else
@@ -326,17 +326,23 @@ void MainWindow::on_checkBox_vedio_stateChanged(int arg1)
 {
     g_isOpenVedio = bool(arg1);
     if(!m_udpSender) return;
+
     if(arg1)
     {
-        //enableImageDisplay(true); //启动所有视频显示
         m_udpSender->openVedio();
     }
     else
     {
         m_udpSender->closeVedio();
-        //enableImageDisplay(false); //关闭所有视频显示
+
         g_myImageMutex.lock();
         g_myImage = nullptr;
+
+        if(m_myImageBig)
+            ui->label_showImageMain->clear();
+        else
+            m_imageLabel->clear();
+
         g_myImageMutex.unlock();
     }
 }
@@ -410,7 +416,7 @@ void MainWindow::enableImageDisplay(bool status)
 void MainWindow::displayImage()
 {
    // qDebug() << "enableImageDisplay" ;
-    QMutexLocker locker1(&g_myImageMutex);
+    QMutexLocker my_image_locker(&g_myImageMutex);
     if(g_myImage!= nullptr && !g_myImage->isNull())
     {
         if(m_myImageBig)
@@ -418,16 +424,11 @@ void MainWindow::displayImage()
                     QPixmap::fromImage(g_myImage->scaled(ui->label_showImageMain->size())));
         else
             m_imageLabel->setPixmap(QPixmap::fromImage(g_myImage->scaled(m_imageLabel->size())));
+        g_myImage = nullptr;
     }
-   /* else if(g_myImage == nullptr) //本地图片指针为空，表明本地摄像头未启动
-    {
-        if(m_myImageBig) ui->label_showImageMain->clear();
-        else m_imageLabel->clear();
-    }*/
+    my_image_locker.unlock();
 
-    locker1.unlock();
-
-    QMutexLocker locker2(&g_otherImageMutex);
+    QMutexLocker other_image_locker(&g_otherImageMutex);
     if(g_otherImage!= nullptr && !g_otherImage->isNull())
     {
         if(!m_myImageBig)
@@ -435,11 +436,10 @@ void MainWindow::displayImage()
                     QPixmap::fromImage(g_otherImage->scaled(ui->label_showImageMain->size())));
         else
             m_imageLabel->setPixmap(QPixmap::fromImage(g_otherImage->scaled(m_imageLabel->size())));
+        g_otherImage = nullptr;
 
-       //static int testCnt = 0;
-       //ui->statusBar->showMessage(QString::number(testCnt++));
     }
-    locker2.unlock();
+    other_image_locker.unlock();
 }
 
 //定时器溢出事件函数
