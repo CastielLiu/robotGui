@@ -6,7 +6,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow),
     m_udpReceiver(nullptr),
     m_udpSender(nullptr),
-    m_configFile("config"),
+    m_configFile("RobotGui"),
+    m_configFileType("hm"),
     m_imageLabel(nullptr),
     m_radar(nullptr)
 {
@@ -149,19 +150,25 @@ void MainWindow::startChat(uint16_t id, bool is_called)
  * @param is_auto 是否为自动断开
  *        自动断开:对方请求断开，我方自动断开
  *        手动断开:我方手动请求断开
+ * 此函数可能会被系统重复调用，务必严格条件限定，防止内存重复释放
+ * 若此函数被不同线程同步调用，极可能发生内存重复释放
  */
 void MainWindow::stopChat(bool is_auto)
 {
-    if(g_transferStatus == transferStatus_Idle)
+    //qDebug() << "stopChat :" << (is_auto? "auto" : "manual" );
+    if(g_transferStatus == transferStatus_Idle || //空闲，无需再次退出
+       g_transferStatus == transferStatus_Stoping)//正在退出，禁止再次退出
          return;
+
     g_transferStatus = transferStatus_Stoping;
 
     if(!is_auto) //手动结束会话，发送中断指令通知对方
     {
         m_udpReceiver->sendInstructions(PkgType_DisConnect,g_calledId);
     }
+    if(m_udpReceiver) //不删除，需保持监听
+        m_udpReceiver->stopAllmsgHandler();
 
-    m_udpReceiver->stopAllmsgHandler();
     //务必首先判断m_udpSender是否已经被实例化
     if(m_udpSender != nullptr)
     {
@@ -276,7 +283,7 @@ void MainWindow::onLableRegisterStatusClicked()
 void MainWindow::savePerformance()
 {
     //创建配置文件操作对象
-    QSettings *config = new QSettings(m_configFile, QSettings::IniFormat);
+    QSettings *config = new QSettings(m_configFile, m_configFileType);
 
     config->setValue("autoLogin", QString::number(m_autoRegister));
     config->setValue("userId", g_myId);
@@ -295,7 +302,7 @@ void MainWindow::savePerformance()
 //载入参数
 void MainWindow::loadPerformance()
 {
-    QSettings *config = new QSettings(m_configFile, QSettings::IniFormat);
+    QSettings *config = new QSettings(m_configFile, m_configFileType);
     if(config)
     {
         uint16_t id = config->value(QString("userId")).toUInt();

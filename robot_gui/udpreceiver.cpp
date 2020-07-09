@@ -226,6 +226,7 @@ void UdpReceiver::onReadyRead()
                 m_dataBuf[sizeof(pkgHeader_t)]+m_dataBuf[sizeof(pkgHeader_t)+1]*256;
 
             confirmRegister(serverPort);
+            continue;
         }
         else if(PkgType_RegisterOK == header->type) //服务器回应注册成功
         {
@@ -234,17 +235,20 @@ void UdpReceiver::onReadyRead()
             //启动心跳线程
             std::thread t(&UdpReceiver::heartBeatThread,this);
             t.detach();
+            continue;
         }
         else if(PkgType_RegisterFail == header->type) //服务器回应注册失败
         {
             qDebug() << "register failed!" ;
             emit this->updateRegisterStatus(RegisterStatus_None);
+            continue;
         }
         else if(PkgType_repeatLogin == header->type)
         {
             emit this->updateRegisterStatus(RegisterStatus_None);
             emit showMsgInStatusBar(QString("repeat login!"),3000);
             killTimer(m_registerTimerId); //关闭登录计时器
+            continue;
         }
         //服务器心跳消息
         else if(PkgType_HeartBeat == header->type)
@@ -252,6 +256,7 @@ void UdpReceiver::onReadyRead()
             m_heartBeatMutex.lock();
             m_serverLastHeartBeatTime = time(nullptr);
             m_heartBeatMutex.unlock();
+            continue;
         }
         /****  以上为登录服务器相关数据 ****/
 
@@ -280,14 +285,17 @@ void UdpReceiver::onReadyRead()
                 pkg.type = PkgType_RefuseConnect;
 
             m_udpSocket->writeDatagram((char*)&pkg,sizeof(pkgHeader_t),senderip,senderport);
+            continue;
         }
         else if(PkgType_AcceptConnect == header->type) //被叫接受连接请求
         {
             emit connectAcceptted();
+            continue;
         }
         else if(PkgType_RefuseConnect == header->type) // 拒绝连接，请求被拒
         {
             emit calledBusy();
+            continue;
         }
         else if(PkgType_CalledOffline == header->type)
         {
@@ -297,14 +305,19 @@ void UdpReceiver::onReadyRead()
                 emit showMsgInStatusBar(QString("Called offline, but you ignore it"),3000);
             else
                 emit calledOffline();
+            continue;
         }
         else if(PkgType_CalledBusy == header->type)
+        {
             emit calledBusy();
+            continue;
+        }
         else if(PkgType_DisConnect == header->type)
         {
             emit showMsgInStatusBar(QString("Call disconnected"), 3000);
             emit stopChatSignal();
             //std::cout <<  "PkgType_DisConnect" << std::endl;
+            continue;
         }
         /**** 以上为用户连接相关消息 ****/
 

@@ -62,6 +62,7 @@ void UdpSender::stopSend()
     //语音
     if(m_audioRecorder!= nullptr )
     {
+        //qDebug() << "delete m_audioRecorder ";
         delete m_audioRecorder;
         m_audioRecorder = nullptr;
     }

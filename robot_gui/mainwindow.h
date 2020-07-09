@@ -100,6 +100,7 @@ private:
 
     bool m_autoRegister;
     QString m_configFile;
+    QString m_configFileType;
 
     MyQLabel *m_imageLabel;
     BiologicalRadar *m_radar;
