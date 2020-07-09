@@ -18,7 +18,7 @@ VedioHandler::VedioHandler():
     m_cvImageGrabber(nullptr),
     m_isVedioOpen(false)
 {
-    m_imageBuffer.setSize(10);
+    m_imageBuffer.reserve(10);
     m_imgCutK = 0.3;
     m_imgScale = 0.5;
     m_imgSize = QSize(256,192);

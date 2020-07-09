@@ -119,6 +119,7 @@ void UdpSender::run()
 
         if(g_isRemoteTerminal)
         {
+            //发送远程控制指令
             m_remoteControler->sendControlCmd(m_udpSocket,g_robotControlId);
         }
         else

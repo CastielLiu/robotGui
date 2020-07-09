@@ -283,7 +283,8 @@ void AudioHandler::playAudio()
     QMutexLocker locker(&m_audioPlayMutex);
     int canPlayLen = (m_writeIndex-m_readIndex+m_maxAudioBufLen)%m_maxAudioBufLen;
 
-    qDebug() << "canPlay Len: " << canPlayLen;
+    if(canPlayLen)
+        qDebug() << "canPlay Len: " << canPlayLen;
 
     if(canPlayLen < 1*m_audioSizePerFrame) //可播放长度小于一帧音频长度的n倍时，暂不播放
         return;

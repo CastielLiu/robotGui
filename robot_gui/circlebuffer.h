@@ -7,21 +7,20 @@
 
 /*
  * CircleBuffer 环形数据存储区模板类
- * 包含读写锁
+ * 内置读写锁，多线程访问时无需手动加锁
  * 两种存储模式：当缓冲区满时丢弃新数据、丢弃旧数据
  */
-
 template<typename T>
 class CircleBuffer
 {
 private:
-   std::vector<T> m_array;
-   std::vector<bool> m_datasStatus;
-   size_t m_size;
-   int m_mode;
-   size_t m_readIndex;
-   size_t m_writeIndex;
-   std::mutex m_readWriteMutex;
+   std::vector<T> m_array; //存储数据
+   size_t m_size;          //环形区中数据个数
+   size_t m_capacity;      //环形区容量
+   int m_mode;             //环形区模式，覆盖旧数据or丢弃新数据
+   size_t m_readIndex;     //读指针
+   size_t m_writeIndex;    //写指针
+   std::mutex m_readWriteMutex; //读写锁
 public:
     enum
     {
@@ -35,49 +34,28 @@ public:
         m_mode = OVERWRITE_OLD_DATA;
     }
 
-    //设置缓冲区大小，不可动态调节，如有需求，可添加动态配置函数
-    bool setSize(size_t size)
-    {
-        if(m_size != 0)
-        {
-            std::cout << "current size is not zero, if you want change size dynamicly, please call resetSize!" << std::endl;
-            return false;
-        }
-        m_size = size;
-        m_array.resize(m_size);
-        m_datasStatus = std::vector<bool>(m_size,false);
-        return true;
-    }
-
-    bool resetSize(size_t size)
+    //设置缓冲区大小
+    bool reserve(size_t n)
     {
         std::lock_guard<std::mutex> lck(m_readWriteMutex);
-        m_size = size;
-
-        m_array.clear(); //先清除掉所有元素
-        m_array.resize(m_size);
-        m_datasStatus = std::vector<bool>(m_size,false);
+        m_array.clear();
+        m_array.resize(n);
+        m_capacity = n;
         m_readIndex = m_writeIndex = 0; //读写指针复位
+        m_size = 0;
         return true;
     }
 
-    size_t getSize(){return m_size;}
-
-    //获取存储区中的数据个数，未测试
-    size_t getDataCnt()
+    size_t size()
     {
         std::lock_guard<std::mutex> lck(m_readWriteMutex);
-        int diff = m_writeIndex-m_readIndex;
-        if(diff==0) //读写指针在同一位置
-        {
-            if(!m_datasStatus[m_readIndex])//不可读
-                return 0;
-            else if(m_datasStatus[m_readIndex] && m_datasStatus[(m_readIndex+1)%m_size]) //多处可读,数据满
-                return m_size;
-            return 1;
-        }
+        return m_size;
+    }
 
-        return diff>0 ? diff: diff+m_size;
+    size_t capacity()
+    {
+        std::lock_guard<std::mutex> lck(m_readWriteMutex);
+        return m_capacity;
     }
 
     //设置缓冲区工作模式
@@ -88,43 +66,50 @@ public:
         std::lock_guard<std::mutex> lck(m_readWriteMutex);
         if(m_size == 0)
             return false;
-        if(m_datasStatus[m_readIndex])
-        {
-            data = m_array[m_readIndex];
-            m_datasStatus[m_readIndex] = false;
-            m_readIndex = (m_readIndex+1)%m_size;
-            return true;
-        }
-        return false;
+        data = m_array[m_readIndex];
+        m_readIndex = (m_readIndex+1)%m_capacity;
+        --m_size; //更新数据个数
+
+        return true;
     }
 
     //缓冲区满：缓冲区所有位置被写入数据且未被读出
     //缓冲区空：1.还未开始写入数据，2.写入的数据均被读出
-
     bool write(const T& data)
     {
         std::lock_guard<std::mutex> lck(m_readWriteMutex);
-        if(m_size == 0)
+        if(m_capacity == 0)
             return false;
-        if(m_readIndex == m_writeIndex) //读写指针在同一位置
+
+        //读写指针在同一位置 1. 数据为空 2. 数据已满
+        if(m_readIndex == m_writeIndex)
         {
-            //当前位置可读,写指针位置可读表明缓冲区满
-            if(m_datasStatus[m_writeIndex])
+            if(m_size == 0) //环形区中无可用数据
             {
-                if(m_mode == CircleBuffer::OVERWRITE_OLD_DATA) //覆盖旧数据，保持数据最新
-                {
-                    m_array[m_writeIndex] = data;
-                    m_writeIndex = (m_writeIndex+1)%m_size;
-                    m_readIndex = (m_readIndex+1)%m_size;
-                    return true;
-                }
-                else //保留旧数据，停止写入并返回写入失败
-                    return false;
+                m_array[m_writeIndex] = data;
+                m_writeIndex = (m_writeIndex+1)%m_capacity;
+                ++m_size; //更新数据个数
+            }
+            else if(m_mode == CircleBuffer::OVERWRITE_OLD_DATA)
+            {
+                //覆盖旧数据，保持数据最新,读写指针同时后移
+                m_array[m_writeIndex] = data;
+                m_writeIndex = (m_writeIndex+1)%m_capacity;
+                m_readIndex = (m_readIndex+1)%m_capacity;
+            }
+            else
+            {
+                //保留旧数据，停止写入并返回写入失败
+                return false;
             }
         }
-        m_array[m_writeIndex] = data;
-        m_datasStatus[m_writeIndex] = true;
-        m_writeIndex = (m_writeIndex+1)%m_size;
+        else
+        {
+            m_array[m_writeIndex] = data;
+            m_writeIndex = (m_writeIndex+1)%m_capacity;
+            ++m_size; //更新数据个数
+        }
+
         return true;
     }
 };
