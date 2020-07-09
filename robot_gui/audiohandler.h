@@ -36,11 +36,13 @@ public:
     bool stop(AudioMode mode);
 
     void appendData(char* const buf, int len);
-    void playAudio();
+    void playAudioThread();
     void sendAudio(QUdpSocket *sockect, uint16_t receiverId);
-    bool startTet();
-    void stopTest();
-    void testThread();
+    bool startAudioTest();
+    void stopAudioTest();
+    bool playLocalAudio(const std::string& file);
+    void stopPlayLocalAudio();
+    void saveAudio(const char *const buf, size_t len);
 private:
     QAudioFormat setAudioFormat(int samplerate, int channelcount, int samplesize);
     bool configReader(int samplerate, int channelcount, int samplesize);

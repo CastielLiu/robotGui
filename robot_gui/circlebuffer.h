@@ -61,6 +61,7 @@ public:
     //设置缓冲区工作模式
     void setMode(int mode){ m_mode = mode;}
 
+    //读取一个数据并更新读指针
     bool read(T& data)
     {
         std::lock_guard<std::mutex> lck(m_readWriteMutex);
@@ -71,6 +72,26 @@ public:
         --m_size; //更新数据个数
 
         return true;
+    }
+
+    //只读，不更新读指针
+    bool onlyRead(T& data)
+    {
+        std::lock_guard<std::mutex> lck(m_readWriteMutex);
+        if(m_size == 0)
+            return false;
+        data = m_array[m_readIndex];
+        return true;
+    }
+
+    //弹出顶端数据
+    bool pop_begin()
+    {
+        std::lock_guard<std::mutex> lck(m_readWriteMutex);
+        if(m_size == 0)
+            return false;
+        m_readIndex = (m_readIndex+1)%m_capacity;
+        --m_size; //更新数据个数
     }
 
     //缓冲区满：缓冲区所有位置被写入数据且未被读出

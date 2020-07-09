@@ -84,6 +84,8 @@ private slots:
 
     void on_pushButton_audioTest_clicked(bool checked);
 
+    void on_pushButton_playLocalAudio_clicked(bool checked);
+
 private:
     void closeEvent(QCloseEvent *event) override;
     void loadPerformance();

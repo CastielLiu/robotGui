@@ -258,4 +258,5 @@ void VedioHandler::appendData(char* const buf, int len)
     g_otherImageMutex.lock();
     g_otherImage = imgPtr;
     g_otherImageMutex.unlock();
+    //此处可用信号槽提醒主程序播放视频
 }

@@ -132,7 +132,7 @@ void UdpSender::run()
            m_vedioCaptor->sendImage(m_udpSocket,m_dstId);
 
         m_audioRecorder->sendAudio(m_udpSocket,m_dstId);
-        QThread::msleep(50);
+        QThread::msleep(30); //此处延时不可过长，要低于语音捕获周期，否则语音不能实时传输
     }
     m_udpSocket->close();
     delete m_udpSocket;

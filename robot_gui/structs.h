@@ -12,9 +12,9 @@ typedef struct PkgHeader
     uint16_t length;
     uint8_t type;
     uint8_t checkNum;
-
     uint16_t senderId;
     uint16_t receiverId;
+    uint16_t seq;
 
     PkgHeader(PkgType t = PkgType_NoneType)
     {

@@ -282,7 +282,10 @@ void UdpReceiver::onReadyRead()
                 emit startChatSignal(callerId); //开始通话
             }
             else
+            {
+                emit showMsgInStatusBar("refuse connect.",5000);
                 pkg.type = PkgType_RefuseConnect;
+            }
 
             m_udpSocket->writeDatagram((char*)&pkg,sizeof(pkgHeader_t),senderip,senderport);
             continue;
@@ -371,6 +374,7 @@ void UdpReceiver::handleAudioMsg(char* const buf)
     pkgHeader_t* package = (pkgHeader_t*)buf;
     int len = package->length;
     //std::cout << len << " bytes add to audioBuf" << std::endl;
+    //qDebug() << "handleAudioMsg: " << package->seq ;
     m_audioPlayer->appendData(buf+sizeof(pkgHeader_t),len);
 }
 
@@ -380,8 +384,8 @@ void UdpReceiver::run(void)
     emit enableImageDisplay(true); //使能mainWindow中的视频播放定时器
     while (!this->isInterruptionRequested())
     {
-        m_audioPlayer->playAudio();
-        QThread::msleep(10);
+        //m_audioPlayer->playAudio();
+        QThread::msleep(100);
         //QThread::sleep(10);
     }
     emit enableImageDisplay(false);//失能mainWindow视频播放

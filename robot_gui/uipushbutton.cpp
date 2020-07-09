@@ -166,7 +166,7 @@ void MainWindow::on_pushButton_audioTest_clicked(bool checked)
         if(audioHandler!=nullptr)
             delete audioHandler;
         audioHandler = new AudioHandler;
-        if(!audioHandler->startTet())
+        if(!audioHandler->startAudioTest())
             ui->pushButton_audioTest->setChecked(false);
     }
     else
@@ -174,8 +174,28 @@ void MainWindow::on_pushButton_audioTest_clicked(bool checked)
         qDebug() << "stop test audio " <<QThread::currentThreadId();
         if(audioHandler!=nullptr)
         {
-            audioHandler->stopTest();
+            audioHandler->stopAudioTest();
             //此处不可删除对象，测试线程可能还在运行
         }
+    }
+}
+
+void MainWindow::on_pushButton_playLocalAudio_clicked(bool checked)
+{
+    static AudioHandler *audioHandler = nullptr;
+    if(checked)
+    {
+        audioHandler = new AudioHandler;
+        if(!audioHandler->playLocalAudio(""))
+        {
+            ui->pushButton_playLocalAudio->setChecked(false);
+            delete audioHandler;
+            audioHandler = nullptr;
+            return ;
+        }
+    }
+    else
+    {
+        audioHandler->stopPlayLocalAudio();
     }
 }

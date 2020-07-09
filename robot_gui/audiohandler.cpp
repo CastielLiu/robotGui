@@ -21,22 +21,19 @@ AudioHandler::~AudioHandler()
         m_file.close();
 }
 
-bool AudioHandler::startTet()
+bool AudioHandler::startAudioTest()
 {
     bool ok = configReader(m_sampleRate,m_channelCount,m_sampleSize);
     if(ok)
         ok = configPlayer(m_sampleRate,m_channelCount,m_sampleSize,1.0);
     if(ok)
-    {
-        std::thread t(&AudioHandler::testThread,this);
-        t.detach();
-    }
+        m_isAudioOpen = true;
     return ok;
 }
 
-void AudioHandler::stopTest()
+void AudioHandler::stopAudioTest()
 {
-    test_flag = false;
+    m_isAudioOpen = false;
     QThread::msleep(500);
     if(m_input != nullptr)
     {
@@ -49,25 +46,6 @@ void AudioHandler::stopTest()
         m_OutPut->stop();
         delete m_OutPut;
         m_OutPut = nullptr;
-    }
-}
-
-void AudioHandler::testThread()
-{
-    test_flag = true;
-    while(test_flag)
-    {
-        if(m_audioBuffer.size() == 0)
-        {
-            QThread::msleep(50);
-            continue;
-        }
-        while(m_audioBuffer.size())
-        {
-            audio_t audio;
-            if(m_audioBuffer.read(audio))
-                m_outputDevice->write(audio.data.get(), audio.len);
-        }
     }
 }
 
@@ -92,6 +70,9 @@ bool AudioHandler::stop(AudioMode mode)
     if(!m_isAudioOpen) return false;
 
     m_isAudioOpen = false;
+    QThread::msleep(100); //等待其他线程正常退出后再释放相关内存
+    // 也可设立线程运行标志，线程退出后标志复位，此处等待复位后再继续执行
+
     if(AudioMode_Record == mode)
     {
         qDebug() << "stop audio record..." ;
@@ -211,6 +192,7 @@ void AudioHandler::sendAudio(QUdpSocket* sockect, uint16_t receiverId)
         delete []sendData;
         return ;
     }
+    static uint16_t seq = 0;
     pkgHeader_t *package = (pkgHeader_t *)sendData;
     package->head[0] = 0x66;
     package->head[1] = 0xcc;
@@ -219,6 +201,7 @@ void AudioHandler::sendAudio(QUdpSocket* sockect, uint16_t receiverId)
     package->checkNum = 0;
     package->senderId = g_myId;
     package->receiverId = receiverId;
+    package->seq = ++seq;
 
     memcpy(sendData+sizeof(pkgHeader_t),audio.data.get(), audio.len);
 
@@ -284,13 +267,73 @@ bool AudioHandler::configPlayer(int sampleRate, int channelCount, int sampleSize
         return false;
     }
 
+    std::thread t(&AudioHandler::playAudioThread,this);
+    t.detach();
+
     return true;
+}
+
+void AudioHandler::stopPlayLocalAudio()
+{
+    if(m_OutPut != nullptr)
+    {
+        m_OutPut->stop();
+        delete m_OutPut;
+        m_OutPut = nullptr;
+    }
+}
+
+bool AudioHandler::playLocalAudio(const std::string& file)
+{
+    QDir::currentPath();
+    QString file_name = QDir::currentPath() +"/audio";
+    qDebug() << file_name;
+    static QFile audioFile;
+    audioFile.setFileName(file_name);
+    bool ok = audioFile.open(QIODevice::ReadOnly);
+    if(!ok) return false;
+    QAudioFormat nFormat;
+
+    nFormat.setSampleRate(m_sampleRate);
+    nFormat.setSampleSize(m_sampleSize);
+    nFormat.setChannelCount(m_channelCount);
+    nFormat.setCodec("audio/pcm");
+    nFormat.setSampleType(QAudioFormat::SignedInt);
+    nFormat.setByteOrder(QAudioFormat::LittleEndian);
+
+    QList<QAudioDeviceInfo> deviceInfo = QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
+    if(deviceInfo.isEmpty())
+    {
+        qDebug() << "AudioHandler: no output device!";
+        return false;
+    }
+    QAudioDeviceInfo device = QAudioDeviceInfo::defaultOutputDevice();
+
+    if (m_OutPut != nullptr) delete m_OutPut;
+    m_OutPut = new QAudioOutput(device, nFormat);
+    m_OutPut->setVolume(1.0);
+    m_OutPut->start(&audioFile);
 }
 
 //将收到的语音消息添加进语音缓冲区，等待播放
 void AudioHandler::appendData(char* const buf, int len)
 {
-/*
+    if(len <=0 ) return;
+
+    std::shared_ptr<char> data = std::shared_ptr<char>(new char[len]);
+    memcpy(data.get(),buf, len);
+    audio_t audio(data, len);
+    m_audioBuffer.write(audio);
+
+/*    static int lastTime = QTime::currentTime().msec();
+    int now = QTime::currentTime().msec();
+    qDebug() << ".." << (now - lastTime + 1000)%1000;
+    lastTime = now;
+*/
+}
+
+void AudioHandler::saveAudio(const char *const buf, size_t len)
+{
     QDir::currentPath();
     if(!m_file.isOpen())
     {
@@ -301,27 +344,28 @@ void AudioHandler::appendData(char* const buf, int len)
         qDebug() << file_name << " "  << QString::number(ok);
     }
     m_file.write(buf,len);
-*/
-    if(len <=0 ) return;
-
-    std::shared_ptr<char> data = std::shared_ptr<char>(new char[len]);
-    memcpy(data.get(),buf, len);
-    audio_t audio(data, len);
-    m_audioBuffer.write(audio);
 }
 
-void AudioHandler::playAudio()
+void AudioHandler::playAudioThread()
 {
-    if(!m_isAudioOpen) return;
-    if(m_audioBuffer.size() == 0) return;
+    while(!m_isAudioOpen)
+        QThread::msleep(50);
 
-    while(m_audioBuffer.size())
+    while(m_isAudioOpen)
     {
+        //以只读的方式从缓冲区中读取数据
+        //待写入播放器成功后将其弹出
+        //否则下次继续播放
         audio_t audio;
-        if(m_audioBuffer.read(audio))
-        {
-            qint64 len = m_outputDevice->write(audio.data.get(), audio.len);
-        }
+        bool ok = m_audioBuffer.onlyRead(audio);
+        if(!ok) continue;
+
+        if(! m_outputDevice->isWritable())
+            continue;
+        qint64 len = m_outputDevice->write(audio.data.get(), audio.len);
+        if(len > 0)
+            m_audioBuffer.pop_begin();
+        QThread::msleep(10);
     }
 }
 

@@ -63,6 +63,7 @@ typedef struct TransPack
 
     uint16_t senderId;
     uint16_t receiverId;
+    uint16_t seq; 
 
     TransPack(dataType t = PkgType_NoneType)
     {
