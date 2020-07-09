@@ -13,6 +13,7 @@
 #include <string>
 #include <QUdpSocket>
 #include <globalvariable.h>
+#include <circlebuffer.h>
 #include <QDir>
 #include <QDateTime>
 
@@ -52,14 +53,24 @@ private:
     const int m_sampleSize;
     const uint16_t m_audioTimePerFrame;
     const uint16_t m_audioSizePerFrame;
-    const uint32_t m_maxAudioBufLen;
 
     bool m_isAudioOpen;
     AudioMode m_audioMode;
 
-    char *m_audioBuffer; //存放语音(本地获取的语音/接收到的语音)
-    uint32_t m_writeIndex=0;  //写索引位置
-    uint32_t m_readIndex=0;   //读索引位置
+    typedef struct Audio
+    {
+        std::shared_ptr<char> data;
+        size_t len;
+        Audio(std::shared_ptr<char> _data, size_t n)
+        {
+            data = _data;
+            len = n;
+        }
+        Audio(){}
+    } audio_t;
+
+    //存放语音(本地获取的语音/接收到的语音)
+    CircleBuffer<audio_t> m_audioBuffer;
 
     //output  播放
     QAudioOutput *m_OutPut = nullptr;
