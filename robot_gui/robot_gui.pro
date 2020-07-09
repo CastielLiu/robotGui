@@ -32,6 +32,7 @@ CONFIG += c++11
 CONFIG += serialPort
 
 SOURCES += \
+    cameraconfigdialog.cpp \
     main.cpp \
     mainwindow.cpp \
     udpreceiver.cpp \
@@ -51,6 +52,7 @@ SOURCES += \
 
 
 HEADERS += \
+    cameraconfigdialog.h \
         mainwindow.h \
     udpreceiver.h \
     audiohandler.h \
@@ -69,6 +71,7 @@ HEADERS += \
     biologicalradar.h
 
 FORMS += \
+        cameraconfigdialog.ui \
         mainwindow.ui
 
 # Default rules for deployment.

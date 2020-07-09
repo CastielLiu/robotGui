@@ -19,6 +19,7 @@
 #include "cvimagegraber.h"
 #include "circlebuffer.h"
 #include <chrono>
+#include <QDateTime>
 
 class VedioHandler : public QObject
 {

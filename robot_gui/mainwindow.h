@@ -15,6 +15,8 @@
 #include <biologicalradar.h>
 #include <utils.h>
 #include <chrono>
+#include <QDateTime>
+#include "cameraconfigdialog.h"
 
 namespace Ui {
 class MainWindow;
@@ -48,6 +50,7 @@ private slots:
     void onActionAutoLogin();
     void onActionRobotCallId();
     void onActionRobotControlId();
+    void onActionCameraConfig();
     void onActionAbout();
     void onActionDebugConfig();
     void onActionBiologicalRadar();

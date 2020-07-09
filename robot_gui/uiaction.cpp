@@ -77,6 +77,13 @@ void MainWindow::onActionRobotControlId()
     }
 }
 
+void MainWindow::onActionCameraConfig()
+{
+    CameraConfigDialog *cameraConfigDia = new CameraConfigDialog();
+    cameraConfigDia->applyConfig(cameraConfigDia->exec());
+    delete cameraConfigDia;
+}
+
 void MainWindow::onActionAbout()
 {
     QMessageBox::about(this,tr("关于"),tr("castiel_liu@outlook.com"));
@@ -163,4 +170,6 @@ void MainWindow::onActionServerConfig()
         break;
     }
 }
+
+
 

@@ -812,7 +812,7 @@
      <x>0</x>
      <y>0</y>
      <width>900</width>
-     <height>23</height>
+     <height>28</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_setting">
@@ -822,6 +822,7 @@
     <addaction name="action_user_id"/>
     <addaction name="action_robotCall_id"/>
     <addaction name="action_robotControl_id"/>
+    <addaction name="action_camera"/>
     <addaction name="action_auto_login"/>
     <addaction name="action_about"/>
    </widget>
@@ -901,6 +902,11 @@
   <action name="action_serverConfig">
    <property name="text">
     <string>服务器配置</string>
+   </property>
+  </action>
+  <action name="action_camera">
+   <property name="text">
+    <string>摄像头</string>
    </property>
   </action>
  </widget>

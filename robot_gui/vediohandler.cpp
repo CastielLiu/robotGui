@@ -150,12 +150,10 @@ void VedioHandler::sendImage(QUdpSocket *sockect, uint16_t receiverId)
     if(!ok) return;
     imgPtr->save(&Buffer,"JPG");
 #elif(WHAT_CAMERE_TOOL == CV_IMAGE_GRABER)
+
+    //quint64 start = QDateTime::currentMSecsSinceEpoch();
     std::shared_ptr<QImage> imgPtr = std::shared_ptr<QImage>(new QImage(m_cvImageGrabber->capture()));
     if(imgPtr->isNull()) return;
-
-    g_myImageMutex.lock();
-    g_myImage = imgPtr;
-    g_myImageMutex.unlock();
 
     QSize size = imgPtr->size();
     //std::cout << "rawImage Size: " << size.width() << "x" << size.height() << std::endl;
@@ -167,6 +165,11 @@ void VedioHandler::sendImage(QUdpSocket *sockect, uint16_t receiverId)
 
     *imgPtr = imgPtr->copy(cut_x,cut_y,w,h);
     *imgPtr = imgPtr->scaled(m_imgSize);
+
+    g_myImageMutex.lock();
+    g_myImage = imgPtr;
+    g_myImageMutex.unlock();
+
 
     //size = imgPtr->size();
     //std::cout << "rawImage Size: " << size.width() << "x" << size.height() << std::endl;
@@ -184,8 +187,11 @@ void VedioHandler::sendImage(QUdpSocket *sockect, uint16_t receiverId)
 
     sockect->writeDatagram(sendArray,sendArray.size(), g_serverIp, g_msgPort);
 
-    //auto timeNow=std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
-    //qDebug() << "send one frame image, size: " << imageByteArray.size() <<"\t"<< timeNow.count();
+    //static quint64 sum_time = 0;
+    //static int cnt = 0;
+    //sum_time += QDateTime::currentMSecsSinceEpoch()-start;
+    //cnt ++;
+    //qDebug() << "fetch image and send it average cost time: " << sum_time/cnt ;
 }
 
 //QCameraImageCapture  摄像头图片捕获槽函数
@@ -252,5 +258,4 @@ void VedioHandler::appendData(char* const buf, int len)
     g_otherImageMutex.lock();
     g_otherImage = imgPtr;
     g_otherImageMutex.unlock();
-
 }
