@@ -21,6 +21,56 @@ AudioHandler::~AudioHandler()
         m_file.close();
 }
 
+bool AudioHandler::startTet()
+{
+    bool ok = configReader(m_sampleRate,m_channelCount,m_sampleSize);
+    if(ok)
+        ok = configPlayer(m_sampleRate,m_channelCount,m_sampleSize,1.0);
+    if(ok)
+    {
+        std::thread t(&AudioHandler::testThread,this);
+        t.detach();
+    }
+    return ok;
+}
+
+void AudioHandler::stopTest()
+{
+    test_flag = false;
+    QThread::msleep(500);
+    if(m_input != nullptr)
+    {
+        m_input->stop();
+        delete m_input;
+        m_input = nullptr;
+    }
+    if(m_OutPut != nullptr)
+    {
+        m_OutPut->stop();
+        delete m_OutPut;
+        m_OutPut = nullptr;
+    }
+}
+
+void AudioHandler::testThread()
+{
+    test_flag = true;
+    while(test_flag)
+    {
+        if(m_audioBuffer.size() == 0)
+        {
+            QThread::msleep(50);
+            continue;
+        }
+        while(m_audioBuffer.size())
+        {
+            audio_t audio;
+            if(m_audioBuffer.read(audio))
+                m_outputDevice->write(audio.data.get(), audio.len);
+        }
+    }
+}
+
 bool AudioHandler::init(AudioMode mode)
 {
     if (m_isAudioOpen) return false;
@@ -40,6 +90,7 @@ bool AudioHandler::init(AudioMode mode)
 bool AudioHandler::stop(AudioMode mode)
 {
     if(!m_isAudioOpen) return false;
+
     m_isAudioOpen = false;
     if(AudioMode_Record == mode)
     {
@@ -98,6 +149,8 @@ bool AudioHandler::configReader(int samplerate, int channelcount, int samplesize
         qDebug() << "use customize input audio device: " << device.deviceName();
     }
     qDebug() << "=========================================================";
+
+    if (m_input != nullptr) delete m_input;
     m_input = new QAudioInput(device,format,this);
 
     m_inputDevice = m_input->start();
@@ -105,6 +158,8 @@ bool AudioHandler::configReader(int samplerate, int channelcount, int samplesize
     {
         qDebug() << "open input audio device failed!";
         m_input->stop();
+        delete m_input;
+        m_input = nullptr;
         return false;
     }
     connect(m_inputDevice,SIGNAL(readyRead()),this,SLOT(onReadyRead()));
@@ -189,8 +244,6 @@ bool AudioHandler::configPlayer(int sampleRate, int channelCount, int sampleSize
     nFormat.setSampleType(QAudioFormat::SignedInt);
     nFormat.setByteOrder(QAudioFormat::LittleEndian);
 
-    if (m_OutPut != nullptr) delete m_OutPut;
-
     QList<QAudioDeviceInfo> deviceInfo = QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
     if(deviceInfo.isEmpty())
     {
@@ -216,6 +269,7 @@ bool AudioHandler::configPlayer(int sampleRate, int channelCount, int sampleSize
     }
     qDebug() << "=========================================================";
     //m_OutPut = new QAudioOutput(nFormat);//default device
+    if (m_OutPut != nullptr) delete m_OutPut;
     m_OutPut = new QAudioOutput(device, nFormat);
 
     m_OutPut->setVolume(volumn);
@@ -225,6 +279,8 @@ bool AudioHandler::configPlayer(int sampleRate, int channelCount, int sampleSize
     {
         qDebug() << "open output audio device failed!";
         m_OutPut->stop();
+        delete m_OutPut;
+        m_OutPut = nullptr;
         return false;
     }
 

@@ -156,3 +156,26 @@ void MainWindow::on_pushButton_clearWorkLog_clicked()
 {
     ui->textBrowser_log->clear();
 }
+
+void MainWindow::on_pushButton_audioTest_clicked(bool checked)
+{
+    static AudioHandler* audioHandler = nullptr;
+    if(checked)
+    {
+        qDebug() << "start test audio " <<QThread::currentThreadId();
+        if(audioHandler!=nullptr)
+            delete audioHandler;
+        audioHandler = new AudioHandler;
+        if(!audioHandler->startTet())
+            ui->pushButton_audioTest->setChecked(false);
+    }
+    else
+    {
+        qDebug() << "stop test audio " <<QThread::currentThreadId();
+        if(audioHandler!=nullptr)
+        {
+            audioHandler->stopTest();
+            //此处不可删除对象，测试线程可能还在运行
+        }
+    }
+}

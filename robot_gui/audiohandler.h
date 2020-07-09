@@ -38,7 +38,9 @@ public:
     void appendData(char* const buf, int len);
     void playAudio();
     void sendAudio(QUdpSocket *sockect, uint16_t receiverId);
-
+    bool startTet();
+    void stopTest();
+    void testThread();
 private:
     QAudioFormat setAudioFormat(int samplerate, int channelcount, int samplesize);
     bool configReader(int samplerate, int channelcount, int samplesize);
@@ -84,6 +86,7 @@ private:
 
     // 测试
     QFile m_file;
+    bool test_flag;
 };
 
 #endif // AUDIOHANDLER_H
