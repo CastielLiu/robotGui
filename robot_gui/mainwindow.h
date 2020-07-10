@@ -51,6 +51,7 @@ private slots:
     void onActionRobotCallId();
     void onActionRobotControlId();
     void onActionCameraConfig();
+    void onActionAudioConfig();
     void onActionAbout();
     void onActionDebugConfig();
     void onActionBiologicalRadar();

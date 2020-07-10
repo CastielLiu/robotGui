@@ -48,7 +48,8 @@ SOURCES += \
     globalvariable.cpp \
     biologicalradar.cpp \
     uiaction.cpp \
-    uipushbutton.cpp
+    uipushbutton.cpp \
+    audioconfigdialog.cpp
 
 
 HEADERS += \
@@ -68,11 +69,13 @@ HEADERS += \
     globalvariable.h \
     structs.h \
     enums.h \
-    biologicalradar.h
+    biologicalradar.h \
+    audioconfigdialog.h
 
 FORMS += \
         cameraconfigdialog.ui \
-        mainwindow.ui
+        mainwindow.ui \
+    audioconfigdialog.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

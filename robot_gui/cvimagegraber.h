@@ -17,9 +17,12 @@ class CvImageGraber
 public:
     CvImageGraber();
     ~CvImageGraber();
+    bool isOpen();
     bool openCamera(int id);
     void closeCamera();
     QImage capture();
+    bool setResolution(int w, int h);
+    bool setResolution(const QSize& size);
 
 private:
     QImage cvMatToQImage(cv::Mat &mtx);

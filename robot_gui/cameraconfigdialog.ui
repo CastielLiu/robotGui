@@ -6,85 +6,86 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>306</width>
-    <height>190</height>
+    <width>507</width>
+    <height>387</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <widget class="QDialogButtonBox" name="buttonBox">
-   <property name="geometry">
-    <rect>
-     <x>220</x>
-     <y>130</y>
-     <width>80</width>
-     <height>58</height>
-    </rect>
-   </property>
-   <property name="orientation">
-    <enum>Qt::Vertical</enum>
-   </property>
-   <property name="standardButtons">
-    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-   </property>
-  </widget>
-  <widget class="QWidget" name="layoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>13</x>
-     <y>11</y>
-     <width>229</width>
-     <height>60</height>
-    </rect>
-   </property>
-   <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,2">
-    <item>
-     <layout class="QVBoxLayout" name="verticalLayout">
-      <item>
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>摄像头</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>分辨率</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <layout class="QVBoxLayout" name="verticalLayout_2">
-      <item>
-       <widget class="QComboBox" name="comboBox_cameraid">
-        <item>
+  <layout class="QVBoxLayout" name="verticalLayout_2">
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout" stretch="1,50,1">
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,2,0,1,2,0">
+       <item>
+        <widget class="QLabel" name="label">
          <property name="text">
-          <string>0</string>
+          <string>摄像头</string>
          </property>
-        </item>
-        <item>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="comboBox_cameraInfo"/>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_2">
          <property name="text">
-          <string>1</string>
+          <string>分辨率</string>
          </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>2</string>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="comboBox_camera_reslotion"/>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
          </property>
-        </item>
-       </widget>
-      </item>
-      <item>
-       <widget class="QComboBox" name="comboBox_camera_reslotion"/>
-      </item>
-     </layout>
-    </item>
-   </layout>
-  </widget>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_showImage">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QDialogButtonBox" name="buttonBox">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="standardButtons">
+        <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections>

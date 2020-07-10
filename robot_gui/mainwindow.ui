@@ -833,7 +833,10 @@
     <addaction name="action_user_id"/>
     <addaction name="action_robotCall_id"/>
     <addaction name="action_robotControl_id"/>
-    <addaction name="action_camera"/>
+    <addaction name="separator"/>
+    <addaction name="action_cameraConfig"/>
+    <addaction name="action_audioConfig"/>
+    <addaction name="separator"/>
     <addaction name="action_auto_login"/>
     <addaction name="action_about"/>
    </widget>
@@ -915,9 +918,14 @@
     <string>服务器配置</string>
    </property>
   </action>
-  <action name="action_camera">
+  <action name="action_cameraConfig">
    <property name="text">
     <string>摄像头</string>
+   </property>
+  </action>
+  <action name="action_audioConfig">
+   <property name="text">
+    <string>音频</string>
    </property>
   </action>
  </widget>

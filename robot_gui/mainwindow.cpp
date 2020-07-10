@@ -19,7 +19,7 @@ MainWindow::MainWindow(QWidget *parent) :
     this->loadPerformance();//载入用户参数
 
     this->setWindowTitle(mWindowTitle);
-    this->setWindowIcon(QIcon(":/images/icon"));
+    this->setWindowIcon(QIcon(":/images/app_icon"));
     this->setFixedSize(this->width(),this->height());
 
     ui->label_registerStatus->setOpenClickEvent(true);
@@ -36,7 +36,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->action_auto_login,SIGNAL(triggered()),this,SLOT(onActionAutoLogin()));
     connect(ui->action_robotCall_id,SIGNAL(triggered()),this,SLOT(onActionRobotCallId()));
     connect(ui->action_robotControl_id,SIGNAL(triggered()),this,SLOT(onActionRobotControlId()));
-    connect(ui->action_camera,SIGNAL(triggered()),this,SLOT(onActionCameraConfig()));
+    connect(ui->action_cameraConfig,SIGNAL(triggered()),this,SLOT(onActionCameraConfig()));
+    connect(ui->action_audioConfig,SIGNAL(triggered()),this,SLOT(onActionAudioConfig()));
     connect(ui->action_about,SIGNAL(triggered()),this,SLOT(onActionAbout()));
     connect(ui->action_debugConfig,SIGNAL(triggered()),this,SLOT(onActionDebugConfig()));
     connect(ui->action_biologicalRadar,SIGNAL(triggered()),this,SLOT(onActionBiologicalRadar()));

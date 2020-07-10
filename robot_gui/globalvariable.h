@@ -12,6 +12,7 @@
 #include <thread>
 #include <QImage>
 #include <QMutex>
+#include <QSize>
 #include "enums.h"
 #include "structs.h"
 
@@ -32,6 +33,7 @@ extern uint16_t g_myId;
 extern uint16_t g_calledId;
 extern uint16_t g_robotControlId ;
 extern int g_cameraId;
+extern QSize g_cameraResolution;
 
 extern uint16_t g_heartBeatInterval ;
 extern uint16_t g_maxHeartBeatDelay ;

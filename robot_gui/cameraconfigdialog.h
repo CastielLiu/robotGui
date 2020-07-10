@@ -11,6 +11,11 @@
 #include <QThread>
 #include <ui_cameraconfigdialog.h>
 #include <globalvariable.h>
+#include <QCamera>
+#include <QCameraViewfinderSettings>
+#include <QCameraInfo>
+#include <cvimagegraber.h>
+#include <QString>
 
 
 namespace Ui{
@@ -24,13 +29,28 @@ public:
     explicit CameraConfigDialog(QWidget *parent = 0);
     ~CameraConfigDialog();
 
-    void applyConfig(bool ok);
+    bool applyConfig(bool ok);
+
+private:
+    void flushAvailableDivice();
+    void flushAvailableResolution(int index);
+    void displayImageThread();
+    void closeCamera();
 
 private slots:
+    void on_comboBox_cameraInfo_activated(int index);
 
+    void on_comboBox_camera_reslotion_activated(int index);
 
 private:
     Ui::CameraConfigDialog *ui;
+    QList<QCameraInfo> mCameraInfos;
+    QList<QSize> mCameraResolutions;
+    QSize mCameraResolution;
+
+    CvImageGraber* mCvImageGraber;
+    bool mImageDisplaying;
+
 };
 
 

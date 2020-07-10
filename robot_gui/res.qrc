@@ -1,5 +1,7 @@
 <RCC>
     <qresource prefix="/images">
-        <file alias="icon">resources/icon.jpg</file>
+        <file alias="app_icon">resources/image/icon.jpg</file>
+        <file alias="speaker_icon">resources/image/speaker.png</file>
+        <file alias="talker_icon">resources/image/talker.png</file>
     </qresource>
 </RCC>

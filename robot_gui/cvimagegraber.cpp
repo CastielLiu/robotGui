@@ -10,6 +10,11 @@ CvImageGraber::~CvImageGraber()
         m_cap.release();
 }
 
+bool CvImageGraber::isOpen()
+{
+    return m_cap.isOpened();
+}
+
 bool CvImageGraber::openCamera(int id)
 {
     m_cap.open(id);
@@ -53,5 +58,18 @@ QImage CvImageGraber::cvMatToQImage(cv::Mat& mtx)
     }
     else
         return QImage();
+}
+
+bool CvImageGraber::setResolution(int w, int h)
+{
+    bool res1 = m_cap.set(cv::CAP_PROP_FRAME_WIDTH, w);
+    bool res2 = m_cap.set(cv::CAP_PROP_FRAME_HEIGHT, h);
+
+    return res1&&res2;
+}
+
+bool CvImageGraber::setResolution(const QSize& size)
+{
+    return setResolution(size.width(), size.height());
 }
 

@@ -79,9 +79,23 @@ void MainWindow::onActionRobotControlId()
 
 void MainWindow::onActionCameraConfig()
 {
+    if(g_transferStatus != transferStatus_Idle)
+    {
+        showMsgInStatusBar("please disconnect before configure camera!",3000);
+        return;
+    }
     CameraConfigDialog *cameraConfigDia = new CameraConfigDialog();
     cameraConfigDia->applyConfig(cameraConfigDia->exec());
     delete cameraConfigDia;
+}
+
+void MainWindow::onActionAudioConfig()
+{
+    if(g_transferStatus != transferStatus_Idle)
+    {
+        showMsgInStatusBar("please disconnect before configure audio device!",3000);
+        return;
+    }
 }
 
 void MainWindow::onActionAbout()

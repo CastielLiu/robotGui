@@ -19,9 +19,6 @@ VedioHandler::VedioHandler():
     m_isVedioOpen(false)
 {
     m_imageBuffer.reserve(10);
-    m_imgCutK = 0.3;
-    m_imgScale = 0.5;
-    m_imgSize = QSize(256,192);
 }
 
 VedioHandler::~VedioHandler()
@@ -92,6 +89,8 @@ bool VedioHandler::init(VedioMode mode)
             qDebug() << "open camera failed!" ;
             return false;
         }
+        if(!g_cameraResolution.isNull())
+            m_cvImageGrabber->setResolution(g_cameraResolution);
 #endif
     }
     else if(mode == VedioMode_Play)
@@ -154,17 +153,6 @@ void VedioHandler::sendImage(QUdpSocket *sockect, uint16_t receiverId)
     //quint64 start = QDateTime::currentMSecsSinceEpoch();
     std::shared_ptr<QImage> imgPtr = std::shared_ptr<QImage>(new QImage(m_cvImageGrabber->capture()));
     if(imgPtr->isNull()) return;
-
-    QSize size = imgPtr->size();
-    //std::cout << "rawImage Size: " << size.width() << "x" << size.height() << std::endl;
-    //*imgPtr = imgPtr->scaled(int(size.width()*m_imgScale),int(size.height()*m_imgScale));
-    static size_t  cut_x = m_imgCutK*size.width()/2,
-                   cut_y = m_imgCutK*size.height(),
-                   w = size.width()-2*cut_x,
-                   h = size.height()-cut_y;
-
-    *imgPtr = imgPtr->copy(cut_x,cut_y,w,h);
-    *imgPtr = imgPtr->scaled(m_imgSize);
 
     g_myImageMutex.lock();
     g_myImage = imgPtr;

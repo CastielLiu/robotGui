@@ -379,8 +379,8 @@ void Server::msgTransmit(const uint8_t* buf, int len)
 	{
 		int send_len = sendto(clients_[dstClientId].fd, buf, len, 0, 
 							  (struct sockaddr*)&clients_[dstClientId].addr, sizeof(sockaddr_in));
-		std::cout << "transmit msg, " << "sender: " << srcClientId 
-				  << "  receiver: " << dstClientId << "type: " << type << std::endl; 
+		//std::cout << "transmit msg, " << "sender: " << srcClientId 
+		//		  << "  receiver: " << dstClientId << "type: " << type << std::endl; 
 	}
 }
 
@@ -415,8 +415,7 @@ void Server::heartBeatThread()
 			
 			//客户端连接标志 connect复位后，将退出其接收线程，然后自动删除用户
 			//若某些用户未能自动删除，手动删除 
-			 
-			if(diff > heartBeatInterval_ + maxHeartBeatDelay_*10) 
+			if(diff > heartBeatInterval_ + maxHeartBeatDelay_*1.5) 
 			{
 				//删除未能正常删除的用户
 				removeClient(client->first);
