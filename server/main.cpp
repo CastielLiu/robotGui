@@ -379,8 +379,8 @@ void Server::msgTransmit(const uint8_t* buf, int len)
 	{
 		int send_len = sendto(clients_[dstClientId].fd, buf, len, 0, 
 							  (struct sockaddr*)&clients_[dstClientId].addr, sizeof(sockaddr_in));
-		//std::cout << "transmit msg, " << "sender: " << srcClientId 
-		//		  << "  receiver: " << dstClientId << "type: " << type << std::endl; 
+		std::cout << "transmit msg, " << "sender: " << srcClientId 
+				  << "  receiver: " << dstClientId << "type: " << type << std::endl; 
 	}
 }
 

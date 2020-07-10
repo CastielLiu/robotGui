@@ -10,6 +10,7 @@
 #include <QDebug>
 #include <QThread>
 #include <ui_cameraconfigdialog.h>
+#include <globalvariable.h>
 
 
 namespace Ui{

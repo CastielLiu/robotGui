@@ -26,12 +26,12 @@ void CvImageGraber::closeCamera()
 
 QImage CvImageGraber::capture()
 {
-    bool ok = m_cap.read(m_cvImage);
-    if(ok)
-        return cvMatToQImage(m_cvImage);
-    else
-        return QImage();
-
+    if(m_cap.isOpened())
+    {
+        if(m_cap.read(m_cvImage))
+            return cvMatToQImage(m_cvImage);
+    }
+    return QImage();
 }
 QImage CvImageGraber::cvMatToQImage(cv::Mat& mtx)
 {

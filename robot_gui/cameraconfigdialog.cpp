@@ -25,5 +25,6 @@ void CameraConfigDialog::applyConfig(bool ok)
 
     int cameraId = ui->comboBox_cameraid->currentText().toInt();
     qDebug() << "camera id: " << cameraId;
+    g_cameraId = cameraId;
     //QSize mImageSize = ;
 }
