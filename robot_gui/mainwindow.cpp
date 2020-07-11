@@ -22,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent) :
     this->setWindowIcon(QIcon(":/images/app_icon"));
     this->setFixedSize(this->width(),this->height());
 
+    ui->stackedWidget->setCurrentIndex(stackWidget_HomePage);
     ui->label_registerStatus->setOpenClickEvent(true);
     connect(ui->label_registerStatus,SIGNAL(clicked()),this,SLOT(onLableRegisterStatusClicked()));
     ui->label_registerStatus->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter); //设置label文字居中
@@ -94,6 +95,10 @@ bool MainWindow::clientModeSelection()
         g_isRemoteTerminal = true;
         mWindowTitle = tr("用户界面: 远程端");
         ui->widget_control2->hide();
+        //ui->widget_control2->setHidden(true);
+        //ui->widget_control2->setVisible(false);
+        //ui->widget_control2->setEnabled(false); //失能上面所有控件，但不隐藏
+
     }
     else if(button == QMessageBox::Yes)
     {
@@ -204,11 +209,20 @@ void MainWindow::updateRegisterStatus(int status)
 {
     g_registerStatus = status;
     if(RegisterStatus_None == g_registerStatus)
+    {
         ui->label_registerStatus->setText("login");
+        ui->label_registerStatus->setStyleSheet("border-image: url(:/images/login1);");
+    }
     else if(RegisterStatus_Ing == g_registerStatus)
+    {
         ui->label_registerStatus->setText("logging in, click cancel");
+    }
     else if(RegisterStatus_Ok == g_registerStatus)
+    {
+
         ui->label_registerStatus->setText("logout");
+        ui->label_registerStatus->setStyleSheet("border-image: url(:/images/login2);");
+    }
 }
 
 void MainWindow::showMsgInStatusBar(const QString& msg,int timeout)

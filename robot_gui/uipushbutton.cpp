@@ -3,7 +3,7 @@
 void MainWindow::on_pushButton_bioRadarExit_clicked()
 {
     emit ui->pushButton_radarOpenSerial->clicked(false);
-    ui->stackedWidget->setCurrentIndex(stackWidget_MainPage);
+    ui->stackedWidget->setCurrentIndex(stackWidget_ChatPage);
 }
 
 void MainWindow::on_pushButton_roscore_clicked()
@@ -98,7 +98,7 @@ void MainWindow::on_pushButton_debugPageOk_clicked()
 {
     g_canCalled = ui->checkBox_canCalled->isChecked();
     g_ignoreCalledOffline = ui->checkBox_ignoreCalledOffline->isChecked();
-    ui->stackedWidget->setCurrentIndex(stackWidget_MainPage);
+    ui->stackedWidget->setCurrentIndex(stackWidget_ChatPage);
 }
 
 //按键事件
@@ -149,7 +149,7 @@ void MainWindow::on_pushButton_Right_released()
 
 void MainWindow::on_pushButton_logpageReturn_clicked()
 {
-    ui->stackedWidget->setCurrentIndex(stackWidget_MainPage);
+    ui->stackedWidget->setCurrentIndex(stackWidget_ChatPage);
 }
 
 void MainWindow::on_pushButton_clearWorkLog_clicked()
@@ -198,4 +198,9 @@ void MainWindow::on_pushButton_playLocalAudio_clicked(bool checked)
     {
         audioHandler->stopPlayLocalAudio();
     }
+}
+
+void MainWindow::on_pushButton_home_clicked()
+{
+    ui->stackedWidget->setCurrentIndex(stackWidget_HomePage);
 }

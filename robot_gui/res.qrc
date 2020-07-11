@@ -3,5 +3,12 @@
         <file alias="app_icon">resources/image/icon.jpg</file>
         <file alias="speaker_icon">resources/image/speaker.png</file>
         <file alias="talker_icon">resources/image/talker.png</file>
+        <file alias="down">resources/image/down.png</file>
+        <file alias="left">resources/image/left.png</file>
+        <file alias="right">resources/image/right.png</file>
+        <file alias="up">resources/image/up.png</file>
+        <file alias="login1">resources/image/log_1.png</file>
+        <file alias="login2">resources/image/log_2.png</file>
+        <file alias="home_icon">resources/image/home.png</file>
     </qresource>
 </RCC>

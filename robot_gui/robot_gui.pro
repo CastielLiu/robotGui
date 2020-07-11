@@ -86,7 +86,7 @@ RESOURCES += \
     res.qrc
 
 #如果使用TX2,需添加此宏，否则注释!
-DEFINES += TX2
+#DEFINES += TX2
 
 win32{
     message("current os is win32")

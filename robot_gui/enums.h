@@ -60,10 +60,11 @@ enum transferStatus
 
 enum stackWidgetIndex
 {
-    stackWidget_MainPage = 0, //主页面
+    stackWidget_ChatPage = 0, //通话页面
     stackWidget_DebugPage =1, //调试页面
     stackWidget_BioRadarPage = 2, //生物雷达界面
     stackWidget_WorkLogPage = 3, //工作日志
+    stackWidget_HomePage = 4,   //Home
 };
 
 #endif // ENUMS_H_

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Goals>
+    <Goal id="0" name="unknown">
+        <Orientation x="0.000000" y="0.000000" z="0.948176" w="-0.317746"/>
+        <Position x="-2.928929" y="1.336642"/>
+    </Goal>
+    <Goal id="1" name="unknown">
+        <Orientation x="0.000000" y="0.000000" z="-0.747152" w="0.664654"/>
+        <Position x="4.235821" y="-4.454691"/>
+    </Goal>
+    <Goal id="2" name="unknown">
+        <Orientation x="0.000000" y="0.000000" z="0.925781" w="-0.378059"/>
+        <Position x="-2.149337" y="-4.202965"/>
+    </Goal>
+    <Goal id="3" name="unknown">
+        <Orientation x="0.000000" y="0.000000" z="-0.721884" w="0.692014"/>
+        <Position x="-5.267714" y="-0.831818"/>
+    </Goal>
+</Goals>
