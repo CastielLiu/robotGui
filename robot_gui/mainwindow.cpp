@@ -22,7 +22,11 @@ MainWindow::MainWindow(QWidget *parent) :
     this->setWindowIcon(QIcon(":/images/app_icon"));
     this->setFixedSize(this->width(),this->height());
 
-    ui->stackedWidget->setCurrentIndex(stackWidget_HomePage);
+    ui->stackedWidget->setCurrentIndex(stackWidget_HomePage);//切换到主页面
+    ui->pushButton_home->hide();//隐藏home键
+    m_clockDisplayTimer = this->startTimer(59000); //启动时钟更新定时器
+    updateClockDisplay(); //定时器需要１分钟后才会触发，先手动更新一次时钟
+
     ui->label_registerStatus->setOpenClickEvent(true);
     connect(ui->label_registerStatus,SIGNAL(clicked()),this,SLOT(onLableRegisterStatusClicked()));
     ui->label_registerStatus->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter); //设置label文字居中
@@ -62,7 +66,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_udpReceiver,SIGNAL(addWorkLog(const QString&,bool)),this,SLOT(addWorkLog(const QString&,bool)));
 
     ui->widget_control1->setFocus(); //设置焦点,方向控制按钮
-
     if(m_autoRegister)  this->login();
 }
 
@@ -230,8 +233,10 @@ void MainWindow::showMsgInStatusBar(const QString& msg,int timeout)
     ui->statusBar->showMessage(msg, timeout);
 }
 
+//状态栏永久信息
 void MainWindow::updateStatusBarPemanentMsg()
 {
+    /*
     static QLabel *permanent=new QLabel(this);
     //permanent->setFrameStyle(QFrame::Box|QFrame::Sunken);
 
@@ -241,6 +246,7 @@ void MainWindow::updateStatusBarPemanentMsg()
     permanent->setText(str);
 
     ui->statusBar->addPermanentWidget(permanent);//显示永久信息
+    */
 }
 
 //被叫忙
@@ -343,6 +349,7 @@ void MainWindow::loadPerformance()
     }
     delete config;
     updateStatusBarPemanentMsg();
+    ui->lineEdit_hostId->setText(QString::number(g_myId));
 }
 
 void MainWindow::on_checkBox_vedio_stateChanged(int arg1)
@@ -465,11 +472,21 @@ void MainWindow::displayImage()
     other_image_locker.unlock();
 }
 
+void MainWindow::updateClockDisplay()
+{
+    QTime time = QTime::currentTime();
+    QString textTime = time.toString("hh:mm"); //hh:mm:ss
+    ui->lcdNumber_clock->display(textTime);
+}
+
 //定时器溢出事件函数
 void MainWindow::timerEvent(QTimerEvent *event)
 {
     if(event->timerId() == m_imageDisplayTimer)
-       displayImage();
+        displayImage();
+    else if(event->timerId() == m_clockDisplayTimer)
+        updateClockDisplay();
+
 }
 
 void MainWindow::updateAvailaleSerial()
@@ -508,4 +525,12 @@ void MainWindow::addWorkLog(const QString& str, bool vip)
     strftime(time_buf+1,21,"%Y-%m-%d %H:%M:%S.",ttime);
     sprintf(time_buf+21,"%03d] ",msec);
     ui->textBrowser_log->append(QString(time_buf) + str);
+}
+
+void MainWindow::on_stackedWidget_currentChanged(int arg1)
+{
+    if(arg1 == stackWidget_HomePage)
+        ui->pushButton_home->hide();
+    else
+        ui->pushButton_home->show();
 }

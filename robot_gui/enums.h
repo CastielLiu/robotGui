@@ -65,6 +65,7 @@ enum stackWidgetIndex
     stackWidget_BioRadarPage = 2, //生物雷达界面
     stackWidget_WorkLogPage = 3, //工作日志
     stackWidget_HomePage = 4,   //Home
+    stackWidget_TransportPage = 5, //送物导航界面
 };
 
 #endif // ENUMS_H_

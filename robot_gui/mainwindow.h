@@ -82,12 +82,14 @@ private slots:
     void on_pushButton_remoteCtrl_clicked();
     void on_pushButton_logpageReturn_clicked();
     void on_pushButton_clearWorkLog_clicked();
-
     void on_pushButton_audioTest_clicked(bool checked);
-
     void on_pushButton_playLocalAudio_clicked(bool checked);
-
     void on_pushButton_home_clicked();
+    void on_pushButton_toChatPage_clicked();
+    void on_pushButton_toTransportPage_clicked();
+
+
+    void on_stackedWidget_currentChanged(int arg1);
 
 private:
     void closeEvent(QCloseEvent *event) override;
@@ -98,6 +100,7 @@ private:
     void updateAvailaleSerial();
     void updateStatusBarPemanentMsg();
     bool clientModeSelection();
+    void updateClockDisplay();
 
 private:
     Ui::MainWindow *ui;
@@ -114,6 +117,7 @@ private:
 
     bool m_myImageBig ;
     int m_imageDisplayTimer =0;
+    int m_clockDisplayTimer = 0;
     QString mWindowTitle;
 };
 

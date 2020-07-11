@@ -18,7 +18,7 @@ void MainWindow::onActionUserId()
        QString msg = QString("Set User Id ") + QString::number(g_myId) + " ok.";
        ui->statusBar->showMessage(msg, 3000);
 
-       this->updateStatusBarPemanentMsg();
+       ui->lineEdit_hostId->setText(QString::number(g_myId));
     }
 }
 

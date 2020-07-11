@@ -204,3 +204,13 @@ void MainWindow::on_pushButton_home_clicked()
 {
     ui->stackedWidget->setCurrentIndex(stackWidget_HomePage);
 }
+
+void MainWindow::on_pushButton_toChatPage_clicked()
+{
+    ui->stackedWidget->setCurrentIndex(stackWidget_ChatPage);
+}
+
+void MainWindow::on_pushButton_toTransportPage_clicked()
+{
+    ui->stackedWidget->setCurrentIndex(stackWidget_TransportPage);
+}

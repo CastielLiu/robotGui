@@ -10,5 +10,7 @@
         <file alias="login1">resources/image/log_1.png</file>
         <file alias="login2">resources/image/log_2.png</file>
         <file alias="home_icon">resources/image/home.png</file>
+        <file alias="chat_icon">resources/image/chat_icon.png</file>
+        <file alias="transport_icon">resources/image/transport_icon.png</file>
     </qresource>
 </RCC>
