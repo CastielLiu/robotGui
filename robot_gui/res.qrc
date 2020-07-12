@@ -12,5 +12,8 @@
         <file alias="home_icon">resources/image/home.png</file>
         <file alias="chat_icon">resources/image/chat_icon.png</file>
         <file alias="transport_icon">resources/image/transport_icon.png</file>
+        <file alias="call_icon">resources/image/call.png</file>
+        <file alias="calling_icon">resources/image/calling.png</file>
+        <file alias="hungup_icon">resources/image/hongup.png</file>
     </qresource>
 </RCC>

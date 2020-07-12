@@ -62,14 +62,51 @@ QImage CvImageGraber::cvMatToQImage(cv::Mat& mtx)
 
 bool CvImageGraber::setResolution(int w, int h)
 {
+    if(!m_cap.isOpened())
+    {
+        std::cerr << "please open the camera before setResolution!" << std::endl;
+        return false;
+    }
     bool res1 = m_cap.set(cv::CAP_PROP_FRAME_WIDTH, w);
     bool res2 = m_cap.set(cv::CAP_PROP_FRAME_HEIGHT, h);
+    bool res = res1&&res2;
+    if(!res)
+    {
+        QSize size = getResolution();
+        std::cout << "set camera resolution: " << w << "x" << h << " failed!  "
+                  << "use " << size.width() << "x" << size.height() << " instead!"
+                  <<std::endl;
+    }
 
-    return res1&&res2;
+    return res;
 }
 
 bool CvImageGraber::setResolution(const QSize& size)
 {
     return setResolution(size.width(), size.height());
+}
+
+QSize CvImageGraber::getResolution()
+{
+    int w = m_cap.get(cv::CAP_PROP_FRAME_WIDTH);
+    int h = m_cap.get(cv::CAP_PROP_FRAME_HEIGHT);
+    return QSize(w,h);
+}
+
+QList<QSize> CvImageGraber::getAvailableResolutions()
+{
+   QList<QSize> resolutions;
+   if(!m_cap.isOpened())
+   {
+       std::cerr << "please open the camera before getAvailableResolutions!" << std::endl;
+       return resolutions;
+   }
+   setResolution(5000,5000);
+   QSize maxResolution = getResolution();
+   for(int i=5; i>0; --i)
+   {
+       resolutions.append(maxResolution/i);
+   }
+   return resolutions;
 }
 

@@ -141,24 +141,24 @@ text-align:center;</string>
                    <widget class="QPushButton" name="pushButton_call">
                     <property name="minimumSize">
                      <size>
-                      <width>0</width>
-                      <height>0</height>
+                      <width>60</width>
+                      <height>60</height>
                      </size>
                     </property>
                     <property name="maximumSize">
                      <size>
-                      <width>80</width>
-                      <height>65535</height>
+                      <width>60</width>
+                      <height>60</height>
                      </size>
                     </property>
                     <property name="focusPolicy">
                      <enum>Qt::NoFocus</enum>
                     </property>
                     <property name="styleSheet">
-                     <string notr="true">0</string>
+                     <string notr="true">border-image: url(:/images/call_icon);</string>
                     </property>
                     <property name="text">
-                     <string>connect</string>
+                     <string/>
                     </property>
                     <property name="checkable">
                      <bool>true</bool>

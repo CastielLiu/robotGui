@@ -4,6 +4,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <iostream>
+#include <QList>
 
 /*
 cvImageGraber imageGraber;
@@ -23,6 +24,8 @@ public:
     QImage capture();
     bool setResolution(int w, int h);
     bool setResolution(const QSize& size);
+    QSize getResolution();
+    QList<QSize> getAvailableResolutions();
 
 private:
     QImage cvMatToQImage(cv::Mat &mtx);

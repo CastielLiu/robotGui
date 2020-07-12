@@ -44,7 +44,21 @@ void CameraConfigDialog::flushAvailableResolution(int index)
     camera.start(); //启动摄像头才可获取相关参数
     mCameraResolutions = camera.supportedViewfinderResolutions();
     camera.stop();  //参数获取后关闭摄像头
-    qDebug() << mCameraResolutions.size() ;
+
+    //如果上述方式未获取到摄像头分辨率，更换获取方式
+    if(mCameraResolutions.size()==0)
+    {
+        camera.stop();
+        CvImageGraber imageGraber;
+        imageGraber.openCamera(index);
+        if(imageGraber.isOpen())
+        {
+            mCameraResolutions = imageGraber.getAvailableResolutions();
+
+        }
+    }
+    if(mCameraResolutions.size())
+        mCameraResolution = mCameraResolutions[0];
     for(const QSize& resolution:mCameraResolutions)
     {
         QString qstr = QString::number(resolution.width()) +
@@ -53,8 +67,7 @@ void CameraConfigDialog::flushAvailableResolution(int index)
 
         ui->comboBox_camera_reslotion->addItem(qstr);
     }
-    if(mCameraResolutions.size())
-        mCameraResolution = mCameraResolutions[0];
+    qDebug() << "supported resolutions num: " <<  mCameraResolutions.size() ;
 }
 
 CameraConfigDialog::~CameraConfigDialog()

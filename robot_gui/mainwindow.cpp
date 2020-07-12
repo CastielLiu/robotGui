@@ -125,13 +125,15 @@ void MainWindow::startChat(uint16_t id, bool is_called)
         //此处将状态置为启动中，待连接成功后置为正在传输
         g_transferStatus = transferStatus_Starting;
         //ui->pushButton_call->setChecked(true);
-        ui->pushButton_call->setText("connecting");
+        ui->pushButton_call->setStyleSheet("border-image: url(:/images/calling_icon);");
+        //ui->pushButton_call->setText("connecting");
     }
     else
     {
         g_transferStatus = transferStatus_Ing;
         ui->pushButton_call->setChecked(true);
-        ui->pushButton_call->setText("disconnect");
+        //ui->pushButton_call->setText("disconnect");
+        ui->pushButton_call->setStyleSheet("border-image: url(:/images/hungup_icon);");
     }
 
     //实例化udp发送器
@@ -189,7 +191,8 @@ void MainWindow::stopChat(bool is_auto)
     ui->label_showImageMain->clear();
 
     ui->pushButton_call->setChecked(false);
-    ui->pushButton_call->setText("connect");
+    //ui->pushButton_call->setText("connect");
+    ui->pushButton_call->setStyleSheet("border-image: url(:/images/call_icon);");
     g_transferStatus = transferStatus_Idle;
 }
 
@@ -261,7 +264,8 @@ void MainWindow::onConnectAcceptted()
 {
     g_transferStatus = transferStatus_Ing;
     ui->pushButton_call->setChecked(true);
-    ui->pushButton_call->setText("disconnect");
+    //ui->pushButton_call->setText("disconnect");
+    ui->pushButton_call->setStyleSheet("border-image: url(:/images/hungup_icon);");
 }
 
 //被叫不在线
