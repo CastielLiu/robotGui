@@ -46,4 +46,6 @@ extern QMutex g_otherImageMutex;
 extern bool g_isOpenVedio;
 extern bool g_isOpenAudio;
 
+extern QString g_appDir;
+
 #endif // GLOBAL_VARIABLE_H

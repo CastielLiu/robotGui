@@ -17,6 +17,7 @@
 #include <chrono>
 #include <QDateTime>
 #include "cameraconfigdialog.h"
+#include "navigation.h"
 
 namespace Ui {
 class MainWindow;
@@ -87,9 +88,9 @@ private slots:
     void on_pushButton_home_clicked();
     void on_pushButton_toChatPage_clicked();
     void on_pushButton_toTransportPage_clicked();
-
-
     void on_stackedWidget_currentChanged(int arg1);
+
+    void onUpdateNavGoalsInfo(const std::vector<goalInfo_t>& goalsInfo);
 
 private:
     void closeEvent(QCloseEvent *event) override;
@@ -114,6 +115,7 @@ private:
 
     MyQLabel *m_imageLabel;
     BiologicalRadar *m_radar;
+    Navigation *mNavigation;
 
     bool m_myImageBig ;
     int m_imageDisplayTimer =0;

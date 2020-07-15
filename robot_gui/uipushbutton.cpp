@@ -13,7 +13,7 @@ void MainWindow::on_pushButton_roscore_clicked()
 
 void MainWindow::on_pushButton_remoteCtrl_clicked()
 {
-    utils::systemCmd("./../command/remote_control.sh");
+    utils::systemCmd(g_appDir.toStdString() + "/../command/remote_control.sh");
 }
 
 void MainWindow::on_pushButton_call_clicked()
@@ -212,8 +212,18 @@ void MainWindow::on_pushButton_toChatPage_clicked()
 
 void MainWindow::on_pushButton_toTransportPage_clicked()
 {
-    QMessageBox::information(this,"infomation",tr("功能正在开发中，敬请关注！"));
-    return;
+    if(mNavigation == nullptr)
+    {
+        mNavigation = new Navigation();
+
+        connect(mNavigation,SIGNAL(updateGoals(std::vector<goalInfo_t>)),
+                this, SLOT(onUpdateNavGoalsInfo(std::vector<goalInfo_t>)));
+
+        QString goalsInfoFile = g_appDir + "/../goals/goals.xml";
+        mNavigation->loadGoalPointsInfo(goalsInfoFile);
+    }
+    //QMessageBox::information(this,"infomation",tr("功能正在开发中，敬请关注！"));
+    //return;
 
     ui->stackedWidget->setCurrentIndex(stackWidget_TransportPage);
 }

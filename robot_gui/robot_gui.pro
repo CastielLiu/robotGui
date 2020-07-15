@@ -35,6 +35,7 @@ SOURCES += \
     cameraconfigdialog.cpp \
     main.cpp \
     mainwindow.cpp \
+    navigation.cpp \
     udpreceiver.cpp \
     audiohandler.cpp \
     utils.cpp \
@@ -55,6 +56,7 @@ SOURCES += \
 HEADERS += \
     cameraconfigdialog.h \
         mainwindow.h \
+    navigation.h \
     udpreceiver.h \
     audiohandler.h \
     utils.h \

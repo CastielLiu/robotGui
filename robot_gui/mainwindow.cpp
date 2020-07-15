@@ -9,7 +9,8 @@ MainWindow::MainWindow(QWidget *parent) :
     m_configFile("RobotGui"),
     m_configFileType("hm"),
     m_imageLabel(nullptr),
-    m_radar(nullptr)
+    m_radar(nullptr),
+    mNavigation(nullptr)
 {
     ui->setupUi(this);
 
@@ -72,9 +73,20 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     if(m_udpReceiver != nullptr)
+    {
         delete m_udpReceiver;
+        m_udpSender = nullptr;
+    }
     if(m_udpSender != nullptr)
+    {
         delete m_udpSender;
+        m_udpSender = nullptr;
+    }
+    if(mNavigation != nullptr)
+    {
+        delete mNavigation;
+        mNavigation = nullptr;
+    }
 
     delete ui;
 }
@@ -537,4 +549,15 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
         ui->pushButton_home->hide();
     else
         ui->pushButton_home->show();
+}
+
+void MainWindow::onUpdateNavGoalsInfo(const std::vector<goalInfo_t>& goalsInfo)
+{
+    ui->comboBox_navGoalsInfo->clear();
+    for(const goalInfo_t& goalInfo:goalsInfo)
+    {
+        ui->comboBox_navGoalsInfo->addItem(QString::fromStdString(goalInfo.name));
+        goalInfo.print();
+    }
+
 }

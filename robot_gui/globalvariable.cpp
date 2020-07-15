@@ -32,3 +32,5 @@ QMutex g_otherImageMutex;
 bool g_isOpenVedio = false;
 bool g_isOpenAudio = true;
 
+QString g_appDir;
+
