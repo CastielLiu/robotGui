@@ -58,7 +58,7 @@ bool Navigation::loadGoalPointsInfo(const QString &file_name)
         {
             if(xmlReader.name() == "Goal")
             {
-                //goalInfo.print();
+                goalInfo.validity = true;
                 mGoalsInfo.push_back(goalInfo);
             }
         }
@@ -71,4 +71,23 @@ bool Navigation::loadGoalPointsInfo(const QString &file_name)
         emit this->updateGoals(mGoalsInfo);
 
     return true;
+}
+
+goalInfo_t Navigation::operator[](int index) const
+{
+    if(index >= mGoalsInfo.size())
+    {
+        return goalInfo_t();
+    }
+    return mGoalsInfo[index];
+}
+
+goalInfo_t Navigation::getGoalInfoByName(const std::string &name) const
+{
+    for(const goalInfo_t& goalInfo: mGoalsInfo)
+    {
+        if(name == goalInfo.name)
+            return goalInfo;
+    }
+    return goalInfo_t();
 }

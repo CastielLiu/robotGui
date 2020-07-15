@@ -55,6 +55,7 @@ SOURCES += \
 
 HEADERS += \
     cameraconfigdialog.h \
+    fifo.hpp \
         mainwindow.h \
     navigation.h \
     udpreceiver.h \

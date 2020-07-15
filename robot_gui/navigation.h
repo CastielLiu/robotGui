@@ -22,9 +22,15 @@ typedef struct GoalInfo
 {
     int id;
     int seq;
+    bool validity;
     std::string name;
     position_t position;
     orientation_t orientation;
+
+    GoalInfo()
+    {
+        validity = false;
+    }
 
     void print() const
     {
@@ -43,6 +49,8 @@ class Navigation : public QObject
 public:
     explicit Navigation(QObject *parent = nullptr);
     bool loadGoalPointsInfo(const QString& file_name);
+    goalInfo_t operator[](int index) const;
+    goalInfo_t getGoalInfoByName(const std::string& name) const;
 
 private:
     std::vector<goalInfo_t> mGoalsInfo;

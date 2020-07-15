@@ -551,13 +551,16 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
         ui->pushButton_home->show();
 }
 
+/*@brief 槽函数，接收导航目标点更新信号
+ *@param goalsInfo 导航目标点信息
+ */
 void MainWindow::onUpdateNavGoalsInfo(const std::vector<goalInfo_t>& goalsInfo)
 {
     ui->comboBox_navGoalsInfo->clear();
     for(const goalInfo_t& goalInfo:goalsInfo)
     {
+        //std::cout << goalInfo.name << std::endl;;
         ui->comboBox_navGoalsInfo->addItem(QString::fromStdString(goalInfo.name));
-        goalInfo.print();
     }
-
 }
+

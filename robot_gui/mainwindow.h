@@ -92,6 +92,8 @@ private slots:
 
     void onUpdateNavGoalsInfo(const std::vector<goalInfo_t>& goalsInfo);
 
+    void on_pushButton_goToNavGoal_clicked();
+
 private:
     void closeEvent(QCloseEvent *event) override;
     void loadPerformance();
