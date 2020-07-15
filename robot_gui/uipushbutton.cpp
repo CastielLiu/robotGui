@@ -212,5 +212,8 @@ void MainWindow::on_pushButton_toChatPage_clicked()
 
 void MainWindow::on_pushButton_toTransportPage_clicked()
 {
+    QMessageBox::information(this,"infomation",tr("功能正在开发中，敬请关注！"));
+    return;
+
     ui->stackedWidget->setCurrentIndex(stackWidget_TransportPage);
 }
