@@ -5,7 +5,6 @@
 #include <cerrno>
 #include <sys/stat.h>
 #include <unistd.h>
-
 #include <iostream>
 #include <cstdio>
 
@@ -16,9 +15,10 @@ public:
     Fifo()  {m_fd = -1;}
     ~Fifo() {close();  }
 
+#ifndef _WIN32
     bool open(const std::string& name,const std::string& mode)
     {
-        if((m_fd=mkfifo(name.c_str(), 0666)) < 0)// 创建FIFO管道,所有人可读可写
+        if((m_fd = mkfifo(name.c_str(), 0666)) < 0)// 创建FIFO管道,所有人可读可写
         {
             if(errno!=EEXIST) //若不是已存在导致的创建失败
             {
@@ -53,15 +53,6 @@ public:
         return true;
     }
 
-    void close()
-    {
-        if(m_fd >= 0)
-        {
-            ::close(m_fd);
-            m_fd = -1;
-        }
-    }
-
     int send(const void* buf, int len)
     {
         if(m_mode == O_RDONLY)
@@ -80,6 +71,16 @@ public:
             return -1;
         }
         return read(m_fd, buf, max_len);
+    }
+#endif
+
+    void close()
+    {
+        if(m_fd >= 0)
+        {
+            ::close(m_fd);
+            m_fd = -1;
+        }
     }
 
     int getProcessId()

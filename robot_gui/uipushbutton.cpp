@@ -232,6 +232,7 @@ void MainWindow::on_pushButton_toTransportPage_clicked()
 
 void MainWindow::on_pushButton_goToNavGoal_clicked()
 {
+#ifndef _WIN32
     if(mNavigation == nullptr)
     {
         qDebug() << "mNavigation has not been instantiated";
@@ -265,6 +266,6 @@ void MainWindow::on_pushButton_goToNavGoal_clicked()
         qDebug() << "write to fifo faild!";
         return;
     }
-
     goalInfo.print();
+#endif
 }
