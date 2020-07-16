@@ -18,6 +18,7 @@
 #include <QDateTime>
 #include "cameraconfigdialog.h"
 #include "navigation.h"
+#include "fifo.hpp"
 
 namespace Ui {
 class MainWindow;

@@ -7,10 +7,10 @@
 #include <iostream>
 #include <QXmlStreamReader>
 
-
+#pragma pack(push,1)
 typedef struct Position
 {
-    double x,y,z;
+    double x,y;
 } position_t;
 
 typedef struct Orientation
@@ -18,14 +18,20 @@ typedef struct Orientation
     double x,y,z,w;
 } orientation_t;
 
+typedef struct Pose
+{
+    position_t position;
+    orientation_t orientation;
+} pose_t;
+
+#pragma pack(pop)
+
 typedef struct GoalInfo
 {
     int id;
-    int seq;
     bool validity;
     std::string name;
-    position_t position;
-    orientation_t orientation;
+    pose_t pose;
 
     GoalInfo()
     {
@@ -34,13 +40,14 @@ typedef struct GoalInfo
 
     void print() const
     {
-        std::cout << "id: " << id << "\tname:" << name << "\tseq" << seq << std::endl;
-        std::cout << "position: " << position.x << "\t" << position.y << "\t" << position.z << std::endl;
-        std::cout << "orientation: " << orientation.x << "\t" << orientation.y << "\t" << orientation.z
-                  << "\t" << orientation.w << std::endl << std::endl;
+        std::cout << "id: " << id << "\tname:" << name  << std::endl;
+        std::cout << "position: " << pose.position.x << "\t" << pose.position.y << "\t" << std::endl;
+        std::cout << "orientation: " << pose.orientation.x << "\t" << pose.orientation.y
+                  << "\t" << pose.orientation.z << "\t" << pose.orientation.w << std::endl << std::endl;
     }
 
 } goalInfo_t;
+
 
 
 class Navigation : public QObject

@@ -34,23 +34,21 @@ bool Navigation::loadGoalPointsInfo(const QString &file_name)
             {
                 QXmlStreamAttributes orienAttrs = xmlReader.attributes();
                 if(orienAttrs.hasAttribute("x"))
-                    goalInfo.orientation.x = orienAttrs.value("x").toDouble();
+                    goalInfo.pose.orientation.x = orienAttrs.value("x").toDouble();
                 if(orienAttrs.hasAttribute("y"))
-                    goalInfo.orientation.y = orienAttrs.value("y").toDouble();
+                    goalInfo.pose.orientation.y = orienAttrs.value("y").toDouble();
                 if(orienAttrs.hasAttribute("z"))
-                    goalInfo.orientation.z = orienAttrs.value("z").toDouble();
+                    goalInfo.pose.orientation.z = orienAttrs.value("z").toDouble();
                 if(orienAttrs.hasAttribute("w"))
-                    goalInfo.orientation.w = orienAttrs.value("w").toDouble();
+                    goalInfo.pose.orientation.w = orienAttrs.value("w").toDouble();
             }
             else if(xmlReader.name() == "Position")
             {
                 QXmlStreamAttributes positionAttrs = xmlReader.attributes();
                 if(positionAttrs.hasAttribute("x"))
-                    goalInfo.position.x = positionAttrs.value("x").toDouble();
+                    goalInfo.pose.position.x = positionAttrs.value("x").toDouble();
                 if(positionAttrs.hasAttribute("y"))
-                    goalInfo.position.y = positionAttrs.value("y").toDouble();
-                if(positionAttrs.hasAttribute("z"))
-                    goalInfo.position.z = positionAttrs.value("z").toDouble();
+                    goalInfo.pose.position.y = positionAttrs.value("y").toDouble();
             }
 
         }

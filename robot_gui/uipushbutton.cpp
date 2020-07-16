@@ -245,5 +245,26 @@ void MainWindow::on_pushButton_goToNavGoal_clicked()
         return ;
     }
 
+    static Fifo *goalInfoFifo = nullptr;
+    if(goalInfoFifo == nullptr)
+    {
+        goalInfoFifo = new Fifo();
+
+        if(!goalInfoFifo->open(g_appDir.toStdString()+"/../fifo/goalInfoFifo", "w"))
+        {
+            delete goalInfoFifo;
+            goalInfoFifo = nullptr;
+            QMessageBox::warning(this,"communication Error",tr("打开FIFO通讯管道失败，请联系管理员！"));
+            return ;
+        }
+    }
+
+    int len = goalInfoFifo->send((void*)&goalInfo.pose, sizeof(goalInfo.pose));
+    if(sizeof(goalInfo.pose) != len)
+    {
+        qDebug() << "write to fifo faild!";
+        return;
+    }
+
     goalInfo.print();
 }
