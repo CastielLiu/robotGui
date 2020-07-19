@@ -253,7 +253,7 @@
         <string notr="true">font: 14pt &quot;Ubuntu&quot;;</string>
        </property>
        <property name="text">
-        <string>确认</string>
+        <string/>
        </property>
       </widget>
      </item>

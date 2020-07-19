@@ -562,6 +562,7 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
  */
 void MainWindow::onUpdateNavGoalsInfo(const std::vector<goalInfo_t>& goalsInfo)
 {
+    mNavgoalsInfo = goalsInfo;
     ui->comboBox_navGoalsInfo->clear();
     for(const goalInfo_t& goalInfo:goalsInfo)
     {

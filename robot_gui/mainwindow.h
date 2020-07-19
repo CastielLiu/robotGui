@@ -121,6 +121,8 @@ private:
     MyQLabel *m_imageLabel;
     BiologicalRadar *m_radar;
     Navigation *mNavigation;
+    std::vector<goalInfo_t> mNavgoalsInfo;
+
     KeyBoard *mKeyBorad;
 
     bool m_myImageBig ;

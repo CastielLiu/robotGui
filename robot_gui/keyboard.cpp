@@ -18,8 +18,7 @@ KeyBoard::~KeyBoard()
 void KeyBoard::update()
 {
     ui->lineEdit_show->setText(qstr);
-    if(!qstr.isEmpty())
-        emit update_signal(qstr);
+    emit update_signal(qstr);
 }
 void KeyBoard::on_pushButton_0_clicked()
 {

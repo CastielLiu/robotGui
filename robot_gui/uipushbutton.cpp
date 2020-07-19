@@ -213,7 +213,22 @@ void MainWindow::on_pushButton_toChatPage_clicked()
 
 void MainWindow::onKeyboardUpdate(const QString& qstr)
 {
-    qDebug() << qstr;
+    ui->comboBox_navGoalsInfo->clear();
+
+    if(qstr.isEmpty())
+    {
+        for(auto &goal:mNavgoalsInfo)
+            ui->comboBox_navGoalsInfo->addItem(QString::fromStdString(goal.name));
+        return;
+    }
+
+    for(auto &goal:mNavgoalsInfo)
+    {
+        if(std::string::npos != goal.name.find(qstr.toStdString()))
+        {
+            ui->comboBox_navGoalsInfo->addItem(QString::fromStdString(goal.name));
+        }
+    }
 }
 
 void MainWindow::on_pushButton_toTransportPage_clicked()
@@ -240,7 +255,6 @@ void MainWindow::on_pushButton_toTransportPage_clicked()
     }
     //QMessageBox::information(this,"infomation",tr("功能正在开发中，敬请关注！"));
     //return;
-
 
 }
 
