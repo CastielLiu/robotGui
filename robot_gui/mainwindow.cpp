@@ -10,7 +10,8 @@ MainWindow::MainWindow(QWidget *parent) :
     m_configFileType("hm"),
     m_imageLabel(nullptr),
     m_radar(nullptr),
-    mNavigation(nullptr)
+    mNavigation(nullptr),
+    mKeyBorad(nullptr)
 {
     ui->setupUi(this);
 
@@ -86,6 +87,11 @@ MainWindow::~MainWindow()
     {
         delete mNavigation;
         mNavigation = nullptr;
+    }
+    if(mKeyBorad != nullptr)
+    {
+        delete mKeyBorad;
+        mKeyBorad = nullptr;
     }
 
     delete ui;

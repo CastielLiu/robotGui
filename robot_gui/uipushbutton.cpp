@@ -11,6 +11,7 @@ void MainWindow::on_pushButton_roscore_clicked()
     utils::systemCmd("bash -c roscore");
 }
 
+
 void MainWindow::on_pushButton_remoteCtrl_clicked()
 {
     utils::systemCmd(g_appDir.toStdString() + "/../command/remote_control.sh");
@@ -210,9 +211,22 @@ void MainWindow::on_pushButton_toChatPage_clicked()
     ui->stackedWidget->setCurrentIndex(stackWidget_ChatPage);
 }
 
+void MainWindow::onKeyboardUpdate(const QString& qstr)
+{
+    qDebug() << qstr;
+}
+
 void MainWindow::on_pushButton_toTransportPage_clicked()
 {
     ui->stackedWidget->setCurrentIndex(stackWidget_TransportPage);
+
+    if(mKeyBorad == nullptr)
+    {
+        mKeyBorad = new KeyBoard(); //实例化键盘ui,
+        ui->horizontalLayout_transportPage->addWidget(mKeyBorad);//添加到已有布局
+        //绑定信号槽，响应键盘输入事件
+        connect(mKeyBorad,SIGNAL(update_signal(const QString&)),this,SLOT(onKeyboardUpdate(const QString&)));
+    }
 
     if(mNavigation == nullptr)
     {

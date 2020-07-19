@@ -33,6 +33,7 @@ CONFIG += serialPort
 
 SOURCES += \
     cameraconfigdialog.cpp \
+    keyboard.cpp \
     main.cpp \
     mainwindow.cpp \
     navigation.cpp \
@@ -56,6 +57,7 @@ SOURCES += \
 HEADERS += \
     cameraconfigdialog.h \
     fifo.hpp \
+    keyboard.h \
         mainwindow.h \
     navigation.h \
     udpreceiver.h \
@@ -77,6 +79,7 @@ HEADERS += \
 
 FORMS += \
         cameraconfigdialog.ui \
+    keyboard.ui \
         mainwindow.ui \
     audioconfigdialog.ui
 

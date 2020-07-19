@@ -17,6 +17,7 @@
 #include <chrono>
 #include <QDateTime>
 #include "cameraconfigdialog.h"
+#include "keyboard.h"
 #include "navigation.h"
 #include "fifo.hpp"
 
@@ -90,10 +91,11 @@ private slots:
     void on_pushButton_toChatPage_clicked();
     void on_pushButton_toTransportPage_clicked();
     void on_stackedWidget_currentChanged(int arg1);
+    void on_pushButton_goToNavGoal_clicked();
+
 
     void onUpdateNavGoalsInfo(const std::vector<goalInfo_t>& goalsInfo);
-
-    void on_pushButton_goToNavGoal_clicked();
+    void onKeyboardUpdate(const QString& qstr);
 
 private:
     void closeEvent(QCloseEvent *event) override;
@@ -119,6 +121,7 @@ private:
     MyQLabel *m_imageLabel;
     BiologicalRadar *m_radar;
     Navigation *mNavigation;
+    KeyBoard *mKeyBorad;
 
     bool m_myImageBig ;
     int m_imageDisplayTimer =0;
