@@ -13,11 +13,17 @@ class Fifo
 {
 public:
     Fifo()  {m_fd = -1;}
-    ~Fifo() {close();  }
+    ~Fifo()
+    {
+        close();
+        if(!m_fifoName.empty())
+            unlink(m_fifoName.c_str()); //删除fifo
+    }
 
-#ifndef _WIN32
+#ifndef _WIN32 //windows无法编译
     bool open(const std::string& name,const std::string& mode)
     {
+        m_fifoName = name;
         if((m_fd = mkfifo(name.c_str(), 0666)) < 0)// 创建FIFO管道,所有人可读可写
         {
             if(errno!=EEXIST) //若不是已存在导致的创建失败

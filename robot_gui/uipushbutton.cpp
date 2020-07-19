@@ -251,7 +251,7 @@ void MainWindow::on_pushButton_goToNavGoal_clicked()
     {
         goalInfoFifo = new Fifo();
 
-        if(!goalInfoFifo->open(g_appDir.toStdString()+"/../fifo/goalInfoFifo", "w"))
+        if(!goalInfoFifo->open("/tmp/robotNavGoalFifo", "w"))
         {
             delete goalInfoFifo;
             goalInfoFifo = nullptr;
