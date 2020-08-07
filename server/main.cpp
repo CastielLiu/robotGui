@@ -258,7 +258,7 @@ void Server::receiveAndTransThread(int server_fd, uint16_t clientId)
 			uint16_t clientB = clients_[clientA].callingID;
 			if(clientB == 0) //clientA没有正在通话的客户 
 				continue;
-			 
+			
 			clients_[clientA].callingID = 0; //清除A中B的ID 
 			clients_[clientB].callingID = 0; //清除B中A的ID 
 		}
@@ -366,14 +366,13 @@ void Server::msgTransmit(const uint8_t* buf, int len)
 			(type != PkgType_RequestConnect))                   //消息指令非请求连接
 	{
 		//此时表明A向B发送数据消息(非请求连接)，但A与B并未建立连接
-		//这种情况可能出现在AB之前正在通话，B中断了通话并发出中断指令，但该指令未被A所接收
+		//这种情况可能出现在AB之前正在通话，B中断了通话并发出中断指令，但该指令未被A正常接收
 		//此时服务器自主向A发送断开连接指令
-		transPack_t pkg(PkgType_DisConnect); 
-		pkg.senderId = dstClientId;
+		transPack_t pkg(PkgType_DisConnect);
+		pkg.senderId = SERVER_ID; //此处标明发送方为服务器
 		pkg.receiverId = srcClientId;
 		sendto(clients_[srcClientId].fd, (char*)&pkg, sizeof(transPack_t), 0, 
 			   (struct sockaddr*)&clients_[srcClientId].addr, sizeof(sockaddr_in));
-	
 	}
 	else
 	{
