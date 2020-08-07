@@ -323,9 +323,8 @@ void UdpReceiver::onReadyRead()
             {
                 emit showMsgInStatusBar(QString("Call disconnected"), 3000);
                 emit stopChatSignal();
+                std::cout <<  "PkgType_DisConnect" << std::endl;
             }
-
-            //std::cout <<  "PkgType_DisConnect" << std::endl;
             continue;
         }
         /**** 以上为用户连接相关消息 ****/
