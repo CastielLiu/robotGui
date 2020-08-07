@@ -103,6 +103,12 @@ QSize CvImageGraber::getResolution()
     return QSize(w,h);
 }
 
+bool operator>=(const QSize& size1, const QSize& size2)
+{
+    return (size1.width()*size1.height())>= (size2.width()*size2.height());
+}
+
+//获取摄像头可用的分辨率，从大到小排序
 QList<QSize> CvImageGraber::getAvailableResolutions()
 {
    QList<QSize> resolutions;
@@ -111,13 +117,18 @@ QList<QSize> CvImageGraber::getAvailableResolutions()
        std::cerr << "please open the camera before getAvailableResolutions!" << std::endl;
        return resolutions;
    }
+   //opencv无法直接获取摄像头分辨率，通过设置超大的尺寸使内部自动设置为可用的最大分辨率
+   //然后再对最大分辨率进行拆分并尝试设置，最终以获取到的实际的分辨率作为结果
    setResolution(5000,5000);
    QSize maxResolution = getResolution();
-   for(int i=5; i>0; --i)
+   resolutions.append(maxResolution);
+   for(int k=2; ; ++k)
    {
-       setResolution(maxResolution/i);
-       QSize resolution = getResolution();
-       resolutions.append(resolution);
+        setResolution(maxResolution/k);
+        QSize resolution = getResolution();
+        if(resolution>=resolutions.last())
+            break;
+        resolutions.append(resolution);
    }
    return resolutions;
 }

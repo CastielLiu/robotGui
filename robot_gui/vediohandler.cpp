@@ -89,8 +89,15 @@ bool VedioHandler::init(VedioMode mode)
             qDebug() << "open camera failed!" ;
             return false;
         }
-        if(!g_cameraResolution.isNull())
-            m_cvImageGrabber->setResolution(g_cameraResolution);
+        if(g_cameraResolution.isNull())
+        {//若全局分辨率为0,设置为最小分辨率
+         //全局分辨率默认为零。可以从配置文件中读取上次设置的分辨率
+            QSize minResolution = m_cvImageGrabber->getAvailableResolutions().last();
+            g_cameraResolution = minResolution;
+            qDebug() << "set the minimum camera resolution: " << g_cameraResolution;
+        }
+        m_cvImageGrabber->setResolution(g_cameraResolution);
+
 #endif
     }
     else if(mode == VedioMode_Play)

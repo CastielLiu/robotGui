@@ -34,6 +34,7 @@ extern uint16_t g_calledId;
 extern uint16_t g_robotControlId ;
 extern int g_cameraId;
 extern QSize g_cameraResolution;
+extern float g_sendVideoScale;
 
 extern uint16_t g_heartBeatInterval ;
 extern uint16_t g_maxHeartBeatDelay ;

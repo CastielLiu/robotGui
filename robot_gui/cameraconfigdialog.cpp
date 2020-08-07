@@ -6,7 +6,8 @@ CameraConfigDialog::CameraConfigDialog(QWidget *parent):
     QDialog(parent),
     ui(new Ui::CameraConfigDialog),
     mCvImageGraber(nullptr),
-    mImageDisplaying(false)
+    mImageDisplaying(false),
+    mImageScale(g_sendVideoScale)
 {
     ui->setupUi(this);
     setWindowTitle("Camera Configure");
@@ -144,6 +145,7 @@ bool CameraConfigDialog::applyConfig(bool ok)
         return false;
     g_cameraId = cameraIndex;
     g_cameraResolution = mCameraResolutions[cameraResolutionIndex];
+    g_sendVideoScale = mImageScale;
     return true;
 }
 
@@ -179,9 +181,16 @@ void CameraConfigDialog::displayImageThread()
     while(mCvImageGraber->isOpen())
     {
         QImage image = mCvImageGraber->capture();
+        QSize imageSize = image.size();
+
+        if(mImageScale != 1.0)
+            image = image.scaled(imageSize*mImageScale);
+
+        imageSize = image.size();
+
         QRect windowSize = ui->label_showImage->geometry();
         float windowRatio = windowSize.width()/windowSize.height();
-        QSize imageSize = image.size();
+
         float imageRatio = imageSize.width()/imageSize.height();
 
         //qDebug() << windowSize.width() << "\t" << windowSize.height() ;
@@ -217,4 +226,9 @@ void CameraConfigDialog::on_comboBox_camera_reslotion_activated(int index)
     if(!mCvImageGraber || !mCvImageGraber->isOpen())
         return;
     mCvImageGraber->setResolution(mCameraResolution.width(),mCameraResolution.height());
+}
+
+void CameraConfigDialog::on_comboBox_imageScale_currentIndexChanged(const QString &arg1)
+{
+    mImageScale = arg1.toFloat();
 }

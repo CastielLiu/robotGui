@@ -17,7 +17,6 @@
 #include <cvimagegraber.h>
 #include <QString>
 
-
 namespace Ui{
 class CameraConfigDialog;
 }
@@ -42,6 +41,8 @@ private slots:
     void on_comboBox_cameraInfo_activated(int index);
     void on_comboBox_camera_reslotion_activated(int index);
 
+    void on_comboBox_imageScale_currentIndexChanged(const QString &arg1);
+
 private:
     Ui::CameraConfigDialog *ui;
     QList<QCameraInfo> mCameraInfos;
@@ -50,7 +51,7 @@ private:
 
     CvImageGraber* mCvImageGraber;
     bool mImageDisplaying;
-
+    float mImageScale;
 };
 
 

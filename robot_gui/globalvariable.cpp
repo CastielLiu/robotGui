@@ -22,6 +22,7 @@ uint16_t g_calledId = 0; //视频通话被叫方ID
 uint16_t g_robotControlId = 5050;//机器人远程控制ID
 int g_cameraId = 0; //摄像头ID
 QSize g_cameraResolution = QSize(0,0);
+float g_sendVideoScale = 1.0;  //发送视频时对图像进行缩放，可减少数据量
 
 /***** 跨线程传递变量   ****/
 std::shared_ptr<QImage> g_myImage = nullptr;   //我方图像
