@@ -40,7 +40,6 @@ private:
 
 private slots:
     void on_comboBox_cameraInfo_activated(int index);
-
     void on_comboBox_camera_reslotion_activated(int index);
 
 private:

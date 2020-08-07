@@ -111,7 +111,9 @@ QList<QSize> CvImageGraber::getAvailableResolutions()
    QSize maxResolution = getResolution();
    for(int i=5; i>0; --i)
    {
-       resolutions.append(maxResolution/i);
+       setResolution(maxResolution/i);
+       QSize resolution = getResolution();
+       resolutions.append(resolution);
    }
    return resolutions;
 }
