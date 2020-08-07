@@ -15,11 +15,15 @@ bool CvImageGraber::isOpen()
     return m_cap.isOpened();
 }
 
-bool CvImageGraber::openCamera(int id)
+bool CvImageGraber::openCamera(int id, int _try)
 {
-    m_cap.open(id);
-    if(m_cap.isOpened())
-        return true;
+    while(_try --)
+    {
+        m_cap.open(id);
+        if(m_cap.isOpened())
+            return true;
+        m_cap.release();
+    }
     return false;
 }
 

@@ -53,9 +53,8 @@ void CameraConfigDialog::flushAvailableResolution(int index)
         imageGraber.openCamera(index);
         if(imageGraber.isOpen())
             mCameraResolutions = imageGraber.getAvailableResolutions();
-        else {
+        else
             qDebug() << "opencv open camera: " << index << " failed";
-        }
     }
     if(mCameraResolutions.size())
         mCameraResolution = mCameraResolutions[0];
