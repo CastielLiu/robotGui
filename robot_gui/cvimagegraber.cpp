@@ -37,6 +37,7 @@ void CvImageGraber::closeCamera()
 
 QImage CvImageGraber::capture()
 {
+    std::lock_guard<std::mutex> lck(m_mutex);
     if(m_cap.isOpened())
     {
         if(m_cap.read(m_cvImage))
@@ -68,6 +69,8 @@ QImage CvImageGraber::cvMatToQImage(cv::Mat& mtx)
 
 bool CvImageGraber::setResolution(int w, int h)
 {
+    std::lock_guard<std::mutex> lck(m_mutex);
+
     if(!m_cap.isOpened())
     {
         std::cerr << "please open the camera before setResolution!" << std::endl;
@@ -94,6 +97,7 @@ bool CvImageGraber::setResolution(const QSize& size)
 
 QSize CvImageGraber::getResolution()
 {
+    std::lock_guard<std::mutex> lck(m_mutex);
     int w = m_cap.get(cv::CAP_PROP_FRAME_WIDTH);
     int h = m_cap.get(cv::CAP_PROP_FRAME_HEIGHT);
     return QSize(w,h);

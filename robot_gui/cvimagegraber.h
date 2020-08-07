@@ -3,6 +3,7 @@
 #include <QImage>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <mutex>
 #include <iostream>
 #include <QList>
 
@@ -32,6 +33,7 @@ private:
 private:
     cv::VideoCapture m_cap;
     cv::Mat m_cvImage;
+    std::mutex m_mutex;
 };
 
 #endif // CVIMAGEGRABER_H
