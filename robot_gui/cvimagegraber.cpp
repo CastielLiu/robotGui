@@ -17,6 +17,8 @@ bool CvImageGraber::isOpen()
 
 bool CvImageGraber::openCamera(int id, int _try)
 {
+    if(m_cap.isOpened())
+        return true;
     while(_try --)
     {
         m_cap.open(id);

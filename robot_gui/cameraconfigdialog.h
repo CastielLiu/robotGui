@@ -33,7 +33,8 @@ public:
 
 private:
     void flushAvailableDivice();
-    void flushAvailableResolution(int index);
+    bool flushAvailableResolutionByQCamera(int index);
+    bool flushAvailableResolutionByOpencv(int index);
     void displayImageThread();
     void closeCamera();
 
