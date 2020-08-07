@@ -238,12 +238,22 @@ void Server::receiveAndTransThread(int server_fd, uint16_t clientId)
 			continue;
 		if(_pkg->type > 10 && _pkg->type<30)
 			std::cout << "received msg, sender id:" << _pkg->senderId << " type: " << int(_pkg->type) << " len:" << len<< std::endl;
-			
+		
+		if(_pkg->type == PkgType_HeartBeat) //心跳包 
+		{
+			//cout << "received client heartbeat :" << clientId << endl;
+			sendto(server_fd,recvbuf, len, 0, (struct sockaddr*)&client_addr, clientLen); //回发给客户端 
+			clients_[clientId].lastHeartBeatTime = time(0); //记录客户心跳时间
+		}
+		else if(_pkg->type == PkgType_LogOut)
+		{
+			cout << "client logout...."<< endl;
+			clients_[clientId].connect = false;
+		}
 		//下列消息类型不仅需要转发，而且服务器需要利用其记录状态，因此需要额外处理
 		//服务器第一时间更新连接状态，防止出现错误
-		if(_pkg->type == PkgType_AcceptConnect) //被叫用户接受连接 
+		else if(_pkg->type == PkgType_AcceptConnect) //被叫用户接受连接 
 		{
-			msgTransmit(recvbuf, len);
 			uint16_t srcClientId = ((const transPack_t *)recvbuf)->senderId;
 			uint16_t dstClientId = ((const transPack_t *)recvbuf)->receiverId;
 			//在通话双方信息中相互添加对方ID
@@ -251,7 +261,7 @@ void Server::receiveAndTransThread(int server_fd, uint16_t clientId)
 			clients_[srcClientId].callingID = dstClientId;
 			clients_[dstClientId].callingID = srcClientId;
 			cout << "connected: " << srcClientId << "\t" << dstClientId << endl;
-			
+			msgTransmit(recvbuf, len);
 		}
 		else if(_pkg->type == PkgType_DisConnect) // 请求断开连接 
 		{
@@ -265,19 +275,10 @@ void Server::receiveAndTransThread(int server_fd, uint16_t clientId)
 			clients_[clientA].callingID = 0; //清除A中B的ID 
 			clients_[clientB].callingID = 0; //清除B中A的ID 
 		}
-		else if(_pkg->type == PkgType_HeartBeat) //心跳包 
-		{
-			//cout << "received client heartbeat :" << clientId << endl;
-			sendto(server_fd,recvbuf, len, 0, (struct sockaddr*)&client_addr, clientLen); //回发给客户端 
-			clients_[clientId].lastHeartBeatTime = time(0); //记录客户心跳时间
-		}
-		else if(_pkg->type == PkgType_LogOut)
-		{
-			cout << "client logout...."<< endl;
-			clients_[clientId].connect = false;
-		}
 		else if((_pkg->type == PkgType_ControlCmd) || (_pkg->type == PkgType_RobotState))
 			cmdAndStatusTransmit(recvbuf, len);
+		else
+			msgTransmit(recvbuf, len);
 		
 	}
 	cout << "delete client : " << clientId;
@@ -373,6 +374,7 @@ void Server::msgTransmit(const uint8_t* buf, int len)
 		pkg.receiverId = srcClientId;
 		sendto(clients_[srcClientId].fd, (char*)&pkg, sizeof(transPack_t), 0, 
 			   (struct sockaddr*)&clients_[srcClientId].addr, sizeof(sockaddr_in));
+		std::cout << "type: " << type << "\t but no connected! Then, send disconnect sugnal by server. \n";
 	}
 	else
 	{

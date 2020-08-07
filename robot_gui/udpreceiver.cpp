@@ -319,8 +319,12 @@ void UdpReceiver::onReadyRead()
         }
         else if(PkgType_DisConnect == header->type)
         {
-            emit showMsgInStatusBar(QString("Call disconnected"), 3000);
-            emit stopChatSignal();
+            if(g_transferStatus == transferStatus_Ing)
+            {
+                emit showMsgInStatusBar(QString("Call disconnected"), 3000);
+                emit stopChatSignal();
+            }
+
             //std::cout <<  "PkgType_DisConnect" << std::endl;
             continue;
         }
