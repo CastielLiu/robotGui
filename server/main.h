@@ -19,7 +19,7 @@
 #include <signal.h>
 
 #define ROBOT_TEST_ID 5050
-#define SERVER_ID = 0
+#define SERVER_ID     0
 
 enum dataType
 {

@@ -236,13 +236,14 @@ void Server::receiveAndTransThread(int server_fd, uint16_t clientId)
 		if(len <= 0) continue;
 		if(_pkg->head[0] != 0x66 || _pkg->head[1] != 0xcc)
 			continue;
-		if(_pkg->type > 10 && _pkg->type<30) 
+		if(_pkg->type > 10 && _pkg->type<30)
 			std::cout << "received msg, sender id:" << _pkg->senderId << " type: " << int(_pkg->type) << " len:" << len<< std::endl;
 			
 		//下列消息类型不仅需要转发，而且服务器需要利用其记录状态，因此需要额外处理
-		//这些操作必须外转发前完成，使得服务器第一时间更新连接状态，防止出现错误
+		//服务器第一时间更新连接状态，防止出现错误
 		if(_pkg->type == PkgType_AcceptConnect) //被叫用户接受连接 
 		{
+			msgTransmit(recvbuf, len);
 			uint16_t srcClientId = ((const transPack_t *)recvbuf)->senderId;
 			uint16_t dstClientId = ((const transPack_t *)recvbuf)->receiverId;
 			//在通话双方信息中相互添加对方ID
@@ -250,9 +251,11 @@ void Server::receiveAndTransThread(int server_fd, uint16_t clientId)
 			clients_[srcClientId].callingID = dstClientId;
 			clients_[dstClientId].callingID = srcClientId;
 			cout << "connected: " << srcClientId << "\t" << dstClientId << endl;
+			
 		}
 		else if(_pkg->type == PkgType_DisConnect) // 请求断开连接 
 		{
+			msgTransmit(recvbuf, len);
 			uint16_t clientA =  clientId;
 			//A方请求断开，清除A中存放的B的Id，并向B发送断开连接 
 			uint16_t clientB = clients_[clientA].callingID;
@@ -262,13 +265,11 @@ void Server::receiveAndTransThread(int server_fd, uint16_t clientId)
 			clients_[clientA].callingID = 0; //清除A中B的ID 
 			clients_[clientB].callingID = 0; //清除B中A的ID 
 		}
-		
-		//当receiver_id为0时，为客户端向服务器发送的指令 
-		if(_pkg->type == PkgType_HeartBeat) //心跳包 
+		else if(_pkg->type == PkgType_HeartBeat) //心跳包 
 		{
 			//cout << "received client heartbeat :" << clientId << endl;
 			sendto(server_fd,recvbuf, len, 0, (struct sockaddr*)&client_addr, clientLen); //回发给客户端 
-			clients_[clientId].lastHeartBeatTime = time(0); //记录客户心跳时间 
+			clients_[clientId].lastHeartBeatTime = time(0); //记录客户心跳时间
 		}
 		else if(_pkg->type == PkgType_LogOut)
 		{
@@ -277,8 +278,7 @@ void Server::receiveAndTransThread(int server_fd, uint16_t clientId)
 		}
 		else if((_pkg->type == PkgType_ControlCmd) || (_pkg->type == PkgType_RobotState))
 			cmdAndStatusTransmit(recvbuf, len);
-		else
-			msgTransmit(recvbuf, len);
+		
 	}
 	cout << "delete client : " << clientId;
 	removeClient(clientId);
