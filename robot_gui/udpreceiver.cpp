@@ -292,7 +292,9 @@ void UdpReceiver::onReadyRead()
         }
         else if(PkgType_AcceptConnect == header->type) //被叫接受连接请求
         {
-            emit connectAcceptted();
+            //检查是否正处于传输状态
+            if(g_transferStatus != transferStatus_Ing)
+                emit connectAcceptted();//发出连接被接收信号
             continue;
         }
         else if(PkgType_RefuseConnect == header->type) // 拒绝连接，请求被拒

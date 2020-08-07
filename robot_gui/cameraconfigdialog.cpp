@@ -48,17 +48,24 @@ void CameraConfigDialog::flushAvailableResolution(int index)
     //如果上述方式未获取到摄像头分辨率，更换获取方式
     if(mCameraResolutions.size()==0)
     {
-        camera.stop();
+        qDebug() << "QCamera can not open camera! try opencv.";
         CvImageGraber imageGraber;
         imageGraber.openCamera(index);
         if(imageGraber.isOpen())
-        {
             mCameraResolutions = imageGraber.getAvailableResolutions();
-
+        else {
+            qDebug() << "opencv open camera: " << index << " failed";
         }
     }
     if(mCameraResolutions.size())
         mCameraResolution = mCameraResolutions[0];
+    else
+    {
+        mCameraResolution = QSize(320,240);
+        qDebug() << "no availbal camera resolutions! use defalt: 320*240";
+    }
+
+
     for(const QSize& resolution:mCameraResolutions)
     {
         QString qstr = QString::number(resolution.width()) +
