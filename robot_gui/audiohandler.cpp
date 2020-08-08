@@ -109,11 +109,11 @@ bool AudioHandler::configReader(int samplerate, int channelcount, int samplesize
     }
 
     //qDebug() << "default" <<  QAudioDeviceInfo::defaultInputDevice().deviceName();
-    qDebug() << "=================video input device ====================";
+    //qDebug() << "=================video input device ====================";
     QAudioDeviceInfo device = QAudioDeviceInfo::defaultInputDevice();
     foreach(const QAudioDeviceInfo&audio, deviceInfo)
     {
-        qDebug() << audio.deviceName();
+        //qDebug() << audio.deviceName();
         if(-1 != audio.deviceName().indexOf(QString("USB_Microphone")))
             device = audio;
     }
@@ -129,7 +129,7 @@ bool AudioHandler::configReader(int samplerate, int channelcount, int samplesize
     {
         qDebug() << "use customize input audio device: " << device.deviceName();
     }
-    qDebug() << "=========================================================";
+    //qDebug() << "=========================================================";
 
     if (m_input != nullptr) delete m_input;
     m_input = new QAudioInput(device,format,this);
@@ -235,10 +235,10 @@ bool AudioHandler::configPlayer(int sampleRate, int channelCount, int sampleSize
     }
 
     QAudioDeviceInfo device = QAudioDeviceInfo::defaultOutputDevice();
-    qDebug() << "=================video output device ====================";
+    //qDebug() << "=================video output device ====================";
     foreach(const QAudioDeviceInfo&audio, deviceInfo)
     {
-        qDebug() << audio.deviceName();
+        //qDebug() << audio.deviceName();
         if(-1 != audio.deviceName().indexOf(QString("USB_Microphone")))
            device = audio;
     }
@@ -250,7 +250,7 @@ bool AudioHandler::configPlayer(int sampleRate, int channelCount, int sampleSize
     {
         qDebug() << "use customize output audio device: " << device.deviceName();
     }
-    qDebug() << "=========================================================";
+    //qDebug() << "=========================================================";
     //m_OutPut = new QAudioOutput(nFormat);//default device
     if (m_OutPut != nullptr) delete m_OutPut;
     m_OutPut = new QAudioOutput(device, nFormat);

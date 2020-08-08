@@ -27,7 +27,7 @@
        <string notr="true"/>
       </property>
       <property name="currentIndex">
-       <number>5</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="page_chat">
        <layout class="QHBoxLayout" name="horizontalLayout_8">
@@ -457,96 +457,64 @@ text-align:center;</string>
        </layout>
       </widget>
       <widget class="QWidget" name="page_debug">
-       <widget class="QWidget" name="widget_2" native="true">
-        <property name="geometry">
-         <rect>
-          <x>120</x>
-          <y>40</y>
-          <width>541</width>
-          <height>301</height>
-         </rect>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>200</width>
-          <height>200</height>
-         </size>
-        </property>
-        <widget class="QCheckBox" name="checkBox_canCalled">
-         <property name="geometry">
-          <rect>
-           <x>9</x>
-           <y>26</y>
-           <width>71</width>
-           <height>16</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>允许被叫</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-        <widget class="QCheckBox" name="checkBox_ignoreCalledOffline">
-         <property name="geometry">
-          <rect>
-           <x>9</x>
-           <y>65</y>
-           <width>95</width>
-           <height>16</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>忽略被叫离线</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="pushButton_audioTest">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>100</y>
-           <width>81</width>
-           <height>23</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>语音测试</string>
-         </property>
-         <property name="checkable">
-          <bool>true</bool>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="pushButton_debugPageOk">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>260</y>
-           <width>75</width>
-           <height>23</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>确定</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="pushButton_playLocalAudio">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>150</y>
-           <width>81</width>
-           <height>23</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>播放本地音频</string>
-         </property>
-         <property name="checkable">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </widget>
+       <layout class="QVBoxLayout" name="verticalLayout_15">
+        <item>
+         <widget class="QWidget" name="widget_2" native="true">
+          <property name="minimumSize">
+           <size>
+            <width>200</width>
+            <height>200</height>
+           </size>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_16">
+           <item>
+            <widget class="QCheckBox" name="checkBox_canCalled">
+             <property name="text">
+              <string>允许被叫</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="checkBox_ignoreCalledOffline">
+             <property name="text">
+              <string>忽略被叫离线</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pushButton_audioTest">
+             <property name="text">
+              <string>语音测试</string>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pushButton_playLocalAudio">
+             <property name="text">
+              <string>播放本地音频</string>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pushButton_debugPageOk">
+             <property name="text">
+              <string>确定</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
       </widget>
       <widget class="QWidget" name="page_bioradar">
        <layout class="QHBoxLayout" name="horizontalLayout_11">
@@ -1151,7 +1119,7 @@ text-align:center;</string>
      <x>0</x>
      <y>0</y>
      <width>900</width>
-     <height>28</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_setting">

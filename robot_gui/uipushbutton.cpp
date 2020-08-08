@@ -151,6 +151,8 @@ void MainWindow::on_pushButton_Right_released()
 void MainWindow::on_pushButton_logpageReturn_clicked()
 {
     ui->stackedWidget->setCurrentIndex(stackWidget_ChatPage);
+    if(ui->checkBox_showLog->isChecked())
+        ui->checkBox_showLog->setChecked(false);
 }
 
 void MainWindow::on_pushButton_clearWorkLog_clicked()
@@ -260,7 +262,7 @@ void MainWindow::on_pushButton_toTransportPage_clicked()
 
 void MainWindow::on_pushButton_goToNavGoal_clicked()
 {
-#ifndef _WIN32
+#ifndef _WIN32 //windows下不支持Fifo
     if(mNavigation == nullptr)
     {
         qDebug() << "mNavigation has not been instantiated";

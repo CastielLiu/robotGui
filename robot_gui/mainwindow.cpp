@@ -99,6 +99,7 @@ MainWindow::~MainWindow()
 
 bool MainWindow::clientModeSelection()
 {
+#ifndef _WIN32 //windows下不进行模式选择，默认为远程端
     QMessageBox msgBox(QMessageBox::Question, tr("机器人操作界面"), tr("客户端模式选择"),
                        QMessageBox::YesAll|QMessageBox::Yes|QMessageBox::Cancel);
     msgBox.button(QMessageBox::YesAll)->setText(tr("远程端"));
@@ -114,7 +115,7 @@ bool MainWindow::clientModeSelection()
     else if(button == QMessageBox::YesAll)
     {
         g_isRemoteTerminal = true;
-        mWindowTitle = tr("用户界面: 远程端");
+        mWindowTitle = tr("智能机器人: 远程端");
         ui->widget_control2->hide();
         //ui->widget_control2->setHidden(true);
         //ui->widget_control2->setVisible(false);
@@ -124,8 +125,13 @@ bool MainWindow::clientModeSelection()
     else if(button == QMessageBox::Yes)
     {
         g_isRemoteTerminal = false;
-        mWindowTitle = tr("用户界面: 本地端");
+        mWindowTitle = tr("智能机器人: 本地端");
     }
+#else
+    g_isRemoteTerminal = true;
+    mWindowTitle = tr("智能机器人: 远程端");
+    ui->widget_control2->hide();
+#endif
     return true;
 }
 
