@@ -31,7 +31,9 @@ public:
     bool applyConfig(bool ok);
 
 private:
+    void updateCurrentImageScale();
     void flushAvailableDivice();
+    bool flushAvailableResolution(int index);
     bool flushAvailableResolutionByQCamera(int index);
     bool flushAvailableResolutionByOpencv(int index);
     void displayImageThread();
@@ -41,7 +43,7 @@ private slots:
     void on_comboBox_cameraInfo_activated(int index);
     void on_comboBox_camera_reslotion_activated(int index);
 
-    void on_comboBox_imageScale_currentIndexChanged(const QString &arg1);
+    void on_comboBox_imageScale_activated(const QString &arg1);
 
 private:
     Ui::CameraConfigDialog *ui;

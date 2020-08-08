@@ -7,17 +7,31 @@ CameraConfigDialog::CameraConfigDialog(QWidget *parent):
     ui(new Ui::CameraConfigDialog),
     mCvImageGraber(nullptr),
     mImageDisplaying(false),
-    mImageScale(g_sendVideoScale)
+    mImageScale(1.0)
 {
     ui->setupUi(this);
     setWindowTitle("Camera Configure");
     //setWindowModality(Qt::NonModal); //非模态对话框
     //setWindowModality(Qt::WindowModal); //窗口级模态对话框
-    setWindowModality(Qt::ApplicationModal); //应用程序级模态对话框
+    //setWindowModality(Qt::ApplicationModal); //应用程序级模态对话框
     //对话框关闭时自动删除对话框对象,用于不需要读取返回值的对话框
     //setAttribute(Qt::WA_DeleteOnClose);
     this->setFixedSize(500,389);
     flushAvailableDivice();
+    updateCurrentImageScale();
+}
+
+void CameraConfigDialog::updateCurrentImageScale()
+{
+    for(int i=0; i<ui->comboBox_imageScale->count(); ++i)
+    {
+        //qDebug() <<ui->comboBox_imageScale->itemText(i) <<"\t" << g_sendVideoScale;
+        if(ui->comboBox_imageScale->itemText(i).toFloat()==g_sendVideoScale)
+        {
+            ui->comboBox_imageScale->setCurrentIndex(i);
+            mImageScale = g_sendVideoScale;
+        }
+    }
 }
 
 void CameraConfigDialog::flushAvailableDivice()
@@ -26,20 +40,24 @@ void CameraConfigDialog::flushAvailableDivice()
 
     mCameraInfos = QCameraInfo::availableCameras();
 
-    foreach (const QCameraInfo &cameraInfo, mCameraInfos)
+    int camera_index = 0;
+    for(int i=0; i<mCameraInfos.size();++i )
     {
+        const QCameraInfo &cameraInfo = mCameraInfos[i];
         ui->comboBox_cameraInfo->addItem(cameraInfo.description());
+        if(cameraInfo.description() == g_cameraDescription)
+            camera_index = i;
     }
-    ui->comboBox_cameraInfo->addItem("flush");
-    ui->comboBox_cameraInfo->setCurrentIndex(0);
 
-    if(mCameraInfos.size())
-        on_comboBox_cameraInfo_activated(0); //默认启动0号相机
+    ui->comboBox_cameraInfo->addItem("flush");
+    ui->comboBox_cameraInfo->setCurrentIndex(camera_index);
+
+    on_comboBox_cameraInfo_activated(camera_index);
+
 }
 
 bool CameraConfigDialog::flushAvailableResolutionByOpencv(int index)
 {
-    ui->comboBox_camera_reslotion->clear();
     bool need_delete = false;
 
     if(mCvImageGraber == nullptr)
@@ -60,58 +78,46 @@ bool CameraConfigDialog::flushAvailableResolutionByOpencv(int index)
         delete mCvImageGraber;
         mCvImageGraber = nullptr;
     }
-
-    for(const QSize& resolution:mCameraResolutions)
-    {
-        QString qstr = QString::number(resolution.width()) +
-                       QString("x") +
-                       QString::number(resolution.height());
-
-        ui->comboBox_camera_reslotion->addItem(qstr);
-    }
-    if(mCameraResolutions.size())
-    {
-        mCameraResolution = mCameraResolutions[0];
-        return true;
-    }
-    else
-    {
-        mCameraResolution = QSize(320,240);
-        qDebug() << "no availbal camera resolutions! use defalt: 320*240";
-        return false;
-    }
 }
 
 bool CameraConfigDialog::flushAvailableResolutionByQCamera(int index)
 {
-    ui->comboBox_camera_reslotion->clear();
-
     QCamera camera(mCameraInfos[index]);
     camera.start(); //启动摄像头才可获取相关参数
     mCameraResolutions = camera.supportedViewfinderResolutions();
     camera.stop();  //参数获取后关闭摄像头
+    if(mCameraResolutions.size())
+        return true;
+    return false;
+}
 
-    for(const QSize& resolution:mCameraResolutions)
+bool CameraConfigDialog::flushAvailableResolution(int index)
+{
+    ui->comboBox_camera_reslotion->clear();
+    bool flush_ok = flushAvailableResolutionByQCamera(index); //刷新可用分辨率
+    if(!flush_ok)
+        flush_ok = flushAvailableResolutionByOpencv(index);
+
+    for(int i=0; i<mCameraResolutions.size(); ++i)
     {
+        auto resolution = mCameraResolutions[i];
         QString qstr = QString::number(resolution.width()) +
                        QString("x") +
                        QString::number(resolution.height());
 
         ui->comboBox_camera_reslotion->addItem(qstr);
+        if(resolution == g_cameraResolution)
+        {
+            ui->comboBox_camera_reslotion->setCurrentIndex(i);
+            mCameraResolution = resolution;
+        }
+    }
+    if(mCameraResolutions.size()==0)
+    {
+        mCameraResolution = QSize(320,240); //default
     }
 
-    if(mCameraResolutions.size())
-    {
-        mCameraResolution = mCameraResolutions[0];
-        return true;
-    }
-    else
-    {
-        mCameraResolution = QSize(320,240);
-        qDebug() << "no availbal camera resolutions! use defalt: 320*240";
-        return false;
-    }
-
+    return flush_ok;
 }
 
 CameraConfigDialog::~CameraConfigDialog()
@@ -159,7 +165,9 @@ void CameraConfigDialog::on_comboBox_cameraInfo_activated(int index)
         flushAvailableDivice();
         return;
     }
-    bool flush_ok = flushAvailableResolutionByQCamera(index); //刷新可用分辨率
+
+    flushAvailableResolution(index); //刷新可用分辨率
+
     mCvImageGraber = new CvImageGraber;
     if(!mCvImageGraber->openCamera(index))
     {
@@ -167,8 +175,7 @@ void CameraConfigDialog::on_comboBox_cameraInfo_activated(int index)
         mCvImageGraber = nullptr;
         return;
     }
-    if(!flush_ok)
-        flushAvailableResolutionByOpencv(index);
+
     //配置分辨率
     mCvImageGraber->setResolution(mCameraResolution.width(),mCameraResolution.height());
     std::thread t(&CameraConfigDialog::displayImageThread,this);
@@ -228,7 +235,7 @@ void CameraConfigDialog::on_comboBox_camera_reslotion_activated(int index)
     mCvImageGraber->setResolution(mCameraResolution.width(),mCameraResolution.height());
 }
 
-void CameraConfigDialog::on_comboBox_imageScale_currentIndexChanged(const QString &arg1)
+void CameraConfigDialog::on_comboBox_imageScale_activated(const QString &arg1)
 {
     mImageScale = arg1.toFloat();
 }

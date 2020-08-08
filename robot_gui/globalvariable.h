@@ -33,6 +33,7 @@ extern uint16_t g_myId;
 extern uint16_t g_calledId;
 extern uint16_t g_robotControlId ;
 extern int g_cameraId;
+extern QString g_cameraDescription;
 extern QSize g_cameraResolution;
 extern float g_sendVideoScale;
 

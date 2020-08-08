@@ -161,13 +161,13 @@ void VedioHandler::sendImage(QUdpSocket *sockect, uint16_t receiverId)
     std::shared_ptr<QImage> imgPtr = std::shared_ptr<QImage>(new QImage(m_cvImageGrabber->capture()));
     if(imgPtr->isNull()) return;
 
+    if(g_sendVideoScale!=1.0)
+       imgPtr = std::shared_ptr<QImage>(new QImage(imgPtr->scaled(imgPtr->size()*g_sendVideoScale)));
+
     g_myImageMutex.lock();
     g_myImage = imgPtr;
     g_myImageMutex.unlock();
 
-
-    //size = imgPtr->size();
-    //std::cout << "rawImage Size: " << size.width() << "x" << size.height() << std::endl;
     if(!imgPtr->save(&Buffer,"JPG"))//将图片保存在QByteArray中
         return;
 

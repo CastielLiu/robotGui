@@ -327,6 +327,7 @@ void MainWindow::savePerformance()
 {
     //创建配置文件操作对象
     QSettings *config = new QSettings(m_configFile, m_configFileType);
+    //qDebug() << config->fileName() ;
 
     config->setValue("autoLogin", QString::number(m_autoRegister));
     config->setValue("userId", g_myId);
@@ -337,8 +338,14 @@ void MainWindow::savePerformance()
     config->beginGroup("server");
     config->setValue("ip", g_serverIp.toString());
     config->setValue("port",g_registerPort);
-
     config->endGroup();
+
+    config->beginGroup("camera");
+    config->setValue("resolution", g_cameraResolution);
+    config->setValue("image_scale",g_sendVideoScale);
+    config->setValue("description", g_cameraDescription);
+    config->endGroup();
+
     delete config;
 }
 
@@ -368,6 +375,11 @@ void MainWindow::loadPerformance()
         }
         g_registerPort = port;
         g_serverIp.setAddress(ip);
+
+        g_cameraResolution = config->value("camera/resolution").toSize();
+        g_sendVideoScale = config->value("camera/image_scale").toFloat();
+        if(g_sendVideoScale == 0) g_sendVideoScale = 1.0;
+        g_cameraDescription = config->value("camera/description").toString();
     }
     delete config;
     updateStatusBarPemanentMsg();

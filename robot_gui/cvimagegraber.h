@@ -20,7 +20,7 @@ public:
     CvImageGraber();
     ~CvImageGraber();
     bool isOpen();
-    bool openCamera(int id, int _try=2);
+    bool openCamera(int id, int _try=1);
     void closeCamera();
     QImage capture();
     bool setResolution(int w, int h);
