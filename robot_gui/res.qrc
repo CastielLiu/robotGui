@@ -15,5 +15,7 @@
         <file alias="call_icon">resources/image/call.png</file>
         <file alias="calling_icon">resources/image/calling.png</file>
         <file alias="hungup_icon">resources/image/hongup.png</file>
+        <file alias="setting_icon">resources/image/setting_icon.png</file>
+        <file alias="tools_icon">resources/image/tools_icon.png</file>
     </qresource>
 </RCC>

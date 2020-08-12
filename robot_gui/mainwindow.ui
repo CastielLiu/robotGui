@@ -27,7 +27,7 @@
        <string notr="true"/>
       </property>
       <property name="currentIndex">
-       <number>3</number>
+       <number>4</number>
       </property>
       <widget class="QWidget" name="page_chat">
        <layout class="QHBoxLayout" name="horizontalLayout_8">
@@ -220,13 +220,40 @@ text-align:center;</string>
               <property name="styleSheet">
                <string notr="true">#widget_right {border: 1px solid rgb(200, 200, 200); }</string>
               </property>
-              <layout class="QVBoxLayout" name="verticalLayout_5">
+              <layout class="QVBoxLayout" name="verticalLayout_5" stretch="0,0">
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
                <item>
                 <widget class="QWidget" name="widget_control2" native="true">
                  <property name="styleSheet">
                   <string notr="true"/>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_3">
+                  <property name="spacing">
+                   <number>6</number>
+                  </property>
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
                   <item>
                    <spacer name="verticalSpacer_2">
                     <property name="orientation">
@@ -284,8 +311,26 @@ text-align:center;</string>
                   </size>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_2">
+                  <property name="spacing">
+                   <number>0</number>
+                  </property>
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
                   <item>
                    <layout class="QHBoxLayout" name="horizontalLayout_4">
+                    <property name="spacing">
+                     <number>0</number>
+                    </property>
                     <item>
                      <spacer name="horizontalSpacer_4">
                       <property name="orientation">
@@ -341,19 +386,9 @@ text-align:center;</string>
                   </item>
                   <item>
                    <layout class="QHBoxLayout" name="horizontalLayout_5">
-                    <item>
-                     <spacer name="horizontalSpacer_6">
-                      <property name="orientation">
-                       <enum>Qt::Horizontal</enum>
-                      </property>
-                      <property name="sizeHint" stdset="0">
-                       <size>
-                        <width>34</width>
-                        <height>29</height>
-                       </size>
-                      </property>
-                     </spacer>
-                    </item>
+                    <property name="spacing">
+                     <number>6</number>
+                    </property>
                     <item>
                      <widget class="QPushButton" name="pushButton_Left">
                       <property name="minimumSize">
@@ -428,19 +463,6 @@ text-align:center;</string>
                        <string/>
                       </property>
                      </widget>
-                    </item>
-                    <item>
-                     <spacer name="horizontalSpacer_5">
-                      <property name="orientation">
-                       <enum>Qt::Horizontal</enum>
-                      </property>
-                      <property name="sizeHint" stdset="0">
-                       <size>
-                        <width>34</width>
-                        <height>29</height>
-                       </size>
-                      </property>
-                     </spacer>
                     </item>
                    </layout>
                   </item>
@@ -917,61 +939,281 @@ text-align:center;</string>
           </item>
           <item>
            <widget class="QWidget" name="widget_4" native="true">
-            <widget class="QPushButton" name="pushButton_toTransportPage">
-             <property name="geometry">
-              <rect>
-               <x>180</x>
-               <y>70</y>
-               <width>100</width>
-               <height>100</height>
-              </rect>
-             </property>
-             <property name="minimumSize">
-              <size>
-               <width>100</width>
-               <height>100</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>100</width>
-               <height>100</height>
-              </size>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">border-image: url(:/images/transport_icon);</string>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-            <widget class="QPushButton" name="pushButton_toChatPage">
+            <widget class="QWidget" name="">
              <property name="geometry">
               <rect>
                <x>40</x>
                <y>70</y>
-               <width>100</width>
-               <height>100</height>
+               <width>102</width>
+               <height>150</height>
               </rect>
              </property>
-             <property name="minimumSize">
-              <size>
-               <width>100</width>
-               <height>100</height>
-              </size>
+             <layout class="QVBoxLayout" name="verticalLayout_17">
+              <property name="spacing">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="QPushButton" name="pushButton_toChatPage">
+                <property name="minimumSize">
+                 <size>
+                  <width>100</width>
+                  <height>100</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>100</width>
+                  <height>100</height>
+                 </size>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">border-image: url(:/images/chat_icon);</string>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_9">
+                <property name="styleSheet">
+                 <string notr="true">font: 11pt &quot;Times New Roman&quot;;</string>
+                </property>
+                <property name="lineWidth">
+                 <number>1</number>
+                </property>
+                <property name="text">
+                 <string>Communication</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_13">
+                <property name="styleSheet">
+                 <string notr="true">font: 14pt &quot;楷体&quot;;</string>
+                </property>
+                <property name="lineWidth">
+                 <number>1</number>
+                </property>
+                <property name="text">
+                 <string>通话</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+            <widget class="QWidget" name="">
+             <property name="geometry">
+              <rect>
+               <x>180</x>
+               <y>70</y>
+               <width>102</width>
+               <height>150</height>
+              </rect>
              </property>
-             <property name="maximumSize">
-              <size>
-               <width>100</width>
-               <height>100</height>
-              </size>
+             <layout class="QVBoxLayout" name="verticalLayout_18">
+              <property name="spacing">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="QPushButton" name="pushButton_toTransportPage">
+                <property name="minimumSize">
+                 <size>
+                  <width>100</width>
+                  <height>100</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>100</width>
+                  <height>100</height>
+                 </size>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">border-image: url(:/images/transport_icon);</string>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_10">
+                <property name="styleSheet">
+                 <string notr="true">font: 11pt &quot;Times New Roman&quot;;</string>
+                </property>
+                <property name="lineWidth">
+                 <number>1</number>
+                </property>
+                <property name="text">
+                 <string>Delivery</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_14">
+                <property name="styleSheet">
+                 <string notr="true">font: 14pt &quot;楷体&quot;;</string>
+                </property>
+                <property name="lineWidth">
+                 <number>1</number>
+                </property>
+                <property name="text">
+                 <string>送物</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+            <widget class="QWidget" name="">
+             <property name="geometry">
+              <rect>
+               <x>320</x>
+               <y>70</y>
+               <width>102</width>
+               <height>150</height>
+              </rect>
              </property>
-             <property name="styleSheet">
-              <string notr="true">border-image: url(:/images/chat_icon);</string>
+             <layout class="QVBoxLayout" name="verticalLayout_19">
+              <property name="spacing">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="QPushButton" name="pushButton_toSettingPage">
+                <property name="minimumSize">
+                 <size>
+                  <width>100</width>
+                  <height>100</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>100</width>
+                  <height>100</height>
+                 </size>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">border-image: url(:/images/setting_icon);</string>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_11">
+                <property name="styleSheet">
+                 <string notr="true">font: 11pt &quot;Times New Roman&quot;;</string>
+                </property>
+                <property name="lineWidth">
+                 <number>1</number>
+                </property>
+                <property name="text">
+                 <string>Settings</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_15">
+                <property name="styleSheet">
+                 <string notr="true">font: 14pt &quot;楷体&quot;;</string>
+                </property>
+                <property name="lineWidth">
+                 <number>1</number>
+                </property>
+                <property name="text">
+                 <string>设置</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+            <widget class="QWidget" name="">
+             <property name="geometry">
+              <rect>
+               <x>460</x>
+               <y>70</y>
+               <width>102</width>
+               <height>150</height>
+              </rect>
              </property>
-             <property name="text">
-              <string/>
-             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_20">
+              <property name="spacing">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="QPushButton" name="pushButton_toToolsPage">
+                <property name="minimumSize">
+                 <size>
+                  <width>100</width>
+                  <height>100</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>100</width>
+                  <height>100</height>
+                 </size>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">border-image: url(:/images/tools_icon);</string>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_12">
+                <property name="styleSheet">
+                 <string notr="true">font: 11pt &quot;Times New Roman&quot;;</string>
+                </property>
+                <property name="lineWidth">
+                 <number>1</number>
+                </property>
+                <property name="text">
+                 <string>Tools</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_16">
+                <property name="styleSheet">
+                 <string notr="true">font: 14pt &quot;楷体&quot;;</string>
+                </property>
+                <property name="lineWidth">
+                 <number>1</number>
+                </property>
+                <property name="text">
+                 <string>工具</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </widget>
            </widget>
           </item>
