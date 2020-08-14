@@ -15,6 +15,7 @@ Qt::Key_Down 0x01000015
 
 void MyWidget::keyPressEvent(QKeyEvent *event)
 {
+    //qDebug() << "void MyWidget::keyPressEvent(QKeyEvent *event)";
     //如果为自动重复的时间，不予处理
     //当用户长按按键时，系统会自动重复发出按下、释放等信号
     if(event->isAutoRepeat()) return;

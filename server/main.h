@@ -21,38 +21,41 @@
 #define ROBOT_TEST_ID 5050
 #define SERVER_ID     0
 
+// ä¼ è¾“æ¶ˆæ¯ç±»å‹
 enum dataType
 {
-	PkgType_NoneType        = 0,
-	
-	//¿Í»§¶Ë×¢²áÏà¹ØÏûÏ¢ÀàĞÍ 
-	PkgType_RegisterOK      = 1, //×¢²á³É¹¦(·şÎñÆ÷·¢Íù¿Í»§¶Ë)
-	PkgType_RegisterFail    = 2, //×¢²áÊ§°Ü(·şÎñÆ÷·¢Íù¿Í»§¶Ë)
-	PkgType_RequestRegister = 3, //ÇëÇó×¢²áµ½·şÎñÆ÷
-	PkgType_ResponseRegister= 4, //»ØÓ¦¿Í»§¶ËÇëÇó(°üº¬·şÎñ¶Ë·şÎñ¶Ë¿ÚºÅ) 
-	PkgType_repeatLogin     = 5, //ÖØ¸´µÇÂ¼
-	PkgType_LogOut          = 6, //ÍË³öµÇÂ½
-	
-	//¿Í»§¶ËÁ¬½ÓÇëÇóÏà¹ØÏûÏ¢ÀàĞÍ 
-	PkgType_RequestConnect  = 20, //ÇëÇóÁ¬½Ó
-    PkgType_AcceptConnect   = 21, //½ÓÊÕÁ¬½Ó
-    PkgType_RefuseConnect   = 22, //¾Ü¾øÁ¬½Ó
-    PkgType_DisConnect      = 23, //¹Ò¶ÏÁ¬½Ó
-    PkgType_CalledOffline   = 24, // ±»½Ğ²»ÔÚÏß
-	PkgType_CalledBusy      = 25, //±»½ĞÃ¦ 
-    
-    //ĞÄÌø°üÏûÏ¢ÀàĞÍ 
-    PkgType_HeartBeat       = 50, //ĞÄÌø°ü
-	
-	//ÊµÊ±´«ÊäÏà¹ØÏûÏ¢ÀàĞÍ 
-    PkgType_Video           = 81, //ÊÓÆµÏûÏ¢
-    PkgType_Audio           = 82, //ÓïÒô
-    PkgType_BoilogicalRadar = 83, //ÉúÎïÀ×´ï 
+    PkgType_NoneType        = 0,
 
-	//Ô¶³Ì¿ØÖÆÏà¹ØÏûÏ¢ÀàĞÍ 
-	PkgType_ControlCmd      = 101,
-	PkgType_RobotState      = 102,
+    //å®¢æˆ·ç«¯æ³¨å†Œç›¸å…³æ¶ˆæ¯ç±»å‹
+    PkgType_RegisterOK      = 1, //æ³¨å†ŒæˆåŠŸ(æœåŠ¡å™¨å‘å¾€å®¢æˆ·ç«¯)
+    PkgType_RegisterFail    = 2, //æ³¨å†Œå¤±è´¥(æœåŠ¡å™¨å‘å¾€å®¢æˆ·ç«¯)
+    PkgType_RequestRegister = 3, //è¯·æ±‚æ³¨å†Œåˆ°æœåŠ¡å™¨
+    PkgType_ResponseRegister= 4, //å›åº”å®¢æˆ·ç«¯è¯·æ±‚(åŒ…å«æœåŠ¡ç«¯æœåŠ¡ç«¯å£å·)
+    PkgType_repeatLogin     = 5, //é‡å¤ç™»å½•
+    PkgType_LogOut          = 6, //é€€å‡ºç™»é™†
+
+    //å®¢æˆ·ç«¯è¿æ¥è¯·æ±‚ç›¸å…³æ¶ˆæ¯ç±»å‹
+    PkgType_RequestConnect  = 20, //è¯·æ±‚è¿æ¥
+    PkgType_AcceptConnect   = 21, //æ¥æ”¶è¿æ¥
+    PkgType_RefuseConnect   = 22, //æ‹’ç»è¿æ¥
+    PkgType_DisConnect      = 23, //æŒ‚æ–­è¿æ¥
+    PkgType_CalledOffline   = 24, // è¢«å«ä¸åœ¨çº¿
+    PkgType_CalledBusy      = 25, //è¢«å«å¿™
+
+    //å¿ƒè·³åŒ…æ¶ˆæ¯ç±»å‹
+    PkgType_HeartBeat       = 50, //å¿ƒè·³åŒ…
+
+    //å®æ—¶ä¼ è¾“ç›¸å…³æ¶ˆæ¯ç±»å‹
+    PkgType_Video           = 81, //è§†é¢‘æ¶ˆæ¯
+    PkgType_Audio           = 82, //è¯­éŸ³
+    PkgType_BoilogicalRadar = 83, //ç”Ÿç‰©é›·è¾¾
+
+    //è¿œç¨‹æ§åˆ¶ç›¸å…³æ¶ˆæ¯ç±»å‹
+    PkgType_ControlCmd      = 101,
+    PkgType_RobotState      = 102,
+
 };
+
 
 #pragma pack(push,1)
 typedef struct TransPack
@@ -79,13 +82,13 @@ typedef struct TransPack
 
 typedef struct ClientInfo 
 {
-	int fd; //Óë¸Ã¿Í»§¶Ë½¨Á¢Á¬½ÓµÄsocketÌ×½Ó×Ö 
-	        //ËäÈ»ÒÑ¾­±£´æÁË¿Í»§¶ËµÄµØÖ·£¬µ«ÊÇ¸ÃµØÖ·Ö»¶Ôµ±Ê±ÓëÆä½¨Á¢Á¬½ÓµÄsocketÓĞĞ§
-			//µ±ÆäËûÓÃ»§Ïò´ËÓÃ»§·¢ËÍÏûÏ¢Ê±£¬·şÎñÆ÷±ØĞëÊ¹ÓÃ´Ëfd½øĞĞ×ª·¢£¬¶ø²»ÊÇÊ¹ÓÃ½ÓÊÕÆäËû¿Í»§ÏûÏ¢µÄfd 
-	sockaddr_in addr; //¿Í»§¶ËµØÖ· 
-	bool connect; //¿Í»§¶ËµÄÁ¬½Ó×´Ì¬(ÊÇ·ñÔÚÏß) 
-	std::time_t lastHeartBeatTime; //ÉÏÒ»´ÎĞÄÌøÊ±¼ä
-	uint16_t callingID; //ÕıÔÚÍ¨»°µÄID 
+	int fd; //Ã“Ã«Å¾ÃƒÂ¿ÃÂ»Â§Â¶Ã‹Å“Å¡ÃÂ¢ÃÂ¬Å“Ã“ÂµÃ„socketÃŒÃ—Å“Ã“Ã—Ã– 
+	        //Ã‹Ã¤ÃˆÂ»Ã’Ã‘Å¸Â­Â±Â£Å½Ã¦ÃÃ‹Â¿ÃÂ»Â§Â¶Ã‹ÂµÃ„ÂµÃ˜Ã–Â·Â£Â¬ÂµÂ«ÃŠÃ‡Å¾ÃƒÂµÃ˜Ã–Â·Ã–Â»Â¶Ã”ÂµÂ±ÃŠÂ±Ã“Ã«Ã†Ã¤Å“Å¡ÃÂ¢ÃÂ¬Å“Ã“ÂµÃ„socketÃ“ÃÃÂ§
+			//ÂµÂ±Ã†Ã¤Ã‹Ã»Ã“ÃƒÂ»Â§ÃÃ²Å½Ã‹Ã“ÃƒÂ»Â§Â·Â¢Ã‹ÃÃÃ»ÃÂ¢ÃŠÂ±Â£Â¬Â·Ã¾ÃÃ±Ã†Ã·Â±Ã˜ÃÃ«ÃŠÂ¹Ã“ÃƒÅ½Ã‹fdÅ“Ã¸ÃÃÃ—ÂªÂ·Â¢Â£Â¬Â¶Ã¸Â²Â»ÃŠÃ‡ÃŠÂ¹Ã“ÃƒÅ“Ã“ÃŠÃ•Ã†Ã¤Ã‹Ã»Â¿ÃÂ»Â§ÃÃ»ÃÂ¢ÂµÃ„fd 
+	sockaddr_in addr; //Â¿ÃÂ»Â§Â¶Ã‹ÂµÃ˜Ã–Â· 
+	bool connect; //Â¿ÃÂ»Â§Â¶Ã‹ÂµÃ„ÃÂ¬Å“Ã“Ã—Å½ÃŒÂ¬(ÃŠÃ‡Â·Ã±Ã”ÃšÃÃŸ) 
+	std::time_t lastHeartBeatTime; //Ã‰ÃÃ’Â»Å½ÃÃÃ„ÃŒÃ¸ÃŠÂ±Å’Ã¤
+	uint16_t callingID; //Ã•Ã½Ã”ÃšÃÅ¡Â»Â°ÂµÃ„ID 
 	ClientInfo()
 	{
 		lastHeartBeatTime=0;
@@ -94,7 +97,7 @@ typedef struct ClientInfo
 	 
 } clientInfo_t;  
 
-//Ê¹ÓÃmap´æ·Å¿Í»§¶ËĞÅÏ¢ÒÔ¼°¶ÔÓ¦µÄid 
+//ÃŠÂ¹Ã“ÃƒmapÅ½Ã¦Â·Ã…Â¿ÃÂ»Â§Â¶Ã‹ÃÃ…ÃÂ¢Ã’Ã”Å’Â°Â¶Ã”Ã“Å ÂµÃ„id 
 typedef std::map<uint16_t,clientInfo_t> clientsMap;
 
 class Server
@@ -121,11 +124,11 @@ private:
 private:
 	clientsMap clients_;
 	
-	//¿Í»§¶Ë×¢²á¶Ë¿ÚºÅ 
+	//Â¿ÃÂ»Â§Â¶Ã‹Ã—Â¢Â²Ã¡Â¶Ã‹Â¿ÃšÂºÃ… 
 	const int register_port_; 
 	
-	uint16_t heartBeatInterval_ = 5; //ĞÄÌø°ü·¢ËÍ¼ä¸ô(s)
-	uint16_t maxHeartBeatDelay_ = 3; //ĞÄÌø°üÈİĞíÑÓ³ÙÊ±¼ä(s)
+	uint16_t heartBeatInterval_ = 5; //ÃÃ„ÃŒÃ¸Â°Ã¼Â·Â¢Ã‹ÃÅ’Ã¤Å¾Ã´(s)
+	uint16_t maxHeartBeatDelay_ = 3; //ÃÃ„ÃŒÃ¸Â°Ã¼ÃˆÃÃÃ­Ã‘Ã“Â³Ã™ÃŠÂ±Å’Ã¤(s)
 	
 };
 

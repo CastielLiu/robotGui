@@ -12,7 +12,7 @@ void cmdCallback(controlCmd_t cmd)
 
 int main(int argc,char**argv) 
 {
-	int myPort = 5050;
+	int myPort = 5002;
 	if(argc >1)
 		myPort = atoi(argv[1]);
 	

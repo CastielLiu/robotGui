@@ -122,6 +122,16 @@ void Server::receiveRegisterThread()
 		int len = recvfrom(register_fd, recvbuf, BufLen,0,(struct sockaddr*)&client_addr, &clientLen);
 		if(len <=0 )
 			continue;
+			
+//		std::cout << "received "<< len << std::endl;
+//		for(int i=0; i<len; ++i)
+//		{
+//			std::cout << int(recvbuf[i]) << "\t";
+//		}
+//		std::cout << std::endl;
+//		std::cout << "pkg id:" <<  int(pkg->type) << std::endl;
+		
+		
 		if(recvbuf[0] != 0x66 || recvbuf[1] != 0xcc)
 			continue;
 		if(pkg->type != PkgType_RequestRegister)

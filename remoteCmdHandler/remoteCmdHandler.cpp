@@ -204,6 +204,7 @@ bool RemoteCmdHandler::registerToServer(const int fd, struct sockaddr_in addr)
 {
     PkgHeader package(PkgType_RequestRegister);
     package.senderId = m_myId;
+    package.receiverId = 0;
     
     int cnt = 0;
     m_isRegisterOk = false;

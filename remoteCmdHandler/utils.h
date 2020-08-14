@@ -2,31 +2,43 @@
 #define UTILS_H_
 
 
-// ÏûÏ¢ÀàĞÍ
+// ä¼ è¾“æ¶ˆæ¯ç±»å‹
 enum PkgType
 {
-    PkgType_Video=0,          //ÊÓÆµÏûÏ¢
-    PkgType_Audio=1,          //ÓïÒô
-    PkgType_RequestConnect=2, //ÇëÇóÁ¬½Ó
-    PkgType_AcceptConnect=3,  //½ÓÊÕÁ¬½Ó
-    PkgType_RefuseConnect=4,  //¾Ü¾øÁ¬½Ó
-    PkgType_DisConnect=5,     //¹Ò¶Ï
-    PkgType_NoneType =6,
-    PkgType_RegisterOK=7,     //×¢²á³É¹¦(·şÎñÆ÷·¢Íù¿Í»§¶Ë)
-    PkgType_RegisterFail=8,   //×¢²áÊ§°Ü(·şÎñÆ÷·¢Íù¿Í»§¶Ë)
-    PkgType_RequestRegister=9,//ÇëÇó×¢²áµ½·şÎñÆ÷
-    PkgType_ResponseRegister=10,//»ØÓ¦¿Í»§¶ËÇëÇó(°üº¬·şÎñ¶Ë·şÎñ¶Ë¿ÚºÅ)
-    PkgType_HeartBeat = 11, //ĞÄÌø°ü
-    PkgType_LogOut = 12,    //ÍË³öµÇÂ½
-    PkgType_CalledOffline=13,// ±»½Ğ²»ÔÚÏß
-    PkgType_CalledBusy = 14,//±»½ĞÃ¦
+    PkgType_NoneType        = 0,
 
-    //remote control
-    PkgType_ControlCmd = 20,
-    PkgType_RobotState = 21,
+    //å®¢æˆ·ç«¯æ³¨å†Œç›¸å…³æ¶ˆæ¯ç±»å‹
+    PkgType_RegisterOK      = 1, //æ³¨å†ŒæˆåŠŸ(æœåŠ¡å™¨å‘å¾€å®¢æˆ·ç«¯)
+    PkgType_RegisterFail    = 2, //æ³¨å†Œå¤±è´¥(æœåŠ¡å™¨å‘å¾€å®¢æˆ·ç«¯)
+    PkgType_RequestRegister = 3, //è¯·æ±‚æ³¨å†Œåˆ°æœåŠ¡å™¨
+    PkgType_ResponseRegister= 4, //å›åº”å®¢æˆ·ç«¯è¯·æ±‚(åŒ…å«æœåŠ¡ç«¯æœåŠ¡ç«¯å£å·)
+    PkgType_repeatLogin     = 5, //é‡å¤ç™»å½•
+    PkgType_LogOut          = 6, //é€€å‡ºç™»é™†
+
+    //å®¢æˆ·ç«¯è¿æ¥è¯·æ±‚ç›¸å…³æ¶ˆæ¯ç±»å‹
+    PkgType_RequestConnect  = 20, //è¯·æ±‚è¿æ¥
+    PkgType_AcceptConnect   = 21, //æ¥æ”¶è¿æ¥
+    PkgType_RefuseConnect   = 22, //æ‹’ç»è¿æ¥
+    PkgType_DisConnect      = 23, //æŒ‚æ–­è¿æ¥
+    PkgType_CalledOffline   = 24, // è¢«å«ä¸åœ¨çº¿
+    PkgType_CalledBusy      = 25, //è¢«å«å¿™
+
+    //å¿ƒè·³åŒ…æ¶ˆæ¯ç±»å‹
+    PkgType_HeartBeat       = 50, //å¿ƒè·³åŒ…
+
+    //å®æ—¶ä¼ è¾“ç›¸å…³æ¶ˆæ¯ç±»å‹
+    PkgType_Video           = 81, //è§†é¢‘æ¶ˆæ¯
+    PkgType_Audio           = 82, //è¯­éŸ³
+    PkgType_BoilogicalRadar = 83, //ç”Ÿç‰©é›·è¾¾
+
+    //è¿œç¨‹æ§åˆ¶ç›¸å…³æ¶ˆæ¯ç±»å‹
+    PkgType_ControlCmd      = 101,
+    PkgType_RobotState      = 102,
+
 };
 
-//Êı¾İ´«ÊäÍ·
+
+//ÃŠÃ½Å¸ÃÅ½Â«ÃŠÃ¤ÃÂ·
 #pragma pack(push,1)
 typedef struct PkgHeader
 {
@@ -34,15 +46,16 @@ typedef struct PkgHeader
     uint16_t length;
     uint8_t type;
     uint8_t checkNum;
-
     uint16_t senderId;
     uint16_t receiverId;
+    uint16_t seq;
 
     PkgHeader(PkgType t = PkgType_NoneType)
     {
         head[0] = 0x66;
         head[1] = 0xcc;
         type = t;
+        receiverId = 0; //é»˜è®¤receiver_idä¸º0, å³æ¥å—è€…ä¸ºæœåŠ¡å™¨,æ— éœ€è½¬å‘
         length = checkNum = 0;
     }
 } pkgHeader_t;
