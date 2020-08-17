@@ -267,32 +267,6 @@ text-align:center;</string>
                     </property>
                    </spacer>
                   </item>
-                  <item>
-                   <widget class="QPushButton" name="pushButton_roscore">
-                    <property name="minimumSize">
-                     <size>
-                      <width>0</width>
-                      <height>35</height>
-                     </size>
-                    </property>
-                    <property name="text">
-                     <string>roscore</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QPushButton" name="pushButton_remoteCtrl">
-                    <property name="minimumSize">
-                     <size>
-                      <width>0</width>
-                      <height>35</height>
-                     </size>
-                    </property>
-                    <property name="text">
-                     <string>remote control</string>
-                    </property>
-                   </widget>
-                  </item>
                  </layout>
                 </widget>
                </item>

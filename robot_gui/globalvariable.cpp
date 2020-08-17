@@ -35,4 +35,5 @@ bool g_isOpenVedio = false;
 bool g_isOpenAudio = true;
 
 QString g_appDir;
+QString g_cmdDir;
 

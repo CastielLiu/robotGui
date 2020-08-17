@@ -81,8 +81,6 @@ private slots:
     void on_pushButton_radarOpenSerial_clicked(bool checked);
     void onBioRadarUpdateData(bioRadarData_t data);
     void on_pushButton_bioRadarExit_clicked();
-    void on_pushButton_roscore_clicked();
-    void on_pushButton_remoteCtrl_clicked();
     void on_pushButton_logpageReturn_clicked();
     void on_pushButton_clearWorkLog_clicked();
     void on_pushButton_audioTest_clicked(bool checked);
@@ -107,6 +105,8 @@ private:
     void updateStatusBarPemanentMsg();
     bool clientModeSelection();
     void updateClockDisplay();
+    void startRemoteControlNode();
+    void stopRemoteControlNode();
 
 private:
     Ui::MainWindow *ui;

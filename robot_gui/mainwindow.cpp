@@ -179,6 +179,18 @@ void MainWindow::startChat(uint16_t id, bool is_called)
                 this,SLOT(onBioRadarUpdateData(bioRadarData_t)));
 
     ui->lineEdit_calledId->setText(QString::number(id));
+    this->startRemoteControlNode(); //start remote control node
+    ui->stackedWidget->setCurrentIndex(stackWidget_ChatPage); //change to chat page
+}
+
+void MainWindow::startRemoteControlNode()
+{
+    utils::systemCmd("start_remote_control.sh");
+}
+
+void MainWindow::stopRemoteControlNode()
+{
+    utils::systemCmd("stop_remote_control.sh");
 }
 
 /* @brief 停止消息传输
@@ -218,6 +230,8 @@ void MainWindow::stopChat(bool is_auto)
     //ui->pushButton_call->setText("connect");
     ui->pushButton_call->setStyleSheet("border-image: url(:/images/call_icon);");
     g_transferStatus = transferStatus_Idle;
+
+    this->stopRemoteControlNode(); //stop remote control node
 }
 
 //用户退出登陆，主动退出，

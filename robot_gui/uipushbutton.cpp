@@ -6,17 +6,6 @@ void MainWindow::on_pushButton_bioRadarExit_clicked()
     ui->stackedWidget->setCurrentIndex(stackWidget_ChatPage);
 }
 
-void MainWindow::on_pushButton_roscore_clicked()
-{
-    utils::systemCmd("bash -c roscore");
-}
-
-
-void MainWindow::on_pushButton_remoteCtrl_clicked()
-{
-    utils::systemCmd(g_appDir.toStdString() + "/../command/remote_control.sh");
-}
-
 void MainWindow::on_pushButton_call_clicked()
 {
     if(ui->pushButton_call->isChecked())
