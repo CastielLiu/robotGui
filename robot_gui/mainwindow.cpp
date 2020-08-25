@@ -94,6 +94,8 @@ MainWindow::~MainWindow()
         mKeyBorad = nullptr;
     }
 
+    stopRemoteControlNode(); //if?
+
     delete ui;
 }
 
@@ -179,7 +181,8 @@ void MainWindow::startChat(uint16_t id, bool is_called)
                 this,SLOT(onBioRadarUpdateData(bioRadarData_t)));
 
     ui->lineEdit_calledId->setText(QString::number(id));
-    this->startRemoteControlNode(); //start remote control node
+    if(g_allowRemoteCtrl)
+        this->startRemoteControlNode(); //start remote control node
     ui->stackedWidget->setCurrentIndex(stackWidget_ChatPage); //change to chat page
 }
 
@@ -603,3 +606,12 @@ void MainWindow::onUpdateNavGoalsInfo(const std::vector<goalInfo_t>& goalsInfo)
     }
 }
 
+/*
+ * remote control allowed
+ */
+void MainWindow::on_checkBox_allowRemoteControl_stateChanged(int arg1)
+{
+    g_allowRemoteCtrl = arg1;
+    if(!g_allowRemoteCtrl)
+        stopRemoteControlNode();
+}

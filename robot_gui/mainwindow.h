@@ -95,6 +95,8 @@ private slots:
     void onUpdateNavGoalsInfo(const std::vector<goalInfo_t>& goalsInfo);
     void onKeyboardUpdate(const QString& qstr);
 
+    void on_checkBox_allowRemoteControl_stateChanged(int arg1);
+
 private:
     void closeEvent(QCloseEvent *event) override;
     void loadPerformance();

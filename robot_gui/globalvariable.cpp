@@ -5,6 +5,7 @@
 bool g_canCalled = true;            //是否启用被叫
 bool g_ignoreCalledOffline = false; //是否忽略被叫离线
 bool g_isRemoteTerminal = true;     //是否为远程端
+bool g_allowRemoteCtrl = true;      //是否allow远程ctrl
 bool g_autoConnect = true;          //是否自动接听
 
 uint16_t g_myId = 123;   // 注：分配客户端id时保留0

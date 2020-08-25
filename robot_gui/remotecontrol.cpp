@@ -6,6 +6,7 @@ RemoteControl::RemoteControl()
     //设置机器人速度绝对值，方向由按键决定
     m_xSpeed = 50;
     m_zSpeed = 50;
+    m_hasNewCmd = false;
 
     //初始化控制指令为0
     m_ctrlCmdPkg.cmd.xSpeed = 0;
@@ -19,10 +20,14 @@ RemoteControl::~RemoteControl()
 void RemoteControl::sendControlCmd(QUdpSocket* sockect, uint16_t receiverId)
 {
     QMutexLocker lock(&m_mutex);
-    m_ctrlCmdPkg.header.receiverId = receiverId;
-    sockect->writeDatagram((const char *)&m_ctrlCmdPkg,sizeof(m_ctrlCmdPkg), g_serverIp, g_msgPort);
+    if(m_hasNewCmd)
+    {
+        m_ctrlCmdPkg.header.receiverId = receiverId;
+        sockect->writeDatagram((const char *)&m_ctrlCmdPkg,sizeof(m_ctrlCmdPkg), g_serverIp, g_msgPort);
+    }
+    if(m_ctrlCmdPkg.cmd.isZero())
+        m_hasNewCmd = false;
 }
-
 //方向键按下后修改控制指令
 void RemoteControl::onDirKeyPressed(int key)
 {
@@ -41,6 +46,7 @@ void RemoteControl::onDirKeyPressed(int key)
         qDebug() << "key " << key << " pressed";
         last_key = key;
     }
+    m_hasNewCmd = true;
 }
 
 //方向键松开后控制指令置零

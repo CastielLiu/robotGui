@@ -16,6 +16,11 @@ typedef struct ControlCmd
 {
     int8_t xSpeed; //前进后退的速度
     int8_t zSpeed; //左右旋转的速度
+
+    bool isZero()
+    {
+        return (xSpeed==0)&&(zSpeed==0);
+    }
 }controlCmd_t;
 
 typedef struct  ControlCmdPkg
@@ -53,6 +58,7 @@ public slots:
 
 private:
     controlCmdPkg_t m_ctrlCmdPkg; //控制指令
+    bool m_hasNewCmd;
 
     //x/z轴运动速度绝对值，方向由按键决定
     int8_t m_xSpeed;

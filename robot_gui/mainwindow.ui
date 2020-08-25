@@ -83,7 +83,7 @@ text-align:center;</string>
                   <item>
                    <widget class="QLabel" name="label_2">
                     <property name="text">
-                     <string>Host ID: </string>
+                     <string>主机ID:</string>
                     </property>
                    </widget>
                   </item>
@@ -113,7 +113,7 @@ text-align:center;</string>
                   <item>
                    <widget class="QLabel" name="label">
                     <property name="text">
-                     <string>Call ID: </string>
+                     <string>通话ID:</string>
                     </property>
                    </widget>
                   </item>
@@ -243,7 +243,7 @@ text-align:center;</string>
                    <number>6</number>
                   </property>
                   <property name="leftMargin">
-                   <number>0</number>
+                   <number>9</number>
                   </property>
                   <property name="topMargin">
                    <number>0</number>
@@ -266,6 +266,16 @@ text-align:center;</string>
                      </size>
                     </property>
                    </spacer>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="checkBox_allowRemoteControl">
+                    <property name="text">
+                     <string> 允许远程控制</string>
+                    </property>
+                    <property name="checked">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
                   </item>
                  </layout>
                 </widget>
