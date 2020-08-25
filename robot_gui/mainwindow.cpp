@@ -1,4 +1,4 @@
-#include "mainwindow.h"
+﻿#include "mainwindow.h"
 #include <thread>
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -93,8 +93,8 @@ MainWindow::~MainWindow()
         delete mKeyBorad;
         mKeyBorad = nullptr;
     }
-
-    stopRemoteControlNode(); //if?
+    if(!g_isRemoteTerminal && g_allowRemoteCtrl)
+        stopRemoteControlNode(); //
 
     delete ui;
 }
@@ -181,7 +181,7 @@ void MainWindow::startChat(uint16_t id, bool is_called)
                 this,SLOT(onBioRadarUpdateData(bioRadarData_t)));
 
     ui->lineEdit_calledId->setText(QString::number(id));
-    if(g_allowRemoteCtrl)
+    if(!g_isRemoteTerminal && g_allowRemoteCtrl)
         this->startRemoteControlNode(); //start remote control node
     ui->stackedWidget->setCurrentIndex(stackWidget_ChatPage); //change to chat page
 }
@@ -234,7 +234,8 @@ void MainWindow::stopChat(bool is_auto)
     ui->pushButton_call->setStyleSheet("border-image: url(:/images/call_icon);");
     g_transferStatus = transferStatus_Idle;
 
-    this->stopRemoteControlNode(); //stop remote control node
+    if(!g_isRemoteTerminal && g_allowRemoteCtrl)
+        this->stopRemoteControlNode(); //stop remote control node
 }
 
 //用户退出登陆，主动退出，
