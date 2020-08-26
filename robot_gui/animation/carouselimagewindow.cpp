@@ -8,26 +8,26 @@
 
 CarouselImageWindow::CarouselImageWindow(QWidget *parent)
     : QWidget(parent)
-    , m_currentDrawImageIndx(0)     //当前绘制的图片索引
-    , m_animationObj(nullptr)       //动画实例
-    , m_buttonBackColor(Qt::white)  //按钮背景色
-    , m_borderColor(Qt::red)        //边框颜色
-    , m_isShowBorder(true)          //是否显示边框
-    , m_borderWidth(5)              //边框宽度
-    , m_borderRadian(3)             //边框圆角半径
-    , m_isPauseChange(false)        //是否暂停切换图片(暂停动画)
+    , m_currentDrawImageIndx(0)
+    , m_animationObj(nullptr)
+    , m_buttonBackColor(Qt::white)
+    , m_borderColor(Qt::red)
+    , m_isShowBorder(true)
+    , m_borderWidth(5)
+    , m_borderRadian(3)
+    , m_isPauseChange(false)
 {
     m_buttonBackWidget = new QWidget;
     m_buttonBackWidget->setStyleSheet(".QWidget{background:transparent;}");
 
     if(parent != nullptr)
-        this->setGeometry(parent->rect());//覆盖父类控件
+        this->setGeometry(parent->rect());
     this->setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
     this->setAttribute(Qt::WA_TranslucentBackground);
     //qDebug() << this->geometry();
 
-    m_imageChangeDuration = 3000; //图片切换周期
-    m_animationDuration = 700;   //动画切换周期
+    m_imageChangeDuration = 3000;
+    m_animationDuration = 700;
 
     connect(&m_imageChangeTimer, SIGNAL(timeout()), this, SLOT(onImageChangeTimeout()));
     //initButtonAnimation(); //test
@@ -47,8 +47,8 @@ void CarouselImageWindow::initButtonAnimation()
 
     QRect endValue = m_moveButton->geometry().adjusted(100,100,100,100);
     m_buttonAnimation->setEndValue(endValue);
-    m_buttonAnimation->setLoopCount(-1); // 设置循环次数，-1表示永久循环
-    m_buttonAnimation->start(); //开始动画
+    m_buttonAnimation->setLoopCount(-1);
+    m_buttonAnimation->start();
 }
 
 void CarouselImageWindow::initAnimation()
@@ -56,18 +56,17 @@ void CarouselImageWindow::initAnimation()
     if(m_animationObj != nullptr)
         delete m_animationObj;
 
-    // 设置ImageChangeFactor属性;
     this->setProperty("ImageChangeFactor", 1.0);
     m_animationObj = new QPropertyAnimation(this, "ImageChangeFactor");
 
     m_animationObj->setDuration(m_animationDuration);
-    //变化曲线，默认为线性变换
+
     //m_animationObj->setEasingCurve(QEasingCurve::InOutQuart);
 
     m_animationObj->setStartValue(1.0);
     m_animationObj->setEndValue(0.0);
 
-    //m_animationObj->setLoopCount(1); //默认为1
+    //m_animationObj->setLoopCount(1);
     connect(m_animationObj, SIGNAL(valueChanged(const QVariant&)), this, SLOT(update()));
 }
 
@@ -142,32 +141,28 @@ void CarouselImageWindow::onImageChangeTimeout(bool manual)
 void CarouselImageWindow::paintEvent(QPaintEvent *event)
 {
     QPainter painter(this);
-    //防走样
+
     painter.setRenderHint(QPainter::Antialiasing, true);
     QRect imageRect = this->rect();
     //qDebug() << "imageRect: " <<  imageRect;
 
-    //如果需要绘制图片边框，需要调整(缩小)图片的绘制范围
-    //防止图片显示不完全
     if (m_isShowBorder)
-        //调整矩形顶点(内收)
         imageRect.adjust(m_borderWidth, m_borderWidth, -m_borderWidth, -m_borderWidth);
     //qDebug() << imageRect;
 
-    painter.save();  //保存绘图器状态
-    // 如果列表中没有图片，显示默认背景图
+    painter.save();
     if (m_imageFileNameList.isEmpty())
     {
         QPixmap backPixmap = QPixmap(":/Resources/CarouselImageBack.png");
         painter.drawPixmap(imageRect, backPixmap.scaled(imageRect.size()));
     }
-    // 如果只有一张图片，直接绘制
+
     else if (m_imageFileNameList.count() == 1)
     {
         QPixmap backPixmap = QPixmap(m_imageFileNameList.first());
         painter.drawPixmap(imageRect, backPixmap.scaled(imageRect.size()));
     }
-    // 有多张图片，动态切换
+
     else if (m_imageFileNameList.count() > 1 && !m_currentPixmap.isNull()
                                              && !m_nextPixmap.isNull())
     {
@@ -185,7 +180,7 @@ void CarouselImageWindow::paintEvent(QPaintEvent *event)
         painter.drawPixmap(imageRect, backPixmap.scaled(imageRect.size()));
     }
 
-    painter.restore(); //恢复绘画器状态
+    painter.restore();
     if (m_isShowBorder)
     {
         qreal adjustedValue = 1.0 * m_borderWidth / 2;
@@ -208,14 +203,12 @@ void CarouselImageWindow::onImageSwitchButtonClicked(int buttonId)
     m_imageChangeTimer.start(m_imageChangeDuration);
 }
 
-// 鼠标移动事件
 void CarouselImageWindow::mousePressEvent(QMouseEvent* event)
 {
     //qDebug() << m_currentDrawImageIndx;
     return QWidget::mousePressEvent(event);
 }
 
-//按钮是否可见
 void CarouselImageWindow::setControlButtonVisible(bool isVisible)
 {
     m_buttonBackWidget->setVisible(isVisible);

@@ -3,21 +3,9 @@
 #include <QPainter>
 #include <QRect>
 
-/*
-
-
-
- */
-
 class AnimationEffect
 {
-/* @brief 动画效果函数指针
- * @param QPainter 绘画器
- * @param QRect 绘画范围
- * @param float factor 比例因子1.0-0.0
- * @param QPixmap now_pixmap 当前画布
- * @param QPixmap next_pixmap 下一张
- */
+
 typedef void (*effectFun_t)(QPainter *, const QRect &,float,
                             const QPixmap &,const QPixmap &);
 public:
@@ -41,7 +29,6 @@ public:
 
     void setEffectType(EffectType _type);
 
-    //淡出
     static void fadeOut(QPainter *painter, const QRect &rect,
                      float factor, const QPixmap &pixmap_now,
                      const QPixmap &pixmap_next);
@@ -50,7 +37,6 @@ public:
                      float factor, const QPixmap &pixmap_now,
                      const QPixmap &pixmap_next);
 
-    //从左到右翻转
     static void flipLeftToRight(QPainter *painter, const QRect &rect,
                               float factor, const QPixmap &pixmap_now,
                               const QPixmap &pixmap_next);

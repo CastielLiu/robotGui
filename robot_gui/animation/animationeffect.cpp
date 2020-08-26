@@ -2,8 +2,6 @@
 
 AnimationEffect::AnimationEffect()
 {
-    //将所有效果添加到效果列表
-    //应与EffectType保持一致
     effectList.push_back(fadeOut);
     effectList.push_back(blinds);
     effectList.push_back(flipLeftToRight);
@@ -22,36 +20,33 @@ void AnimationEffect::setEffectType(EffectType _type)
     effect = effectList[type];
 }
 
-//淡出
 void AnimationEffect::fadeOut(QPainter *painter, const QRect &rect,
                                  float factor, const QPixmap &pixmap_now,
                                  const QPixmap &pixmap_next)
 {
     painter->setOpacity(1);
     painter->drawPixmap(rect, pixmap_next);
-    painter->setOpacity(factor); //不透明度
+    painter->setOpacity(factor);
     painter->drawPixmap(rect, pixmap_now);
 }
 
-//百叶窗
 void AnimationEffect::blinds(QPainter *painter, const QRect &rect,
                  float factor, const QPixmap &pixmap_now,
                  const QPixmap &pixmap_next)
 {
-    //首先绘制下一张图片
+
     painter->drawPixmap(rect, pixmap_now);
-    int n = 5; //百叶窗栅格数
-    int dh = pixmap_now.height() / n + 0.5; //纵向均分得到每个栅格的高度
-    int ddh = ((1.0-factor) * dh)+0.5; //由比例因子确定覆盖高度
-    if(ddh < 0 ) return; //ddh为零将导致绘图参数错误而全部绘制！
-    // 遍历百叶窗进行绘制
+    int n = 5;
+    int dh = pixmap_now.height() / n + 0.5;
+    int ddh = ((1.0-factor) * dh)+0.5;
+    if(ddh < 0 ) return;
+
     for(int i = 0; i < n; i++)
         painter->drawPixmap(rect.x(), rect.y() + i * dh, pixmap_next,
                             0, i * dh, pixmap_next.width(), ddh);
 
 }
 
-//从左到右翻转
 void AnimationEffect::flipLeftToRight(QPainter *painter, const QRect &rect,
                           float factor, const QPixmap &pixmap_now,
                           const QPixmap &pixmap_next)
@@ -59,7 +54,7 @@ void AnimationEffect::flipLeftToRight(QPainter *painter, const QRect &rect,
     int w = rect.width();
     int h = rect.height();
 
-    float rot = factor * 90.0f; //旋转角度
+    float rot = factor * 90.0f;
     QTransform trans;
     trans.translate(w * (1 - factor), h / 2);
     trans.rotate(rot, Qt::YAxis);
