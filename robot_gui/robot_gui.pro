@@ -51,7 +51,9 @@ SOURCES += \
     biologicalradar.cpp \
     uiaction.cpp \
     uipushbutton.cpp \
-    audioconfigdialog.cpp
+    audioconfigdialog.cpp \
+    animation/animationeffect.cpp \
+    animation/carouselimagewindow.cpp
 
 
 HEADERS += \
@@ -75,7 +77,9 @@ HEADERS += \
     structs.h \
     enums.h \
     biologicalradar.h \
-    audioconfigdialog.h
+    audioconfigdialog.h \
+    animation/animationeffect.h \
+    animation/carouselimagewindow.h
 
 FORMS += \
         cameraconfigdialog.ui \
@@ -89,7 +93,8 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 RESOURCES += \
-    res.qrc
+    res.qrc \
+    display_images.qrc
 
 #如果使用TX2,需添加此宏，否则注释!
 #DEFINES += TX2

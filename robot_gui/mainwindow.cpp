@@ -11,7 +11,8 @@ MainWindow::MainWindow(QWidget *parent) :
     m_imageLabel(nullptr),
     m_radar(nullptr),
     mNavigation(nullptr),
-    mKeyBorad(nullptr)
+    mKeyBorad(nullptr),
+    mAnimationWidget(nullptr)
 {
     ui->setupUi(this);
 
@@ -585,12 +586,30 @@ void MainWindow::addWorkLog(const QString& str, bool vip)
     ui->textBrowser_log->append(QString(time_buf) + str);
 }
 
+//stackWidge索引更新
 void MainWindow::on_stackedWidget_currentChanged(int arg1)
 {
     if(arg1 == stackWidget_HomePage)
         ui->pushButton_home->hide();
     else
         ui->pushButton_home->show();
+
+    if(arg1 == stackWidget_TransportPage && mAnimationWidget==nullptr)
+    {
+        mAnimationWidget = new CarouselImageWindow(ui->widget_trannsportPageDisplay);
+        mAnimationWidget->addImage(":/dispaly_images/animation/images/1.jpg");
+        mAnimationWidget->addImage(":/dispaly_images/animation/images/2.jpg");
+        mAnimationWidget->addImage(":/dispaly_images/animation/images/3.jpg");
+        mAnimationWidget->addImage(":/dispaly_images/animation/images/4.jpg");
+        mAnimationWidget->addImage(":/dispaly_images/animation/images/5.jpg");
+        mAnimationWidget->addImage(":/dispaly_images/animation/images/6.jpg");
+        mAnimationWidget->addImage(":/dispaly_images/animation/images/7.jpg");
+        mAnimationWidget->setControlButtonColor(Qt::yellow);
+        mAnimationWidget->setBorderColor(Qt::red);
+        mAnimationWidget->setBorderVisible(false);
+        mAnimationWidget->startPlay();
+        mAnimationWidget->show();
+    }
 }
 
 /*@brief 槽函数，接收导航目标点更新信号

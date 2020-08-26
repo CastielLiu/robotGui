@@ -1,4 +1,4 @@
-#ifndef MAINWINDOW_H
+﻿#ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
 #include "ui_mainwindow.h"
@@ -20,6 +20,7 @@
 #include "keyboard.h"
 #include "navigation.h"
 #include "fifo.hpp"
+#include "animation/carouselimagewindow.h"
 
 namespace Ui {
 class MainWindow;
@@ -131,6 +132,9 @@ private:
     int m_imageDisplayTimer =0;
     int m_clockDisplayTimer = 0;
     QString mWindowTitle;
+
+    //动画显示
+    CarouselImageWindow *mAnimationWidget;
 };
 
 #endif // MAINWINDOW_H
