@@ -1,7 +1,7 @@
 linux/*
 !linux/*.sh
 !linux/README.md
-!linux/pkg/.nothing
+
 
 
 windows/*
