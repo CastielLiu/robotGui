@@ -1,7 +1,11 @@
 linux/*
-!linux/release.sh
+!linux/*.sh
+!linux/README.md
+!linux/pkg/.nothing
+
 
 windows/*
 !windows/release.bat
+!windows/README.txt
 
 
