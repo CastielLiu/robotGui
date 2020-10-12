@@ -4,17 +4,17 @@ using std::string;
 using std::cout;
 using std::endl;
 
-//¶àÏß³ÌÊı¾İ×ª·¢
+//å¤šçº¿ç¨‹æ•°æ®è½¬å‘
 /*
-	¶à¸öÏß³Ì£¬Ã¿¸öÏß³Ì¾ù¿ÉÊÕ·¢£¬
-	·şÎñÆ÷Ìá¹©¶à¸ö½ÓÊÕ¶Ë¿ÚºÅ£¬ÆäÖĞÒ»¸öÓÃ×÷×¢²á¶Ë¿ÚºÅ£¬¼´¿Í»§¶ËÁ¬½Ó·şÎñÆ÷Ê±·ÃÎÊµÄ¶Ë¿ÚºÅ£¬
-	·şÎñÆ÷ÊÕµ½×¢²áĞÅÏ¢ºóÆô¶¯Ò»¸öĞÂµÄÏß³Ì²¢´´½¨ĞÂµÄsocket£¨´ËÊ±ÏµÍ³¸ø·ÖÅäÁËÒ»¸öĞÂµÄ¶Ë¿ÚºÅ£©
-	½«ĞÂ¶Ë¿ÚºÅÍ¨¹ı×¢²ásocket·¢ËÍ¸ø¿Í»§¶Ë£¬¿Í»§¶ËÊÕµ½ĞÂ¶Ë¿ÚºÅºóÏòĞÂ¶Ë¿ÚºÅ·¢ËÍ×¢²áÖ¸Áî£¬·şÎñÆ÷»ØÓ¦ºó×¢²á³É¹¦¡£ 
-	¿Í»§¶Ë×¢²á³É¹¦ºóÌí¼Ó½ø¿Í»§ÁĞ±í£¬·ÀÖ¹¶à´Î×¢²áµ¼ÖÂÆô¶¯¶àÓàÏß³Ì¡£ 
-	Ö®ºó¸Ã¿Í»§¶ËÓë·şÎñÆ÷µÄĞÂ¶Ë¿ÚºÅ½øĞĞÊı¾İ½»»¥
+	å¤šä¸ªçº¿ç¨‹ï¼Œæ¯ä¸ªçº¿ç¨‹å‡å¯æ”¶å‘ï¼Œ
+	æœåŠ¡å™¨æä¾›å¤šä¸ªæ¥æ”¶ç«¯å£å·ï¼Œå…¶ä¸­ä¸€ä¸ªç”¨ä½œæ³¨å†Œç«¯å£å·ï¼Œå³å®¢æˆ·ç«¯è¿æ¥æœåŠ¡å™¨æ—¶è®¿é—®çš„ç«¯å£å·ï¼Œ
+	æœåŠ¡å™¨æ”¶åˆ°æ³¨å†Œä¿¡æ¯åå¯åŠ¨ä¸€ä¸ªæ–°çš„çº¿ç¨‹å¹¶åˆ›å»ºæ–°çš„socketï¼ˆæ­¤æ—¶ç³»ç»Ÿç»™åˆ†é…äº†ä¸€ä¸ªæ–°çš„ç«¯å£å·ï¼‰
+	å°†æ–°ç«¯å£å·é€šè¿‡æ³¨å†Œsocketå‘é€ç»™å®¢æˆ·ç«¯ï¼Œå®¢æˆ·ç«¯æ”¶åˆ°æ–°ç«¯å£å·åå‘æ–°ç«¯å£å·å‘é€æ³¨å†ŒæŒ‡ä»¤ï¼ŒæœåŠ¡å™¨å›åº”åæ³¨å†ŒæˆåŠŸã€‚ 
+	å®¢æˆ·ç«¯æ³¨å†ŒæˆåŠŸåæ·»åŠ è¿›å®¢æˆ·åˆ—è¡¨ï¼Œé˜²æ­¢å¤šæ¬¡æ³¨å†Œå¯¼è‡´å¯åŠ¨å¤šä½™çº¿ç¨‹ã€‚ 
+	ä¹‹åè¯¥å®¢æˆ·ç«¯ä¸æœåŠ¡å™¨çš„æ–°ç«¯å£å·è¿›è¡Œæ•°æ®äº¤äº’
  */
 
-//¾²Ì¬±äÁ¿£¬ÔËĞĞ±êÖ¾£¬ÓÃÓÚÖĞ¶Ï¶àÏß³Ì 
+//é™æ€å˜é‡ï¼Œè¿è¡Œæ ‡å¿—ï¼Œç”¨äºä¸­æ–­å¤šçº¿ç¨‹ 
 bool Server::run_flag = true; 
 
 Server::Server(int port):
@@ -26,9 +26,9 @@ Server::~Server()
 {
 }
 
-//³õÊ¼»¯socket·µ»Ø¾ä±ú
-//ipÎª±¾µØip£¬¶Ë¿ÚÄ¬ÈÏÎª0£¬ÓÉÏµÍ³×Ô¶¯·ÖÅä 
-//time_out Îª×èÈû½ÓÊÕµÈ´ıÊ±³¤£¬Ä¬ÈÏÎª0 
+//åˆå§‹åŒ–socketè¿”å›å¥æŸ„
+//ipä¸ºæœ¬åœ°ipï¼Œç«¯å£é»˜è®¤ä¸º0ï¼Œç”±ç³»ç»Ÿè‡ªåŠ¨åˆ†é… 
+//time_out ä¸ºé˜»å¡æ¥æ”¶ç­‰å¾…æ—¶é•¿ï¼Œé»˜è®¤ä¸º0 
 int Server::initSocket(const int port, const std::string ip, int time_out)
 {
 	struct sockaddr_in local_addr;
@@ -50,13 +50,13 @@ int Server::initSocket(const int port, const std::string ip, int time_out)
 		return -1;
 	}
 	int udp_opt = 1;
-	// ÉèÖÃµØÖ·¿É¸´ÓÃ 
+	// è®¾ç½®åœ°å€å¯å¤ç”¨ 
 	setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &udp_opt, sizeof(udp_opt));
 	if(time_out)
 	{
 		struct timeval timeout;
-	    timeout.tv_sec = time_out;//Ãë
-	    //timeout.tv_usec = 0;//Î¢Ãë
+	    timeout.tv_sec = time_out;//ç§’
+	    //timeout.tv_usec = 0;//å¾®ç§’
 	    setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
 	}
 	
@@ -69,21 +69,21 @@ int Server::initSocket(const int port, const std::string ip, int time_out)
 	return fd;
 } 
 
-//´òÓ¡socketµØÖ·ÒÔ¼°¶Ë¿ÚºÅĞÅÏ¢ 
+//æ‰“å°socketåœ°å€ä»¥åŠç«¯å£å·ä¿¡æ¯ 
 void showSocketMsg(const std::string& prefix, int fd)
 {
 	struct sockaddr_in serverAddr;
 	socklen_t server_len; // = sizeof(sockaddr_in);
-	//»ñÈ¡socketĞÅÏ¢, ip,port.. 
+	//è·å–socketä¿¡æ¯, ip,port.. 
 	getsockname(fd,  (struct sockaddr *)&serverAddr, &server_len);
 	char ip[16];
 	inet_ntop(AF_INET,&serverAddr.sin_addr,ip,server_len);
 	cout << prefix << "\t ip: " << ip << "\t port: " << serverAddr.sin_port << endl;
 }
 
-//³õÊ¼»¯socket²¢×Ô¶¯·ÖÅä¶Ë¿ÚºÅ£¬·µ»ØÖµÎªÌ×½Ó×Öfd
-//²ÎÊıÎªÒıÓÃ£¬½«±»Ğ´Èë·ÖÅäµÄ¶Ë¿ÚºÅ 
-//´Ëº¯Êı³õÊ¼»¯socketÊ±²»ÄÜÉèÖÃ¶Ë¿ÚºÅ¸´ÓÃ¹¦ÄÜ£¬Í¬Ò»¶Ë¿ÚºÅ±»¶à´Î°ó¶¨µ¼ÖÂÖ®Ç°°ó¶¨µÄÎŞ·¨Ê¹ÓÃ 
+//åˆå§‹åŒ–socketå¹¶è‡ªåŠ¨åˆ†é…ç«¯å£å·ï¼Œè¿”å›å€¼ä¸ºå¥—æ¥å­—fd
+//å‚æ•°ä¸ºå¼•ç”¨ï¼Œå°†è¢«å†™å…¥åˆ†é…çš„ç«¯å£å· 
+//æ­¤å‡½æ•°åˆå§‹åŒ–socketæ—¶ä¸èƒ½è®¾ç½®ç«¯å£å·å¤ç”¨åŠŸèƒ½ï¼ŒåŒä¸€ç«¯å£å·è¢«å¤šæ¬¡ç»‘å®šå¯¼è‡´ä¹‹å‰ç»‘å®šçš„æ— æ³•ä½¿ç”¨ 
 int Server::initSocketAutoAssignPort(uint16_t& port)
 {
 	struct sockaddr_in local_addr;
@@ -91,7 +91,7 @@ int Server::initSocketAutoAssignPort(uint16_t& port)
 	local_addr.sin_family = AF_INET;
 	int convert_ret = inet_pton(AF_INET, "0.0.0.0", &local_addr.sin_addr);
 	
-	//Çø¼äËÑË÷¶Ë¿ÚºÅ£¬Ö±µ½°ó¶¨³É¹¦ 
+	//åŒºé—´æœç´¢ç«¯å£å·ï¼Œç›´åˆ°ç»‘å®šæˆåŠŸ 
 	for(port=50000;port<60000; ++port)
 	{
 		local_addr.sin_port = htons(port);
@@ -105,10 +105,10 @@ int Server::initSocketAutoAssignPort(uint16_t& port)
 	}
 }
 
-//½ÓÊÕ¿Í»§¶Ë×¢²áĞÅÏ¢µÄÏß³Ì 
+//æ¥æ”¶å®¢æˆ·ç«¯æ³¨å†Œä¿¡æ¯çš„çº¿ç¨‹ 
 void Server::receiveRegisterThread()
 {
-	int register_fd = initSocket(register_port_); //³õÊ¼»¯×¢²ásocket 
+	int register_fd = initSocket(register_port_); //åˆå§‹åŒ–æ³¨å†Œsocket 
 	//showSocketMsg("register sockect ",register_fd);
 	
 	const int BufLen =20;
@@ -137,10 +137,10 @@ void Server::receiveRegisterThread()
 		if(pkg->type != PkgType_RequestRegister)
 			continue;
 		
-		// ÊÕµ½¿Í»§¶ËÇëÇó×¢²áµÄĞÅÏ¢ 
+		// æ”¶åˆ°å®¢æˆ·ç«¯è¯·æ±‚æ³¨å†Œçš„ä¿¡æ¯ 
 		uint16_t clientId = pkg->senderId;
 		auto it = clients_.find(clientId);
-		if (it != clients_.end()) //²éÕÒµ½Ä¿±ê¿Í»§¶Ë ,±íÃ÷ÒÑ¾­×¢²á
+		if (it != clients_.end()) //æŸ¥æ‰¾åˆ°ç›®æ ‡å®¢æˆ·ç«¯ ,è¡¨æ˜å·²ç»æ³¨å†Œ
 		{
 			//cout << "client id: " << clientId << "has in map\n";
 			transPack_t pkg(PkgType_repeatLogin);
@@ -153,20 +153,20 @@ void Server::receiveRegisterThread()
 		
 		clientInfo_t client;
 		client.addr = client_addr;
-		client.connect = false; //´ËÊ±¿Í»§¶ËÓë·şÎñ¶Ë»¹Î´½¨Á¢ÕæÕıµÄÁ¬½Ó 
-		clients_[clientId] = client; //ĞÂ×¢²áµÄ¿Í»§¶ËÌîÈëmap 
+		client.connect = false; //æ­¤æ—¶å®¢æˆ·ç«¯ä¸æœåŠ¡ç«¯è¿˜æœªå»ºç«‹çœŸæ­£çš„è¿æ¥ 
+		clients_[clientId] = client; //æ–°æ³¨å†Œçš„å®¢æˆ·ç«¯å¡«å…¥map 
 		
 		//cout << "write clientId: " << clientId << "to map\n";
 		 	
 		uint16_t new_port;
 		
-		//ÎªĞÂ×¢²áµÄ¿Í»§¶ËĞÂ´´½¨Ò»¸ö·şÎñÌ×½Ó×Ö
+		//ä¸ºæ–°æ³¨å†Œçš„å®¢æˆ·ç«¯æ–°åˆ›å»ºä¸€ä¸ªæœåŠ¡å¥—æ¥å­—
 		int server_fd = initSocketAutoAssignPort(new_port);
-		//Æô¶¯½ÓÊÕºÍ×ª·¢Ïß³Ì 
+		//å¯åŠ¨æ¥æ”¶å’Œè½¬å‘çº¿ç¨‹ 
 		std::thread t(&Server::receiveAndTransThread,this,server_fd, clientId);
 		t.detach();
 		
-		//Ïò¿Í»§¶Ë»ØÓ¦ÎªÆä·ÖÅäµÄĞÂ¶Ë¿ÚºÅĞÅÏ¢ 
+		//å‘å®¢æˆ·ç«¯å›åº”ä¸ºå…¶åˆ†é…çš„æ–°ç«¯å£å·ä¿¡æ¯ 
 		transPack_t pkg(PkgType_ResponseRegister);
 		int headerLen = sizeof(transPack_t); 
 		pkg.length = 2;
@@ -182,46 +182,46 @@ void Server::receiveRegisterThread()
 	delete [] recvbuf;
 }
 
-//½ÓÊÕ¿Í»§¶ËĞÅÏ¢²¢½øĞĞ×ª·¢µÄÏß³Ì 
-//¿Í»§¶Ë¶Ï¿ªÁ¬½Óºó¹Ø±ÕÏß³Ì 
+//æ¥æ”¶å®¢æˆ·ç«¯ä¿¡æ¯å¹¶è¿›è¡Œè½¬å‘çš„çº¿ç¨‹ 
+//å®¢æˆ·ç«¯æ–­å¼€è¿æ¥åå…³é—­çº¿ç¨‹ 
 void Server::receiveAndTransThread(int server_fd, uint16_t clientId)
 {
-	//Ê×ÏÈ½ÓÊÕ¿Í»§¶ËµÄÈ·ÈÏ×¢²áÏûÏ¢£¬
-	//È·ÈÏ×¢²áÓë×¢²áÏûÏ¢ÀàĞÍÒ»ÖÂ£¬
-	//×¢²áÏûÏ¢ÓÉ¿Í»§¶Ë·¢ËÍµ½·şÎñÆ÷µÄ¹«ÓÃ×¢²á¶Ë¿ÚºÅ 
-	//È·ÈÏ×¢²áÏûÏ¢ÓÉ¿Í»§¶Ë·¢ËÍµ½·şÎñÆ÷Îª¸Ã¿Í»§¶Ë·ÖÅäµÄĞÂ¶Ë¿ÚºÅ 
+	//é¦–å…ˆæ¥æ”¶å®¢æˆ·ç«¯çš„ç¡®è®¤æ³¨å†Œæ¶ˆæ¯ï¼Œ
+	//ç¡®è®¤æ³¨å†Œä¸æ³¨å†Œæ¶ˆæ¯ç±»å‹ä¸€è‡´ï¼Œ
+	//æ³¨å†Œæ¶ˆæ¯ç”±å®¢æˆ·ç«¯å‘é€åˆ°æœåŠ¡å™¨çš„å…¬ç”¨æ³¨å†Œç«¯å£å· 
+	//ç¡®è®¤æ³¨å†Œæ¶ˆæ¯ç”±å®¢æˆ·ç«¯å‘é€åˆ°æœåŠ¡å™¨ä¸ºè¯¥å®¢æˆ·ç«¯åˆ†é…çš„æ–°ç«¯å£å· 
 	const int BufLen1 =2*sizeof(transPack_t);
 	uint8_t *recvbuf = new uint8_t [BufLen1];
 	const transPack_t *pkg = (const transPack_t *)recvbuf;
 	struct sockaddr_in client_addr;
 	socklen_t clientLen = sizeof(client_addr);
 	
-	//ÅäÖÃÎª·Ç×èÈû£¬²¢ÉèÖÃ³¬Ê±Ê±¼ä 
+	//é…ç½®ä¸ºéé˜»å¡ï¼Œå¹¶è®¾ç½®è¶…æ—¶æ—¶é—´ 
 	struct timeval timeout;
-    timeout.tv_sec = 10;//Ãë
-    //timeout.tv_usec = 0;//Î¢Ãë
+    timeout.tv_sec = 10;//ç§’
+    //timeout.tv_usec = 0;//å¾®ç§’
     setsockopt(server_fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
     
 	cout << "new thread start to receive msgs..." << endl;
 	int len = recvfrom(server_fd, recvbuf, BufLen1,0,(struct sockaddr*)&client_addr, &clientLen);
-	if(len <=0 || //½ÓÊÕ³¬Ê± 
-	   recvbuf[0] != 0x66 || recvbuf[1] != 0xcc || //°üÍ·´íÎó 
-	   pkg->type != PkgType_RequestRegister ||  //Ö¸Áî´íÎó Ó¦ÎªÈ·ÈÏ×¢²áÏûÏ¢°ü 
-	   clientId != pkg->senderId ) //id²»Æ¥Åä 
+	if(len <=0 ||                                  //æ¥æ”¶è¶…æ—¶ 
+	   recvbuf[0] != 0x66 || recvbuf[1] != 0xcc || //åŒ…å¤´é”™è¯¯ 
+	   pkg->type != PkgType_RequestRegister ||     //æŒ‡ä»¤é”™è¯¯ åº”ä¸ºç¡®è®¤æ³¨å†Œæ¶ˆæ¯åŒ… 
+	   clientId != pkg->senderId ) //idä¸åŒ¹é… 
 	{
-		removeClient(clientId); //É¾³ıÓÃ»§
+		removeClient(clientId); //åˆ é™¤ç”¨æˆ·
 		return; 
 	} 
 	
 	std::cout << "received confirm register msg." << std:: endl; 
 	
-	clients_[clientId].connect = true; //Á¬½Ó³É¹¦
-	clients_[clientId].addr = client_addr; //Ğ´Èë¿Í»§¶ËµØÖ·
-	clients_[clientId].fd =  server_fd; //½«Óë¸ÃÓÃ»§½¨Á¢Á¬½ÓµÄÌ×½Ó×Ö±£´æ 
-	//·¢ËÍ×¢²á³É¹¦
+	clients_[clientId].connect = true; //è¿æ¥æˆåŠŸ
+	clients_[clientId].addr = client_addr; //å†™å…¥å®¢æˆ·ç«¯åœ°å€
+	clients_[clientId].fd =  server_fd; //å°†ä¸è¯¥ç”¨æˆ·å»ºç«‹è¿æ¥çš„å¥—æ¥å­—ä¿å­˜ 
+	//å‘é€æ³¨å†ŒæˆåŠŸ
 	transPack_t temp_pkg(PkgType_RegisterOK);
 
-	//·¢ËÍ¶à´Î×¢²á³É¹¦ĞÅºÅ 
+	//å‘é€å¤šæ¬¡æ³¨å†ŒæˆåŠŸä¿¡å· 
 	for(int i=0; i<3; ++i)
 	{
 		sendto(server_fd,(char*)&temp_pkg, sizeof(temp_pkg), 0, (struct sockaddr*)&client_addr, sizeof(sockaddr_in));
@@ -234,60 +234,61 @@ void Server::receiveAndTransThread(int server_fd, uint16_t clientId)
 	recvbuf = new uint8_t [BufLen2];
 	const transPack_t *_pkg = (const transPack_t *)recvbuf;
 	
-	timeout.tv_sec = 1;//Ãë
+	timeout.tv_sec = 1;//ç§’
     setsockopt(server_fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
     
 	while(run_flag && clients_[clientId].connect)
 	{
-		//´Ë´¦½ÓÊÕÓ¦Îª·Ç×èÈû£¬³¬Ê±ºó¼ì²é run_flag ÒÔ¼°ÓÃ»§µÄÁ¬½Ó×´Ì¬
-		//·ñÔò1.³ÌĞòÎŞ·¨Õı³£ÍË³ö£¬2.ÓÃ»§ÍË³öºó»¹ÔÚµÈ´ı½ÓÊÕÊı¾İ 
+		//æ­¤å¤„æ¥æ”¶åº”ä¸ºéé˜»å¡ï¼Œè¶…æ—¶åæ£€æŸ¥ run_flag ä»¥åŠç”¨æˆ·çš„è¿æ¥çŠ¶æ€
+		//å¦åˆ™1.ç¨‹åºæ— æ³•æ­£å¸¸é€€å‡ºï¼Œ2.ç”¨æˆ·é€€å‡ºåè¿˜åœ¨ç­‰å¾…æ¥æ”¶æ•°æ® 
 		int len = recvfrom(server_fd, recvbuf, BufLen2,0,(struct sockaddr*)&client_addr, &clientLen);
 		
 		if(len <= 0) continue;
 		if(_pkg->head[0] != 0x66 || _pkg->head[1] != 0xcc)
 			continue;
-		if(_pkg->type > 10 && _pkg->type<30)
-			std::cout << "received msg, sender id:" << _pkg->senderId << " type: " << int(_pkg->type) << " len:" << len<< std::endl;
+		//if(_pkg->type > 10 && _pkg->type<30)
+		//	std::cout << "received msg, sender id:" << _pkg->senderId << " type: " << int(_pkg->type) << " len:" << len<< std::endl;
 		
-		if(_pkg->type == PkgType_HeartBeat) //ĞÄÌø°ü 
+		if(_pkg->type == PkgType_HeartBeat) //å¿ƒè·³åŒ… 
 		{
 			//cout << "received client heartbeat :" << clientId << endl;
-			sendto(server_fd,recvbuf, len, 0, (struct sockaddr*)&client_addr, clientLen); //»Ø·¢¸ø¿Í»§¶Ë 
-			clients_[clientId].lastHeartBeatTime = time(0); //¼ÇÂ¼¿Í»§ĞÄÌøÊ±¼ä
+			sendto(server_fd,recvbuf, len, 0, (struct sockaddr*)&client_addr, clientLen); //å›å‘ç»™å®¢æˆ·ç«¯ 
+			clients_[clientId].lastHeartBeatTime = time(0); //è®°å½•å®¢æˆ·å¿ƒè·³æ—¶é—´
 		}
 		else if(_pkg->type == PkgType_LogOut)
 		{
 			cout << "client logout...."<< endl;
 			clients_[clientId].connect = false;
 		}
-		//ÏÂÁĞÏûÏ¢ÀàĞÍ²»½öĞèÒª×ª·¢£¬¶øÇÒ·şÎñÆ÷ĞèÒªÀûÓÃÆä¼ÇÂ¼×´Ì¬£¬Òò´ËĞèÒª¶îÍâ´¦Àí
-		//·şÎñÆ÷µÚÒ»Ê±¼ä¸üĞÂÁ¬½Ó×´Ì¬£¬·ÀÖ¹³öÏÖ´íÎó
-		else if(_pkg->type == PkgType_AcceptConnect) //±»½ĞÓÃ»§½ÓÊÜÁ¬½Ó 
+		//ä¸‹åˆ—æ¶ˆæ¯ç±»å‹ä¸ä»…éœ€è¦è½¬å‘ï¼Œè€Œä¸”æœåŠ¡å™¨éœ€è¦åˆ©ç”¨å…¶è®°å½•çŠ¶æ€ï¼Œå› æ­¤éœ€è¦é¢å¤–å¤„ç†
+		//æœåŠ¡å™¨ç¬¬ä¸€æ—¶é—´æ›´æ–°è¿æ¥çŠ¶æ€ï¼Œé˜²æ­¢å‡ºç°é”™è¯¯
+		else if(_pkg->type == PkgType_AcceptConnect) //è¢«å«ç”¨æˆ·æ¥å—è¿æ¥ 
 		{
 			uint16_t srcClientId = ((const transPack_t *)recvbuf)->senderId;
 			uint16_t dstClientId = ((const transPack_t *)recvbuf)->receiverId;
-			//ÔÚÍ¨»°Ë«·½ĞÅÏ¢ÖĞÏà»¥Ìí¼Ó¶Ô·½ID
-			//ÓÃÓÚÔÚÍâ²¿ÅĞ¶ÏÓÃ»§µÄÍ¨»°×´Ì¬ 
+			//åœ¨é€šè¯åŒæ–¹ä¿¡æ¯ä¸­ç›¸äº’æ·»åŠ å¯¹æ–¹ID
+			//ç”¨äºåœ¨å¤–éƒ¨åˆ¤æ–­ç”¨æˆ·çš„é€šè¯çŠ¶æ€ 
 			clients_[srcClientId].callingID = dstClientId;
 			clients_[dstClientId].callingID = srcClientId;
 			cout << "connected: " << srcClientId << "\t" << dstClientId << endl;
-			msgTransmit(recvbuf, len); //ÏÈ½øĞĞÊı¾İ´æ´¢£¬ÔÙ½øĞĞ×ª·¢ 
+			msgTransmit(recvbuf, len); //å…ˆè¿›è¡Œæ•°æ®å­˜å‚¨ï¼Œå†è¿›è¡Œè½¬å‘ 
 		}
-		else if(_pkg->type == PkgType_DisConnect) // ÇëÇó¶Ï¿ªÁ¬½Ó 
+		else if(_pkg->type == PkgType_DisConnect) // è¯·æ±‚æ–­å¼€è¿æ¥ 
 		{
-			msgTransmit(recvbuf, len); //ÏÈ×ª·¢¸ø¿Í»§¶Ë£¬ÔÙ½øĞĞÊı¾İÇå³ı 
 			uint16_t clientA =  clientId;
-			//A·½ÇëÇó¶Ï¿ª£¬Çå³ıAÖĞ´æ·ÅµÄBµÄId£¬²¢ÏòB·¢ËÍ¶Ï¿ªÁ¬½Ó 
+			//Aæ–¹è¯·æ±‚æ–­å¼€ï¼Œæ¸…é™¤Aä¸­å­˜æ”¾çš„Bçš„Idï¼Œå¹¶å‘Bå‘é€æ–­å¼€è¿æ¥ 
 			uint16_t clientB = clients_[clientA].callingID;
-			if(clientB == 0) //clientAÃ»ÓĞÕıÔÚÍ¨»°µÄ¿Í»§ 
+			if(clientB == 0) //clientAæ²¡æœ‰æ­£åœ¨é€šè¯çš„å®¢æˆ· 
 				continue;
 			
-			clients_[clientA].callingID = 0; //Çå³ıAÖĞBµÄID 
-			clients_[clientB].callingID = 0; //Çå³ıBÖĞAµÄID 
+			msgTransmit(recvbuf, len); //å…ˆè½¬å‘ç»™å®¢æˆ·ç«¯ï¼Œå†è¿›è¡Œæ•°æ®æ¸…é™¤ 
+			
+			clients_[clientA].callingID = 0; //æ¸…é™¤Aä¸­Bçš„ID 
+			clients_[clientB].callingID = 0; //æ¸…é™¤Bä¸­Açš„ID 
 		}
 		else if((_pkg->type == PkgType_ControlCmd) || (_pkg->type == PkgType_RobotState))
 			cmdAndStatusTransmit(recvbuf, len);
-		else //ÆäËûÀàĞÍÏûÏ¢£¬Ö±½Ó×ª·¢ 
+		else //å…¶ä»–ç±»å‹æ¶ˆæ¯ï¼Œç›´æ¥è½¬å‘ 
 			msgTransmit(recvbuf, len);
 		
 	}
@@ -300,8 +301,8 @@ void Server::receiveAndTransThread(int server_fd, uint16_t clientId)
 void Server::removeClient(uint16_t id)
 {
 	uint16_t otherId = clients_[id].callingID;
-	if(otherId != 0) //±ØĞëÅĞ¶Ï£¬Èô´ËÖµÎª0£¬¶ÔÆä·ÃÎÊ½«µ¼ÖÂ²åÈëIDÎª0µÄ¿Í»§¡££¨map·ÃÎÊ²»´æÔÚµÄ¼ü£¬×Ô¶¯²åÈë£© 
-		clients_[otherId].callingID = 0; //É¾³ıÓÃ»§Ç°½«ÓëÖ®Í¨»°µÄ¿Í»§µÄĞÅÏ¢ÖÃÎ»	
+	if(otherId != 0) //å¿…é¡»åˆ¤æ–­ï¼Œè‹¥æ­¤å€¼ä¸º0ï¼Œå¯¹å…¶è®¿é—®å°†å¯¼è‡´æ’å…¥IDä¸º0çš„å®¢æˆ·ã€‚ï¼ˆmapè®¿é—®ä¸å­˜åœ¨çš„é”®ï¼Œè‡ªåŠ¨æ’å…¥ï¼‰ 
+		clients_[otherId].callingID = 0; //åˆ é™¤ç”¨æˆ·å‰å°†ä¸ä¹‹é€šè¯çš„å®¢æˆ·çš„ä¿¡æ¯ç½®ä½	
 	clients_.erase(id);
 }
 
@@ -313,7 +314,7 @@ void Server::run()
 	std::thread t2 = std::thread(&Server::heartBeatThread,this);
 	t2.detach(); 
 	
-	//ĞÂ½¨½ÓÊÕ¿Í»§¶Ë×¢²áĞÅÏ¢µÄÏß³Ì 
+	//æ–°å»ºæ¥æ”¶å®¢æˆ·ç«¯æ³¨å†Œä¿¡æ¯çš„çº¿ç¨‹ 
 	std::thread t = std::thread(&Server::receiveRegisterThread,this);
 	t.join();
 }
@@ -323,12 +324,12 @@ void Server::cmdAndStatusTransmit(const uint8_t* buf, int len)
 	uint16_t srcClientId = ((const transPack_t *)buf)->senderId;
 	uint16_t dstClientId = ((const transPack_t *)buf)->receiverId;
 	
-	if(dstClientId == ROBOT_TEST_ID) //»úÆ÷ÈË¶Ë²âÊÔID
+	if(dstClientId == ROBOT_TEST_ID) //æœºå™¨äººç«¯æµ‹è¯•ID
 		return; 
 	auto it = clients_.find(dstClientId);
-	if (it == clients_.end()) //Î´²éÕÒµ½Ä¿±ê¿Í»§¶Ë 
+	if (it == clients_.end()) //æœªæŸ¥æ‰¾åˆ°ç›®æ ‡å®¢æˆ·ç«¯ 
 	{
-		//ÏòÖ÷½ĞÓÃ»§»Ø¸´ ,»Ø¸´Ê±°´Ô­°üÍ·ĞŞ¸ÄÖ¸ÁîÀàĞÍºó·µ»Ø
+		//å‘ä¸»å«ç”¨æˆ·å›å¤ ,å›å¤æ—¶æŒ‰åŸåŒ…å¤´ä¿®æ”¹æŒ‡ä»¤ç±»å‹åè¿”å›
 		transPack_t pkg = *(transPack_t*)buf;
 		pkg.type =  PkgType_CalledOffline;
 		pkg.length = 0;
@@ -346,13 +347,13 @@ void Server::msgTransmit(const uint8_t* buf, int len)
 	uint16_t dstClientId = ((const transPack_t *)buf)->receiverId;
 	int type = ((const transPack_t *)buf)->type;
 	
-	if(dstClientId == 0) //idÎª0±íÊ¾ÏûÏ¢½öĞè·¢¸ø·şÎñÆ÷£¬¶øÎŞĞè×ª·¢ 
+	if(dstClientId == 0) //idä¸º0è¡¨ç¤ºæ¶ˆæ¯ä»…éœ€å‘ç»™æœåŠ¡å™¨ï¼Œè€Œæ— éœ€è½¬å‘ 
 		return; 
 	
 	auto it = clients_.find(dstClientId);
-	if (it == clients_.end()) //Î´²éÕÒµ½Ä¿±ê¿Í»§¶Ë 
+	if (it == clients_.end()) //æœªæŸ¥æ‰¾åˆ°ç›®æ ‡å®¢æˆ·ç«¯ 
 	{
-		//ÏòÖ÷½ĞÓÃ»§»Ø¸´ ,»Ø¸´Ê±°´Ô­°üÍ·ĞŞ¸ÄÖ¸ÁîÀàĞÍºó·µ»Ø
+		//å‘ä¸»å«ç”¨æˆ·å›å¤ ,å›å¤æ—¶æŒ‰åŸåŒ…å¤´ä¿®æ”¹æŒ‡ä»¤ç±»å‹åè¿”å›
 		transPack_t pkg;
 		memcpy(&pkg, buf, sizeof(transPack_t));
 		pkg.type =  PkgType_CalledOffline;
@@ -363,24 +364,24 @@ void Server::msgTransmit(const uint8_t* buf, int len)
 		return;
 	}
 	
-	//±»½ĞÓÃ»§ĞÅÏ¢ÖĞµÄ'±»½Ğ'ID ·Ç0ÇÒ²»ÊÇµ±Ç°µÄÖ÷½ĞID£¬±íÃ÷±»½ĞÕıÔÚÓëÆäËûÓÃ»§Í¨»°
+	//è¢«å«ç”¨æˆ·ä¿¡æ¯ä¸­çš„'è¢«å«'ID é0ä¸”ä¸æ˜¯å½“å‰çš„ä¸»å«IDï¼Œè¡¨æ˜è¢«å«æ­£åœ¨ä¸å…¶ä»–ç”¨æˆ·é€šè¯
 	if((clients_[dstClientId].callingID != 0) &&
 	   (clients_[dstClientId].callingID != srcClientId))
 	{
 		transPack_t pkg;
 		memcpy(&pkg, buf, sizeof(transPack_t));
-		pkg.type =  PkgType_CalledBusy;
+		pkg.type =  PkgType_CalledBusy;             //called busy
 		sendto(clients_[srcClientId].fd, (char*)&pkg, sizeof(transPack_t), 0, 
 			   (struct sockaddr*)&clients_[srcClientId].addr, sizeof(sockaddr_in));	
 	}
-	else if((clients_[srcClientId].callingID != dstClientId) && //Ö÷½ĞÓë±»½Ğ,Î´½¨Á¢Á¬½Ó
-			(type != PkgType_RequestConnect))                   //ÏûÏ¢Ö¸Áî·ÇÇëÇóÁ¬½Ó
+	else if((clients_[srcClientId].callingID != dstClientId) && //ä¸»å«ä¸è¢«å«,æœªå»ºç«‹è¿æ¥
+			(type != PkgType_RequestConnect))                   //æ¶ˆæ¯æŒ‡ä»¤éè¯·æ±‚è¿æ¥
 	{
-		//´ËÊ±±íÃ÷AÏòB·¢ËÍÊı¾İÏûÏ¢(·ÇÇëÇóÁ¬½Ó)£¬µ«AÓëB²¢Î´½¨Á¢Á¬½Ó
-		//ÕâÖÖÇé¿ö¿ÉÄÜ³öÏÖÔÚABÖ®Ç°ÕıÔÚÍ¨»°£¬BÖĞ¶ÏÁËÍ¨»°²¢·¢³öÖĞ¶ÏÖ¸Áî£¬µ«¸ÃÖ¸ÁîÎ´±»AÕı³£½ÓÊÕ
-		//´ËÊ±·şÎñÆ÷×ÔÖ÷ÏòA·¢ËÍ¶Ï¿ªÁ¬½ÓÖ¸Áî
+		//æ­¤æ—¶è¡¨æ˜Aå‘Bå‘é€æ•°æ®æ¶ˆæ¯(éè¯·æ±‚è¿æ¥)ï¼Œä½†Aä¸Bå¹¶æœªå»ºç«‹è¿æ¥
+		//è¿™ç§æƒ…å†µå¯èƒ½å‡ºç°åœ¨ABä¹‹å‰æ­£åœ¨é€šè¯ï¼ŒBä¸­æ–­äº†é€šè¯å¹¶å‘å‡ºä¸­æ–­æŒ‡ä»¤ï¼Œä½†è¯¥æŒ‡ä»¤æœªè¢«Aæ­£å¸¸æ¥æ”¶
+		//æ­¤æ—¶æœåŠ¡å™¨è‡ªä¸»å‘Aå‘é€æ–­å¼€è¿æ¥æŒ‡ä»¤
 		transPack_t pkg(PkgType_DisConnect);
-		pkg.senderId = SERVER_ID; //´Ë´¦±êÃ÷·¢ËÍ·½Îª·şÎñÆ÷
+		pkg.senderId = SERVER_ID; //æ­¤å¤„æ ‡æ˜å‘é€æ–¹ä¸ºæœåŠ¡å™¨
 		pkg.receiverId = srcClientId;
 		sendto(clients_[srcClientId].fd, (char*)&pkg, sizeof(transPack_t), 0, 
 			   (struct sockaddr*)&clients_[srcClientId].addr, sizeof(sockaddr_in));
@@ -395,8 +396,8 @@ void Server::msgTransmit(const uint8_t* buf, int len)
 	}
 }
 
-//ÓÉÓÚÓöµ½¹ı·şÎñÆ÷×Ô¶¯¶Ï¿ªµÄÎÊÌâ 
-//¶¨Ê±ÏòÖÕ¶Ë´òÓ¡Êı¾İµÄÏß³Ì£¬±£³Ö·şÎñÆ÷Ò»Ö±´¦ÓÚ»½ĞÑ×´Ì¬
+//ç”±äºé‡åˆ°è¿‡æœåŠ¡å™¨è‡ªåŠ¨æ–­å¼€çš„é—®é¢˜ 
+//å®šæ—¶å‘ç»ˆç«¯æ‰“å°æ•°æ®çš„çº¿ç¨‹ï¼Œä¿æŒæœåŠ¡å™¨ä¸€ç›´å¤„äºå”¤é†’çŠ¶æ€
 void Server::printThread(int interval)
 {
 	int i=0;
@@ -415,25 +416,25 @@ void Server::heartBeatThread()
 		for(auto client =clients_.begin(); client!= clients_.end(); ++client)
 		{
 			//cout << "id: " << client->first <<endl;
-			//³õÊ¼Çé¿öÏÂ¿Í»§ÉÏ´ÎĞÄÌøÊ±¼äÎª0 
+			//åˆå§‹æƒ…å†µä¸‹å®¢æˆ·ä¸Šæ¬¡å¿ƒè·³æ—¶é—´ä¸º0 
 			if(client->second.lastHeartBeatTime ==0)
 			{
-				//´Ë´¦ĞŞ¸ÄÉÏ´ÎĞÄÌøÊ±¼ä£¬·ÀÖ¹ÓĞĞ©¿Í»§×¢²áºó´ÓÎ´ĞÄÌø¡£ 
+				//æ­¤å¤„ä¿®æ”¹ä¸Šæ¬¡å¿ƒè·³æ—¶é—´ï¼Œé˜²æ­¢æœ‰äº›å®¢æˆ·æ³¨å†Œåä»æœªå¿ƒè·³ã€‚ 
 				client->second.lastHeartBeatTime = 1; 
 				continue;
 			} 
 			std::time_t diff =  time(0) - client->second.lastHeartBeatTime;
 			
-			//¿Í»§¶ËÁ¬½Ó±êÖ¾ connect¸´Î»ºó£¬½«ÍË³öÆä½ÓÊÕÏß³Ì£¬È»ºó×Ô¶¯É¾³ıÓÃ»§
-			//ÈôÄ³Ğ©ÓÃ»§Î´ÄÜ×Ô¶¯É¾³ı£¬ÊÖ¶¯É¾³ı 
+			//å®¢æˆ·ç«¯è¿æ¥æ ‡å¿— connectå¤ä½åï¼Œå°†é€€å‡ºå…¶æ¥æ”¶çº¿ç¨‹ï¼Œç„¶åè‡ªåŠ¨åˆ é™¤ç”¨æˆ·
+			//è‹¥æŸäº›ç”¨æˆ·æœªèƒ½è‡ªåŠ¨åˆ é™¤ï¼Œæ‰‹åŠ¨åˆ é™¤ 
 			if(diff > heartBeatInterval_ + maxHeartBeatDelay_*1.5) 
 			{
-				//É¾³ıÎ´ÄÜÕı³£É¾³ıµÄÓÃ»§
+				//åˆ é™¤æœªèƒ½æ­£å¸¸åˆ é™¤çš„ç”¨æˆ·
 				removeClient(client->first);
 			}
 			else if( diff >heartBeatInterval_ + maxHeartBeatDelay_) 
 			{
-				//Á¬½ÓÖÃfalse£¬µÈ´ıÏß³ÌÍË³öºó×Ô¶¯É¾³ıÓÃ»§ 
+				//è¿æ¥ç½®falseï¼Œç­‰å¾…çº¿ç¨‹é€€å‡ºåè‡ªåŠ¨åˆ é™¤ç”¨æˆ· 
 				client->second.connect = false;
 				cout << "client " << client->first  << " overtime!  auto-disconnect." << endl;
 			}
@@ -443,12 +444,12 @@ void Server::heartBeatThread()
 	}
 }
 
-//ÏµÍ³ÖĞ¶ÏĞÅºÅ²¶»ñ
+//ç³»ç»Ÿä¸­æ–­ä¿¡å·æ•è·
 void sigint_handler(int signal_num)
 {
 	//std::cout << "signal_num: " << signal_num << std::endl;
 	Server::run_flag = false;
-	usleep(100000); //Ô¤ÁôÊ±¼äÇåÀíÏß³Ì 
+	usleep(100000); //é¢„ç•™æ—¶é—´æ¸…ç†çº¿ç¨‹ 
 	exit(0);
 }
 

@@ -53,7 +53,6 @@ enum dataType
     //远程控制相关消息类型
     PkgType_ControlCmd      = 101,
     PkgType_RobotState      = 102,
-
 };
 
 
@@ -82,13 +81,14 @@ typedef struct TransPack
 
 typedef struct ClientInfo 
 {
-	int fd; //ÓëžÃ¿Í»§¶ËœšÁ¢Á¬œÓµÄsocketÌ×œÓ×Ö 
-	        //ËäÈ»ÒÑŸ­±£ŽæÁË¿Í»§¶ËµÄµØÖ·£¬µ«ÊÇžÃµØÖ·Ö»¶Ôµ±Ê±ÓëÆäœšÁ¢Á¬œÓµÄsocketÓÐÐ§
-			//µ±ÆäËûÓÃ»§ÏòŽËÓÃ»§·¢ËÍÏûÏ¢Ê±£¬·þÎñÆ÷±ØÐëÊ¹ÓÃŽËfdœøÐÐ×ª·¢£¬¶ø²»ÊÇÊ¹ÓÃœÓÊÕÆäËû¿Í»§ÏûÏ¢µÄfd 
-	sockaddr_in addr; //¿Í»§¶ËµØÖ· 
-	bool connect; //¿Í»§¶ËµÄÁ¬œÓ×ŽÌ¬(ÊÇ·ñÔÚÏß) 
-	std::time_t lastHeartBeatTime; //ÉÏÒ»ŽÎÐÄÌøÊ±Œä
-	uint16_t callingID; //ÕýÔÚÍš»°µÄID 
+	int fd; //与该客户端建立连接的socket套接字 
+	        //虽然已经保存了客户端的地址，但是该地址只对当时与其建立连接的socket有效
+			//当其他用户向此用户发送消息时，服务器必须使用此fd进行转发，而不是使用接收其他客户消息的fd 
+	sockaddr_in addr; //客户端地址 
+	bool connect; //客户端的连接状态(是否在线) 
+	std::time_t lastHeartBeatTime; //上一次心跳时间
+	uint16_t callingID; //正在通话的ID 
+
 	ClientInfo()
 	{
 		lastHeartBeatTime=0;
@@ -97,7 +97,7 @@ typedef struct ClientInfo
 	 
 } clientInfo_t;  
 
-//Ê¹ÓÃmapŽæ·Å¿Í»§¶ËÐÅÏ¢ÒÔŒ°¶ÔÓŠµÄid 
+//使用map存放客户端信息以及对应的id 
 typedef std::map<uint16_t,clientInfo_t> clientsMap;
 
 class Server
@@ -124,11 +124,11 @@ private:
 private:
 	clientsMap clients_;
 	
-	//¿Í»§¶Ë×¢²á¶Ë¿ÚºÅ 
+	//客户端注册端口号
 	const int register_port_; 
 	
-	uint16_t heartBeatInterval_ = 5; //ÐÄÌø°ü·¢ËÍŒäžô(s)
-	uint16_t maxHeartBeatDelay_ = 3; //ÐÄÌø°üÈÝÐíÑÓ³ÙÊ±Œä(s)
+	uint16_t heartBeatInterval_ = 1; //心跳间隔
+	uint16_t maxHeartBeatDelay_ = 1.0; //最大允许心跳迟滞
 	
 };
 

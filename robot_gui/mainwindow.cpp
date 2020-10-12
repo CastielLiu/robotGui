@@ -198,7 +198,7 @@ void MainWindow::stopRemoteControlNode()
 }
 
 /* @brief 停止消息传输
- * @param is_auto 是否为自动断开
+ * @param is_auto 是否为自动断开, defaut: false
  *        自动断开:对方请求断开，我方自动断开
  *        手动断开:我方手动请求断开
  * 此函数可能会被系统重复调用，务必严格条件限定，防止内存重复释放
