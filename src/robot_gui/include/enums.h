@@ -66,6 +66,7 @@ enum stackWidgetIndex
     stackWidget_WorkLogPage = 3, //工作日志
     stackWidget_HomePage = 4,   //Home
     stackWidget_TransportPage = 5, //送物导航界面
+    stackWidget_MapsPage      = 6, //maps
 };
 
 #endif // ENUMS_H_

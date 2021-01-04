@@ -21,6 +21,8 @@
 #include "navigation.h"
 #include "fifo.hpp"
 #include "animation/carouselimagewindow.h"
+#include <qrviz/qrviz.h>
+#include <qnode/qnode.h>
 
 namespace Ui {
 class MainWindow;
@@ -31,7 +33,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = nullptr);
+    explicit MainWindow(int argc, char** argv, QWidget *parent = nullptr);
     ~MainWindow() override;
 private slots:
     void on_pushButton_call_clicked();
@@ -98,6 +100,8 @@ private slots:
 
     void on_checkBox_allowRemoteControl_stateChanged(int arg1);
 
+    void on_pushButton_toMapsPage_clicked();
+
 private:
     void closeEvent(QCloseEvent *event) override;
     void loadPerformance();
@@ -110,6 +114,7 @@ private:
     void updateClockDisplay();
     void startRemoteControlNode();
     void stopRemoteControlNode();
+    bool initRviz();
 
 private:
     Ui::MainWindow *ui;
@@ -135,6 +140,10 @@ private:
 
     //动画显示
     CarouselImageWindow *mAnimationWidget;
+
+    //rviz
+    QNode *mQnode;
+    QRviz *mQrviz;
 };
 
 #endif // MAINWINDOW_H

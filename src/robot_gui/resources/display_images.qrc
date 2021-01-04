@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/dispaly_images">
+    <qresource prefix="/animation_images">
         <file>animation_img/1.jpg</file>
         <file>animation_img/2.jpg</file>
         <file>animation_img/3.jpg</file>

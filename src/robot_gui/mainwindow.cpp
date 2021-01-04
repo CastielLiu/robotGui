@@ -1,7 +1,7 @@
 ﻿#include "mainwindow.h"
 #include <thread>
 
-MainWindow::MainWindow(QWidget *parent) :
+MainWindow::MainWindow(int argc, char **argv, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
     m_udpReceiver(nullptr),
@@ -12,7 +12,9 @@ MainWindow::MainWindow(QWidget *parent) :
     m_radar(nullptr),
     mNavigation(nullptr),
     mKeyBorad(nullptr),
-    mAnimationWidget(nullptr)
+    mAnimationWidget(nullptr),
+    mQnode(nullptr),
+    mQrviz(nullptr)
 {
     ui->setupUi(this);
 
@@ -23,7 +25,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     this->setWindowTitle(mWindowTitle);
     this->setWindowIcon(QIcon(":/images/app_icon"));
-    this->setFixedSize(this->width(),this->height());
+    //this->setFixedSize(this->width(),this->height());
 
     ui->stackedWidget->setCurrentIndex(stackWidget_HomePage);//切换到主页面
     ui->pushButton_home->hide();//隐藏home键
@@ -70,6 +72,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->widget_control1->setFocus(); //设置焦点,方向控制按钮
     if(m_autoRegister)  this->login();
+
+    mQnode = new QNode;
+    bool ok = mQnode->init(argc, argv);
+    if(!ok) exit(1);
+
+    this->initRviz();
 }
 
 MainWindow::~MainWindow()
@@ -189,12 +197,12 @@ void MainWindow::startChat(uint16_t id, bool is_called)
 
 void MainWindow::startRemoteControlNode()
 {
-    utils::systemCmd("start_remote_control.sh");
+    utils::systemCmd("start_remote_control.sh&");
 }
 
 void MainWindow::stopRemoteControlNode()
 {
-    utils::systemCmd("stop_remote_control.sh");
+    utils::systemCmd("stop_remote_control.sh&");
 }
 
 /* @brief 停止消息传输
@@ -633,4 +641,10 @@ void MainWindow::on_checkBox_allowRemoteControl_stateChanged(int arg1)
     g_allowRemoteCtrl = arg1;
     if(!g_allowRemoteCtrl)
         stopRemoteControlNode();
+}
+
+bool MainWindow::initRviz()
+{
+  mQrviz = new QRviz(ui->page_rviz);
+  ui->horizontalLayout_pageRviz->addWidget(mQrviz);
 }

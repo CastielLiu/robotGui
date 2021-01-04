@@ -288,3 +288,8 @@ void MainWindow::on_pushButton_goToNavGoal_clicked()
     goalInfo.print();
 #endif
 }
+
+void MainWindow::on_pushButton_toMapsPage_clicked()
+{
+  ui->stackedWidget->setCurrentIndex(stackWidget_MapsPage);
+}

@@ -17,5 +17,11 @@
         <file alias="hungup_icon">image/hongup.png</file>
         <file alias="setting_icon">image/setting_icon.png</file>
         <file alias="tools_icon">image/tools_icon.png</file>
+        <file alias="map_icon">image/map.png</file>
+        <file alias="robot_offline">image/offline.png</file>
+        <file alias="robot_online">image/online.png</file>
+        <file alias="power_v">image/power-v.png</file>
+        <file alias="robot_icon">image/robot.png</file>
+        <file alias="robot_icon2">image/robot2.png</file>
     </qresource>
 </RCC>
