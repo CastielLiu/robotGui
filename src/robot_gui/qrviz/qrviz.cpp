@@ -3,7 +3,8 @@
 
 QRviz::QRviz(QWidget *parent) :
   QWidget(parent),
-  addtopic_form(nullptr)
+  addtopic_form(nullptr),
+  is_storeParams(false)
 {
   ui.setupUi(this);
 
@@ -26,13 +27,11 @@ QRviz::QRviz(QWidget *parent) :
   tool_manager_->initialize();
   manager_->removeAllDisplays();
 
-
-
   ui.treeWidget_rviz->setWindowTitle("Displays");
   ui.treeWidget_rviz->setWindowIcon(QIcon("://rviz_icon/classes/Displays.svg"));
   //header 设置
-  ui.treeWidget_rviz->setHeaderHidden(true);
-  ui.treeWidget_rviz->setHeaderLabels(QStringList()<<"key"<<"value");
+  ui.treeWidget_rviz->setHeaderHidden(true); //隐藏表头
+  ui.treeWidget_rviz->setHeaderLabels(QStringList()<<"key"<<"value"); //两列数据
 
   //Global options
   QTreeWidgetItem *Global=new QTreeWidgetItem(QStringList()<<"Global Options");
@@ -51,11 +50,12 @@ QRviz::QRviz(QWidget *parent) :
   frame->setMaximumWidth(150);
   ui.treeWidget_rviz->setItemWidget(FixedFrame,1,frame);
 
-
   QTreeWidgetItem* bcolor=new QTreeWidgetItem(QStringList()<<"Background Color");
   Global->addChild(bcolor);
   //添加lineedit控件
   QLineEdit *colorval=new QLineEdit("48;48;48");
+  bg_color = QColor(48,48,48);
+
   colorval->setMaximumWidth(150);
   ui.treeWidget_rviz->setItemWidget(bcolor,1,colorval);
 
@@ -110,66 +110,119 @@ QRviz::QRviz(QWidget *parent) :
   Grid_Color_Value->setText("160;160;160");
   ui.treeWidget_rviz->setItemWidget(Grid_Color,1,Grid_Color_Value);
 
-  //qucik treewidget
-  //ui.treeWidget_quick_cmd->setHeaderLabels(QStringList()<<"key"<<"values");
-  //ui.treeWidget_quick_cmd->setHeaderHidden(true);
-
   QComboBox *Global_op=(QComboBox *) ui.treeWidget_rviz->itemWidget(ui.treeWidget_rviz->topLevelItem(0)->child(0),1);
   QString Reference_text=Global_op->currentText();
-  this->Display_Grid(true,Reference_text,10,QColor(160,160,160));
+  grid_color = QColor(160,160,160);
+  this->Display_Grid(true,Reference_text,10, grid_color);
+
+  this->connections();
+  this->loadUserDisplays();
 }
 
 QRviz::~QRviz()
 {
+  if(is_storeParams)
+    this->savePerformance();
 }
 
-void QRviz::init()
+//连接信号槽
+void QRviz::connections()
 {
-  //treewidget的值改变的槽函数
-  //绑定treeiew所有控件的值改变函数
-  for(int i=0;i<ui.treeWidget_rviz->topLevelItemCount();i++)
-  {
-      //top 元素
-      QTreeWidgetItem *top=ui.treeWidget_rviz->topLevelItem(i);
+    //treewidget的值改变的槽函数
+    //绑定treeiew所有控件的值改变函数
+    for(int i=0;i<ui.treeWidget_rviz->topLevelItemCount();i++)
+    {
+        //top 元素
+        QTreeWidgetItem *top=ui.treeWidget_rviz->topLevelItem(i);
 //        qDebug()<<top->text(0)<<endl;
-      for(int j=0;j<top->childCount();j++)
-      {
-           //获取该WidgetItem的子节点
-           QTreeWidgetItem* tmp= top->child(j);
-           QWidget* controls=ui.treeWidget_rviz->itemWidget(tmp,1);
+        for(int j=0;j<top->childCount();j++)
+        {
+             //获取该WidgetItem的子节点
+             QTreeWidgetItem* tmp= top->child(j);
+             QWidget* controls=ui.treeWidget_rviz->itemWidget(tmp,1);
 //             qDebug()<<controls;
-           //将当前控件对象和父级对象加入到map中
-           widget_to_parentItem_map[controls]=top;
-           //判断这些widget的类型 并分类型进行绑定槽函数
-           if(QString(controls->metaObject()->className())=="QComboBox")
-           {
-               connect(controls,SIGNAL(currentTextChanged(QString)),this,SLOT(slot_treewidget_item_value_change(QString)));
-           }
-           else if(QString(controls->metaObject()->className())=="QLineEdit")
-            {
-               connect(controls,SIGNAL(textChanged(QString)),this,SLOT(slot_treewidget_item_value_change(QString)));
-             }
-           else if(QString(controls->metaObject()->className())=="QSpinBox")
-           {
-               connect(controls,SIGNAL(valueChanged(QString)),this,SLOT(slot_treewidget_item_value_change(QString)));
-           }
-      }
-  }
-  //绑定treeview checkbox选中事件
- // stateChanged
+             //将当前控件对象和父级对象加入到map中
+             widget_to_parentItem_map[controls]=top;
+             //判断这些widget的类型 并分类型进行绑定槽函数
+             if(QString(controls->metaObject()->className())=="QComboBox")
+                 connect(controls,SIGNAL(currentTextChanged(QString)),this,SLOT(slot_treewidget_item_value_change(QString)));
+             else if(QString(controls->metaObject()->className())=="QLineEdit")
+                 connect(controls,SIGNAL(textChanged(QString)),this,SLOT(slot_treewidget_item_value_change(QString)));
+             else if(QString(controls->metaObject()->className())=="QSpinBox")
+                 connect(controls,SIGNAL(valueChanged(QString)),this,SLOT(slot_treewidget_item_value_change(QString)));
+        }
+    }
+    //绑定treeview checkbox选中事件
+   // stateChanged
+    for(int i=0;i<ui.treeWidget_rviz->topLevelItemCount();i++)
+    {
+        //top 元素
+        QTreeWidgetItem *top=ui.treeWidget_rviz->topLevelItem(i);
+        QWidget *check=ui.treeWidget_rviz->itemWidget(top,1);
+        //记录父子关系
+        widget_to_parentItem_map[check]=top;
+        connect(check,SIGNAL(stateChanged(int)),this,SLOT(slot_treewidget_item_check_change(int)));
 
-  for(int i=0;i<ui.treeWidget_rviz->topLevelItemCount();i++)
-  {
-      //top 元素
-      QTreeWidgetItem *top=ui.treeWidget_rviz->topLevelItem(i);
-      QWidget *check=ui.treeWidget_rviz->itemWidget(top,1);
-      //记录父子关系
-      widget_to_parentItem_map[check]=top;
-      connect(check,SIGNAL(stateChanged(int)),this,SLOT(slot_treewidget_item_check_change(int)));
-  }
-  //connect(ui.treeWidget_rviz,SIGNAL(itemChanged(QTreeWidgetItem*,int)),this,SLOT(slot_treewidget_item_value_change(QTreeWidgetItem*,int)));
+
+    }
+    //connect(ui.treeWidget_rviz,SIGNAL(itemChanged(QTreeWidgetItem*,int)),this,SLOT(slot_treewidget_item_value_change(QTreeWidgetItem*,int)));
 }
 
+
+//载入用户设定的显示控件。 目前为固定
+void QRviz::loadUserDisplays()
+{
+  if(!addtopic_form)
+  {
+      addtopic_form=new AddTopics();
+      //阻塞其他窗体
+      addtopic_form->setWindowModality(Qt::ApplicationModal);
+      //绑定添加rviz话题信号
+      connect(addtopic_form,SIGNAL(Topic_choose(QTreeWidgetItem *)),this,SLOT(slot_choose_topic(QTreeWidgetItem *)));
+  }
+
+  slot_choose_topic(addtopic_form->addAxis()); //添加坐标轴
+  slot_choose_topic(addtopic_form->addMap());  //添加地图
+  slot_choose_topic(addtopic_form->addPath()); //添加路径
+}
+
+
+void QRviz::enablePerformanceStorage(const QString& name, const QString& type)
+{
+  is_storeParams = true;
+  m_configFileName = name;
+  m_configFileType = type;
+  this->loadPerformance();
+}
+
+void QRviz::savePerformance()
+{
+    //创建配置文件操作对象
+    QSettings *config = new QSettings(m_configFileName, m_configFileType);
+    //qDebug() << config->fileName() ;
+
+    //窗口尺寸信息
+    config->beginGroup("QRviz");
+    config->setValue("geometry", saveGeometry()); //保存各窗口尺寸
+    config->setValue("splitterState", ui.splitter_window_display->saveState()); //保存splitter的状态
+
+    config->endGroup();
+
+    delete config;
+}
+
+//载入参数
+void QRviz::loadPerformance()
+{
+    QSettings *config = new QSettings(m_configFileName, m_configFileType);
+    if(config)
+    {
+        //窗口信息
+        restoreGeometry(config->value("QRviz/geometry").toByteArray());
+        ui.splitter_window_display->restoreState(config->value("QRviz/splitterState").toByteArray());
+    }
+    delete config;
+}
 
 //显示robotModel
 void QRviz::Display_RobotModel(bool enable)
@@ -179,7 +232,8 @@ void QRviz::Display_RobotModel(bool enable)
     {
         RobotModel_=manager_->createDisplay("rviz/RobotModel","Qrviz RobotModel",enable);
     }
-    else{
+    else
+    {
         delete RobotModel_;
         RobotModel_=manager_->createDisplay("rviz/RobotModel","Qrviz RobotModel",enable);
     }
@@ -188,29 +242,18 @@ void QRviz::Display_RobotModel(bool enable)
 //显示grid
 void QRviz::Display_Grid(bool enable,QString Reference_frame,int Plan_Cell_count,QColor color)
 {
-    if(grid_==NULL)
-    {
+    if(grid_ == NULL)
         grid_ = manager_->createDisplay( "rviz/Grid", "adjustable grid", true );
-        ROS_ASSERT( grid_ != NULL );
-        // Configure the GridDisplay the way we like it.
-        grid_->subProp( "Line Style" )->setValue("Billboards");
-        grid_->subProp( "Color" )->setValue(color);
-        grid_->subProp( "Reference Frame" )->setValue(Reference_frame);
-        grid_->subProp("Plane Cell Count")->setValue(Plan_Cell_count);
 
-    }
-    else{
-        delete grid_;
-        grid_ = manager_->createDisplay( "rviz/Grid", "adjustable grid", true );
-        ROS_ASSERT( grid_ != NULL );
-        // Configure the GridDisplay the way we like it.
-        grid_->subProp( "Line Style" )->setValue("Billboards");
-        grid_->subProp( "Color" )->setValue(color);
-        grid_->subProp( "Reference Frame" )->setValue(Reference_frame);
-        grid_->subProp("Plane Cell Count")->setValue(Plan_Cell_count);
-    }
+    ROS_ASSERT( grid_ != NULL );
+    // Configure the GridDisplay the way we like it.
+    grid_->subProp( "Line Style" )->setValue("Billboards");
+    grid_->subProp( "Color" )->setValue(color);
+    grid_->subProp( "Reference Frame" )->setValue(Reference_frame);
+    grid_->subProp("Plane Cell Count")->setValue(Plan_Cell_count);
     grid_->setEnabled(enable);
     manager_->startUpdate();
+
 }
 //显示map
 void QRviz::Display_Map(bool enable,QString topic,double Alpha,QString Color_Scheme)
@@ -231,8 +274,6 @@ void QRviz::Display_Map(bool enable,QString topic,double Alpha,QString Color_Sch
     }
     else{
          ROS_ASSERT(map_);
-         qDebug()<<"asdasdasd:"<<topic<<Alpha;
-
         delete map_;
         map_=manager_->createDisplay("rviz/Map","QMap",true);
         ROS_ASSERT(map_);
@@ -259,7 +300,6 @@ void QRviz::Display_LaserScan(bool enable,QString topic)
         ROS_ASSERT(laser_);
         laser_->subProp("Topic")->setValue(topic);
     }
-    qDebug()<<"topic:"<<topic;
     laser_->setEnabled(enable);
     manager_->startUpdate();
 }
@@ -315,10 +355,6 @@ void QRviz::addTool( rviz::Tool* )
 void QRviz::createDisplay(QString display_name,QString topic_name)
 {
 
-
-}
-void QRviz::run()
-{
 
 }
 
@@ -394,19 +430,7 @@ void QRviz::on_pushButton_add_topic_clicked()
         addtopic_form->show();
     }
     else
-    {
-      /*
-        QPoint p=addtopic_form->pos();
-        delete addtopic_form;
-        addtopic_form=new AddTopics();
-        //阻塞其他窗体
-        addtopic_form->setWindowModality(Qt::ApplicationModal);
-        connect(addtopic_form,SIGNAL(Topic_choose(QTreeWidgetItem *)),this,SLOT(slot_choose_topic(QTreeWidgetItem *)));
-        addtopic_form->show();
-        addtopic_form->move(p.x(),p.y());
-        */
       addtopic_form->show();
-    }
 }
 //选中要添加的话题的槽函数
 void QRviz::slot_choose_topic(QTreeWidgetItem *choose)
@@ -585,7 +609,7 @@ void QRviz::slot_choose_topic(QTreeWidgetItem *choose)
 void QRviz::slot_treewidget_item_check_change(int is_check)
 {
     QCheckBox* sen = (QCheckBox*)sender();
-    qDebug()<<"check:"<<is_check<<"parent:"<<widget_to_parentItem_map[sen]->text(0)<<"地址："<<widget_to_parentItem_map[sen];
+    //qDebug()<<"check:"<<is_check<<"parent:"<<widget_to_parentItem_map[sen]->text(0)<<"地址："<<widget_to_parentItem_map[sen];
     QTreeWidgetItem *parentItem=widget_to_parentItem_map[sen];
     QString dis_name=widget_to_parentItem_map[sen]->text(0);
     bool enable=is_check>1?true:false;
@@ -615,7 +639,7 @@ void QRviz::slot_treewidget_item_check_change(int is_check)
         QComboBox *scheme=(QComboBox *) ui.treeWidget_rviz->itemWidget(parentItem->child(3),1);
 
         Display_Map(enable,topic_box->currentText(),alpha->text().toDouble(),scheme->currentText());
-        qDebug()<<topic_box->currentText()<<alpha->text()<<scheme->currentText();
+        //qDebug()<<topic_box->currentText()<<alpha->text()<<scheme->currentText();
     }
     else if(dis_name=="LaserScan")
     {
@@ -640,34 +664,37 @@ void QRviz::slot_treewidget_item_check_change(int is_check)
 //treewidget 的值改变槽函数
 void QRviz::slot_treewidget_item_value_change(QString value)
 {
-
     QWidget* sen = (QWidget*)sender();
-    qDebug()<<sen->metaObject()->className()<<"parent:"<<widget_to_parentItem_map[sen]->text(0);
-    qDebug()<<value;
+    //qDebug()<<sen->metaObject()->className()<<"parent:"<<widget_to_parentItem_map[sen]->text(0);
+    //qDebug()<<value;
     QTreeWidgetItem *parentItem=widget_to_parentItem_map[sen];
     QString Dis_Name=widget_to_parentItem_map[sen]->text(0);
 
-//    qDebug()<<"sdad"<<enable;
     //判断每种显示的类型
     if(Dis_Name=="Grid")
     {
-        //是否启用该图层
-        QCheckBox *che_box=(QCheckBox *) ui.treeWidget_rviz->itemWidget(parentItem,1);
-        bool enable=che_box->isChecked();
-        QLineEdit *Color_text=(QLineEdit *) ui.treeWidget_rviz->itemWidget(parentItem->child(3),1);
-        QString co=Color_text->text();
-        QStringList colorList=co.split(";");
-        QColor cell_color=QColor(colorList[0].toInt(),colorList[1].toInt(),colorList[2].toInt());
+      //是否启用该图层
+      QCheckBox *che_box=(QCheckBox *) ui.treeWidget_rviz->itemWidget(parentItem,1);
+      bool enable=che_box->isChecked();
+      QLineEdit *Color_text=(QLineEdit *) ui.treeWidget_rviz->itemWidget(parentItem->child(3),1);
+      QString co=Color_text->text();
+      QStringList colorList=co.split(";");
+      QColor cell_color;
 
-        QComboBox *Reference_box=(QComboBox *) ui.treeWidget_rviz->itemWidget(parentItem->child(1),1);
-        QString Reference_text=Reference_box->currentText();
-        if(Reference_box->currentText()=="<Fixed Frame>")
-        {
-            QComboBox *Global_op=(QComboBox *) ui.treeWidget_rviz->itemWidget(ui.treeWidget_rviz->topLevelItem(0)->child(0),1);
-            Reference_text=Global_op->currentText();
-        }
-        QSpinBox *plan_cell_count=(QSpinBox *) ui.treeWidget_rviz->itemWidget(parentItem->child(2),1);
-        Display_Grid(enable,Reference_text,plan_cell_count->text().toInt(),cell_color);
+      if(colorList.size()!=3)
+        cell_color = grid_color;
+      else
+        cell_color = QColor(colorList[0].toInt(),colorList[1].toInt(),colorList[2].toInt());
+
+      QComboBox *Reference_box=(QComboBox *) ui.treeWidget_rviz->itemWidget(parentItem->child(1),1);
+      QString Reference_text=Reference_box->currentText();
+      if(Reference_box->currentText()=="<Fixed Frame>")
+      {
+        QComboBox *Global_op=(QComboBox *) ui.treeWidget_rviz->itemWidget(ui.treeWidget_rviz->topLevelItem(0)->child(0),1);
+        Reference_text=Global_op->currentText();
+      }
+      QSpinBox *plan_cell_count=(QSpinBox *) ui.treeWidget_rviz->itemWidget(parentItem->child(2),1);
+      Display_Grid(enable,Reference_text,plan_cell_count->text().toInt(),cell_color);
 
     }
     else if(Dis_Name=="Global Options")
@@ -675,10 +702,16 @@ void QRviz::slot_treewidget_item_value_change(QString value)
         QComboBox *Global_op=(QComboBox *) ui.treeWidget_rviz->itemWidget(ui.treeWidget_rviz->topLevelItem(0)->child(0),1);
         QString Reference_text=Global_op->currentText();
         QLineEdit *back_color=(QLineEdit *) ui.treeWidget_rviz->itemWidget(ui.treeWidget_rviz->topLevelItem(0)->child(1),1);
-        QStringList coList=back_color->text().split(";");
-        QColor colorBack=QColor(coList[0].toInt(),coList[1].toInt(),coList[2].toInt());
+        QStringList colorList=back_color->text().split(";");
+        QColor colorBackGround;
+
+        if(colorList.size()!=3)
+          colorBackGround = bg_color;
+        else
+          colorBackGround=QColor(colorList[0].toInt(),colorList[1].toInt(),colorList[2].toInt());
+
         QSpinBox *FrameRaBox=(QSpinBox *) ui.treeWidget_rviz->itemWidget(ui.treeWidget_rviz->topLevelItem(0)->child(2),1);
-        SetGlobalOptions(Reference_text,colorBack,FrameRaBox->value());
+        SetGlobalOptions(Reference_text, colorBackGround, FrameRaBox->value());
     }
     else if(Dis_Name=="Map")
     {
@@ -688,7 +721,7 @@ void QRviz::slot_treewidget_item_value_change(QString value)
         QComboBox *topic_box=(QComboBox *) ui.treeWidget_rviz->itemWidget(parentItem->child(1),1);
         QLineEdit *alpha=(QLineEdit *) ui.treeWidget_rviz->itemWidget(parentItem->child(2),1);
         QComboBox *scheme=(QComboBox *) ui.treeWidget_rviz->itemWidget(parentItem->child(3),1);
-        qDebug()<<topic_box->currentText()<<alpha->text()<<scheme->currentText();
+        //qDebug()<<topic_box->currentText()<<alpha->text()<<scheme->currentText();
         Display_Map(enable,topic_box->currentText(),alpha->text().toDouble(),scheme->currentText());
     }
     else if(Dis_Name=="LaserScan")

@@ -20,6 +20,7 @@
 #include <QLineEdit>
 #include <QSpinBox>
 #include <QException>
+#include <QSettings>
 #include <QStandardItemModel>
 #include <QTreeWidgetItem>
 #include "ui_qrviz.h"
@@ -36,8 +37,8 @@ class QRviz : public QWidget
 public:
   explicit QRviz(QWidget *parent = 0);
   ~QRviz();
-  void init();
-  void run();
+  void connections();
+  void loadUserDisplays();
   void createDisplay(QString display_name,QString topic_name);
   //显示Grid
   void Display_Grid(bool enable,QString Reference_frame,int Plan_Cell_count,QColor color=QColor(125,125,125));
@@ -57,8 +58,15 @@ public:
   //显示robotmodel
   void Display_RobotModel(bool enable);
 
+  //使能参数存储
+  void enablePerformanceStorage(const QString& name, const QString& type);
 
- private:
+private:
+  void loadPerformance();
+  void savePerformance();
+
+private:
+  Ui::QRviz ui;
   //rviz显示容器
   rviz::RenderPanel *render_panel_;
   rviz::VisualizationManager *manager_;
@@ -90,8 +98,15 @@ public:
   QMap <QString,QTreeWidgetItem *> tree_rviz_stues;
   //存放display的当前值 item名，参数名称和值
   QMap <QTreeWidgetItem*,QMap<QString,QString>> tree_rviz_values;
-
   AddTopics *addtopic_form = NULL;
+
+  QColor grid_color;
+  QColor bg_color;
+
+  //ui界面参数存储
+  bool is_storeParams;
+  QString m_configFileName;
+  QString m_configFileType;
 
 
  private slots:
@@ -99,10 +114,6 @@ public:
   void slot_choose_topic(QTreeWidgetItem *choose);
   void slot_treewidget_item_value_change(QString);
   void slot_treewidget_item_check_change(int);
-
-  //   rviz::VisualizationManager *manager_=NULL;
-  //    rviz::RenderPanel *render_panel_;
-
   void on_pushBotton_move_camera_clicked();
   void on_pushBotton_select_clicked();
   void on_pushBotton_2DPose_clicked();
@@ -111,8 +122,6 @@ public:
   void on_pushBotton_setReturn_clicked();
   void on_pushButton_add_topic_clicked();
 
-private:
-  Ui::QRviz ui;
 };
 
 #endif // QRVIZ_H

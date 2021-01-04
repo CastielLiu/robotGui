@@ -6,7 +6,7 @@ MainWindow::MainWindow(int argc, char **argv, QWidget *parent) :
     ui(new Ui::MainWindow),
     m_udpReceiver(nullptr),
     m_udpSender(nullptr),
-    m_configFile("RobotGui"),
+    m_configFileName("RobotGui"),
     m_configFileType("hm"),
     m_imageLabel(nullptr),
     m_radar(nullptr),
@@ -78,6 +78,10 @@ MainWindow::MainWindow(int argc, char **argv, QWidget *parent) :
     if(!ok) exit(1);
 
     this->initRviz();
+
+    //接口测试
+    this->updatePower(96, 12.6);
+    updateRobotOnlineState(true);
 }
 
 MainWindow::~MainWindow()
@@ -104,6 +108,12 @@ MainWindow::~MainWindow()
     }
     if(!g_isRemoteTerminal && g_allowRemoteCtrl)
         stopRemoteControlNode(); //
+
+    if(mQrviz)
+    {
+      delete mQrviz;
+      mQrviz = nullptr;
+    }
 
     delete ui;
 }
@@ -197,12 +207,12 @@ void MainWindow::startChat(uint16_t id, bool is_called)
 
 void MainWindow::startRemoteControlNode()
 {
-    utils::systemCmd("start_remote_control.sh&");
+    utils::systemCmd("start_remote_control.sh", true);
 }
 
 void MainWindow::stopRemoteControlNode()
 {
-    utils::systemCmd("stop_remote_control.sh&");
+    utils::systemCmd("stop_remote_control.sh", true);
 }
 
 /* @brief 停止消息传输
@@ -359,8 +369,8 @@ void MainWindow::onLableRegisterStatusClicked()
 void MainWindow::savePerformance()
 {
     //创建配置文件操作对象
-    QSettings *config = new QSettings(m_configFile, m_configFileType);
-    //qDebug() << config->fileName() ;
+    QSettings *config = new QSettings(m_configFileName, m_configFileType);
+    qDebug() << config->fileName() ;
 
     config->setValue("autoLogin", QString::number(m_autoRegister));
     config->setValue("userId", g_myId);
@@ -368,15 +378,23 @@ void MainWindow::savePerformance()
     config->setValue("robotCotrolId", g_robotControlId);
     config->setValue("cameraId", g_cameraId);
 
+    //服务器参数
     config->beginGroup("server");
     config->setValue("ip", g_serverIp.toString());
     config->setValue("port",g_registerPort);
     config->endGroup();
 
+    //摄像头参数
     config->beginGroup("camera");
     config->setValue("resolution", g_cameraResolution);
     config->setValue("image_scale",g_sendVideoScale);
     config->setValue("description", g_cameraDescription);
+    config->endGroup();
+
+    //窗口尺寸信息
+    config->beginGroup("MainWindow");
+    config->setValue("geometry", saveGeometry()); //保存各窗口尺寸
+    config->setValue("windowState", saveState()); //保存各窗口位置
     config->endGroup();
 
     delete config;
@@ -385,7 +403,7 @@ void MainWindow::savePerformance()
 //载入参数
 void MainWindow::loadPerformance()
 {
-    QSettings *config = new QSettings(m_configFile, m_configFileType);
+    QSettings *config = new QSettings(m_configFileName, m_configFileType);
     if(config)
     {
         uint16_t id = config->value(QString("userId")).toUInt();
@@ -413,6 +431,10 @@ void MainWindow::loadPerformance()
         g_sendVideoScale = config->value("camera/image_scale").toFloat();
         if(g_sendVideoScale == 0) g_sendVideoScale = 1.0;
         g_cameraDescription = config->value("camera/description").toString();
+
+        //窗口信息
+        restoreGeometry(config->value("MainWindow/geometry").toByteArray());
+        restoreState(config->value("MainWindow/windowState").toByteArray());
     }
     delete config;
     updateStatusBarPemanentMsg();
@@ -646,5 +668,28 @@ void MainWindow::on_checkBox_allowRemoteControl_stateChanged(int arg1)
 bool MainWindow::initRviz()
 {
   mQrviz = new QRviz(ui->page_rviz);
+  mQrviz->enablePerformanceStorage(m_configFileName, m_configFileType);
   ui->horizontalLayout_pageRviz->addWidget(mQrviz);
+}
+
+void MainWindow::updatePower(int percentage, float voltage)
+{
+  ui->label_voltage->setText(QString::number(voltage)+"V");
+  ui->progressBar_power->setValue(percentage);
+}
+
+void MainWindow::updateRobotOnlineState(bool online)
+{
+  if(online)
+  {
+    ui->label_robot_status_img->setPixmap(QPixmap::fromImage(QImage(":/images/robot_online")));
+    ui->label_robot_status->setStyleSheet("color:green;");
+    ui->label_robot_status->setText("在线");
+  }
+  else
+  {
+    ui->label_robot_status_img->setPixmap(QPixmap::fromImage(QImage(":/images/robot_offline")));
+    ui->label_robot_status->setStyleSheet("color:red;");
+    ui->label_robot_status->setText("离线");
+  }
 }

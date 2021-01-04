@@ -6,7 +6,7 @@
 
 namespace utils {
 
-void systemCmd(const std::string& cmd);
+void systemCmd(const std::string& cmd, bool);
 
 }
 #endif // UTILS_H

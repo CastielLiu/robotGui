@@ -4,11 +4,19 @@
 
 namespace utils {
 
-void systemCmd(const std::string& cmd)
+/*@param bg_operation 是否后台运行
+ *
+ */
+void systemCmd(const std::string& cmd, bool bg_operation=false)
 {
-    std::string dstCmd = "gnome-terminal -e \"" + g_cmdDir.toStdString() + cmd +"\"";
-    std::cout << "command: " << dstCmd << std::endl;
-    system(dstCmd.c_str());
+  std::string dstCmd;
+  if(bg_operation)
+    dstCmd = "gnome-terminal -e \"" + g_cmdDir.toStdString() + cmd +" &\"";
+  else
+    dstCmd = "gnome-terminal -e \"" + g_cmdDir.toStdString() + cmd +"\"";
+
+  std::cout << "command: " << dstCmd << std::endl;
+  system(dstCmd.c_str());
 }
 
 }

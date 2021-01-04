@@ -183,8 +183,6 @@ void AddTopics::initUi()
     Imu->setIcon(0,QIcon("://rviz_icon/classes/Imu.png"));
     parent->addChild(Imu);
 
-
-
 }
 void AddTopics::slot_curritem_changed(QTreeWidgetItem *current, QTreeWidgetItem *previous)
 {

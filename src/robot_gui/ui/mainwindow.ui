@@ -105,7 +105,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QProgressBar" name="progressBar">
+       <widget class="QProgressBar" name="progressBar_power">
         <property name="maximumSize">
          <size>
           <width>90</width>
@@ -149,7 +149,7 @@ QProgressBar {
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="label_power">
+       <widget class="QLabel" name="label_voltage">
         <property name="minimumSize">
          <size>
           <width>50</width>

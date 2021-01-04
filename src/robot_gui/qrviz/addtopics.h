@@ -18,6 +18,9 @@ public:
     explicit AddTopics(QWidget *parent = 0);
     QTreeWidgetItem *choose;
     ~AddTopics();
+    QTreeWidgetItem *addMap() {return Map->clone();}
+    QTreeWidgetItem *addAxis(){return Axes->clone();}
+    QTreeWidgetItem *addPath(){return Path->clone();}
 signals:
     void Topic_choose(QTreeWidgetItem *choose);
 private slots:

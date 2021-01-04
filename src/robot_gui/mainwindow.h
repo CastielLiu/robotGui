@@ -114,6 +114,8 @@ private:
     void updateClockDisplay();
     void startRemoteControlNode();
     void stopRemoteControlNode();
+    void updatePower(int percentage, float voltage);
+    void updateRobotOnlineState(bool online);
     bool initRviz();
 
 private:
@@ -123,7 +125,7 @@ private:
     UdpSender *m_udpSender;
 
     bool m_autoRegister;
-    QString m_configFile;
+    QString m_configFileName;
     QString m_configFileType;
 
     MyQLabel *m_imageLabel;
