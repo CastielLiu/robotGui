@@ -2,4 +2,6 @@ robot_gui/robot_gui.pro.*
 build-*
 test/
 debug*
+build/
+devel/
 

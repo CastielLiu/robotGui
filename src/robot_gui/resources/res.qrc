@@ -1,0 +1,21 @@
+<RCC>
+    <qresource prefix="/images">
+        <file alias="app_icon">image/icon.jpg</file>
+        <file alias="speaker_icon">image/speaker.png</file>
+        <file alias="talker_icon">image/talker.png</file>
+        <file alias="down">image/down.png</file>
+        <file alias="left">image/left.png</file>
+        <file alias="right">image/right.png</file>
+        <file alias="up">image/up.png</file>
+        <file alias="login1">image/log_1.png</file>
+        <file alias="login2">image/log_2.png</file>
+        <file alias="home_icon">image/home.png</file>
+        <file alias="chat_icon">image/chat_icon.png</file>
+        <file alias="transport_icon">image/transport_icon.png</file>
+        <file alias="call_icon">image/call.png</file>
+        <file alias="calling_icon">image/calling.png</file>
+        <file alias="hungup_icon">image/hongup.png</file>
+        <file alias="setting_icon">image/setting_icon.png</file>
+        <file alias="tools_icon">image/tools_icon.png</file>
+    </qresource>
+</RCC>

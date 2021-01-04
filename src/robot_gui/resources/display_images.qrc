@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/dispaly_images">
+        <file>animation_img/1.jpg</file>
+        <file>animation_img/2.jpg</file>
+        <file>animation_img/3.jpg</file>
+        <file>animation_img/4.jpg</file>
+        <file>animation_img/5.jpg</file>
+        <file>animation_img/6.jpg</file>
+        <file>animation_img/7.jpg</file>
+        <file>animation_img/8.jpg</file>
+    </qresource>
+</RCC>

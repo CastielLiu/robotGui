@@ -597,13 +597,13 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
     if(arg1 == stackWidget_TransportPage && mAnimationWidget==nullptr)
     {
         mAnimationWidget = new CarouselImageWindow(ui->widget_trannsportPageDisplay);
-        mAnimationWidget->addImage(":/dispaly_images/animation/images/1.jpg");
-        mAnimationWidget->addImage(":/dispaly_images/animation/images/2.jpg");
-        mAnimationWidget->addImage(":/dispaly_images/animation/images/3.jpg");
-        mAnimationWidget->addImage(":/dispaly_images/animation/images/4.jpg");
-        mAnimationWidget->addImage(":/dispaly_images/animation/images/5.jpg");
-        mAnimationWidget->addImage(":/dispaly_images/animation/images/6.jpg");
-        mAnimationWidget->addImage(":/dispaly_images/animation/images/7.jpg");
+        mAnimationWidget->addImage(":/dispaly_images/animation_img/1.jpg");
+        mAnimationWidget->addImage(":/dispaly_images/animation_img/2.jpg");
+        mAnimationWidget->addImage(":/dispaly_images/animation_img/3.jpg");
+        mAnimationWidget->addImage(":/dispaly_images/animation_img/4.jpg");
+        mAnimationWidget->addImage(":/dispaly_images/animation_img/5.jpg");
+        mAnimationWidget->addImage(":/dispaly_images/animation_img/6.jpg");
+        mAnimationWidget->addImage(":/dispaly_images/animation_img/7.jpg");
         mAnimationWidget->setControlButtonColor(Qt::yellow);
         mAnimationWidget->setBorderColor(Qt::red);
         mAnimationWidget->setBorderVisible(false);
@@ -625,7 +625,6 @@ void MainWindow::onUpdateNavGoalsInfo(const std::vector<goalInfo_t>& goalsInfo)
         ui->comboBox_navGoalsInfo->addItem(QString::fromStdString(goalInfo.name));
     }
 }
-
 /*
  * remote control allowed
  */
