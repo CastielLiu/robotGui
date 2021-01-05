@@ -475,7 +475,6 @@ void QRviz::slot_choose_topic(QTreeWidgetItem *choose)
   }
   else if(choose->text(0)=="LaserScan")
   {
-
     QComboBox *Laser_Topic=new QComboBox;
     Laser_Topic->setMaximumWidth(150);
     Laser_Topic->addItem("scan");

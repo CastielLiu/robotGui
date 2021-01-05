@@ -23,5 +23,6 @@
         <file alias="power_v">image/power-v.png</file>
         <file alias="robot_icon">image/robot.png</file>
         <file alias="robot_icon2">image/robot2.png</file>
+        <file alias="bio_radar">image/bioradar.png</file>
     </qresource>
 </RCC>

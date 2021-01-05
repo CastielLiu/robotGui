@@ -565,7 +565,10 @@ void MainWindow::updateClockDisplay()
 {
     QTime time = QTime::currentTime();
     QString textTime = time.toString("hh:mm"); //hh:mm:ss
-    ui->lcdNumber_clock->display(textTime);
+
+    //ui->lcdNumber_clock->display(textTime);
+    ui->lcdNumber_clock->display("23:59");
+
 }
 
 //定时器溢出事件函数
@@ -627,13 +630,13 @@ void MainWindow::on_stackedWidget_currentChanged(int arg1)
     if(arg1 == stackWidget_TransportPage && mAnimationWidget==nullptr)
     {
         mAnimationWidget = new CarouselImageWindow(ui->widget_trannsportPageDisplay);
-        mAnimationWidget->addImage(":/dispaly_images/animation_img/1.jpg");
-        mAnimationWidget->addImage(":/dispaly_images/animation_img/2.jpg");
-        mAnimationWidget->addImage(":/dispaly_images/animation_img/3.jpg");
-        mAnimationWidget->addImage(":/dispaly_images/animation_img/4.jpg");
-        mAnimationWidget->addImage(":/dispaly_images/animation_img/5.jpg");
-        mAnimationWidget->addImage(":/dispaly_images/animation_img/6.jpg");
-        mAnimationWidget->addImage(":/dispaly_images/animation_img/7.jpg");
+        mAnimationWidget->addImage(":/animation_images/animation_img/1.jpg");
+        mAnimationWidget->addImage(":/animation_images/animation_img/2.jpg");
+        mAnimationWidget->addImage(":/animation_images/animation_img/3.jpg");
+        mAnimationWidget->addImage(":/animation_images/animation_img/4.jpg");
+        mAnimationWidget->addImage(":/animation_images/animation_img/5.jpg");
+        mAnimationWidget->addImage(":/animation_images/animation_img/6.jpg");
+        mAnimationWidget->addImage(":/animation_images/animation_img/7.jpg");
         mAnimationWidget->setControlButtonColor(Qt::yellow);
         mAnimationWidget->setBorderColor(Qt::red);
         mAnimationWidget->setBorderVisible(false);
